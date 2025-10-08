@@ -3,10 +3,10 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 // create a component
-const DaruratDetail = () => {
+const AbsensiFaceRecognation = () => {
     return (
         <View style={styles.container}>
-            <Text>DaruratDetail</Text>
+            <Text>AbsensiFaceRecognation</Text>
         </View>
     );
 };
@@ -22,4 +22,4 @@ const styles = StyleSheet.create({
 });
 
 //make this component available to the app
-export default DaruratDetail;
+export default AbsensiFaceRecognation;
