@@ -91,7 +91,8 @@ export const Stylex = StyleSheet.create({
     h_title1 : {
         fontSize : 24,
         color : '#FFFFFF',
-        fontWeight : '900'
+        fontWeight : '900',
+        fontFamily: 'Audiowide', 
     },
     h_title2 : {
         fontSize : 10,
