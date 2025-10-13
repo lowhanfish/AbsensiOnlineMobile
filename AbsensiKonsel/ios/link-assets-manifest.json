@@ -2,6 +2,10 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "src/assets/fonts/Almarai-Regular.ttf",
+      "sha1": "70717b2433c393140de1608f1b1dc50773342d9e"
+    },
+    {
       "path": "src/assets/fonts/Audiowide-Regular.ttf",
       "sha1": "651503b7a0a89f49f78f14d04c62f811853573cd"
     }

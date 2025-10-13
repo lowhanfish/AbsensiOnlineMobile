@@ -52,6 +52,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Audiowide-Regular.ttf</string>
+		<string>Almarai-Regular.ttf</string>
 	</array>
 </dict>
 </plist>
