@@ -9,6 +9,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Login from './src/pages/Auth/Login';
 import MainPage from './src/pages/MainPage';
+import Dashboard from './src/pages/Dashboard/dashboard';
+
+
 
 
 
@@ -41,7 +44,8 @@ function AppStack() {
 
 function RootStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainPage" component={MainPage} />
       <Stack.Screen name="Login" component={Login} />
     </Stack.Navigator>
   );

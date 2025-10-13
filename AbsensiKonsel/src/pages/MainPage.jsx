@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from "@react-navigation/native";
@@ -16,6 +16,14 @@ import Apel from './Apel/Apel';
 import ApelDetail from './Apel/ApelDetail';
 import Izin from './Izin/Izin';
 import IzinForm from './Izin/IzinForm';
+
+
+import { Stylex } from '../assets/styles/main';
+import ImageLib from '../components/ImageLib';
+import BottomBar from '../components/BottomBar';
+
+
+
 
 
 const ContentStack = createNativeStackNavigator();
@@ -42,7 +50,25 @@ const ContentAll = () => {
 const MainPage = () => {
     return (
         <View style={styles.container}>
-            <Text>MainPage</Text>
+            {/* <ContentAll /> */}
+
+            <View style={Stylex.body}>
+                <TouchableOpacity style={[Stylex.btnSetting]}>
+                    <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
+                </TouchableOpacity>
+
+
+
+
+                <ScrollView>
+                    {/* <Text style={{ fontSize: 100 }}>APPPPP</Text> */}
+
+                </ScrollView>
+
+            </View>
+
+            <BottomBar />
+
         </View>
     );
 };
@@ -51,9 +77,6 @@ const MainPage = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#2c3e50',
     },
 });
 
