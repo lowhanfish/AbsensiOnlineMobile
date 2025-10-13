@@ -14,22 +14,29 @@ const centerAll = {
 const bottomHeight = 71;
 
 export const Stylex = StyleSheet.create({
+    bg1 : {
+
+    },
+    bg2 : {
+
+    },
     body : {
+        display : 'flex',
         flex : 1,
         // backgroundColor : 'yellow',
-        // paddingBottom:bottomHeight
+        paddingBottom:bottomHeight
     },
 
     btnSetting : {
         position : 'absolute',
-        top : 22,
-        right : 20,
-        zIndex:1
+        top : 30,
+        right : 30,
+        zIndex:9
 
     },
     
     bottomBarContainer : {
-        position : 'static',
+        position : 'absolute',
         bottom : 0,
         width : '100%',
     },
@@ -37,8 +44,9 @@ export const Stylex = StyleSheet.create({
         flex:1,
         alignItems :'center',
         flexDirection : 'row',
-        borderWidth : 4,
-        borderColor : '#EBEBEB'
+        borderWidth : 2,
+        borderColor : '#EBEBEB',
+        backgroundColor :'#FFFFFF'
         
     },
     bottomBarItem : {
@@ -74,5 +82,20 @@ export const Stylex = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 1,
         elevation: 0.7, // 👈 ini untuk Android
+    },
+
+    titleContainer:{
+        paddingTop :75,
+        paddingLeft :28
+    },
+    h_title1 : {
+        fontSize : 24,
+        color : '#FFFFFF',
+        fontWeight : '900'
+    },
+    h_title2 : {
+        fontSize : 10,
+        color : '#A4A4A4'
+
     },
 });

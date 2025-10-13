@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, ImageBackground, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from "@react-navigation/native";
@@ -31,7 +31,7 @@ const ContentStack = createNativeStackNavigator();
 
 const ContentAll = () => {
     return (
-        <ContentStack.Navigator screenOptions={{ headerShown: false }}>
+        <ContentStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
             <ContentStack.Screen name="Dashboard" component={Dashboard} />
             <ContentStack.Screen name="Absensi" component={Absensi} />
             <ContentStack.Screen name="AbsensiFaceRecognation" component={AbsensiFaceRecognation} />
@@ -49,27 +49,23 @@ const ContentAll = () => {
 // create a component
 const MainPage = () => {
     return (
-        <View style={styles.container}>
-            {/* <ContentAll /> */}
 
-            <View style={Stylex.body}>
+        <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
+
+            <View style={[Stylex.body]}>
                 <TouchableOpacity style={[Stylex.btnSetting]}>
                     <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
                 </TouchableOpacity>
 
 
+                <ContentAll />
 
 
-                <ScrollView>
-                    {/* <Text style={{ fontSize: 100 }}>APPPPP</Text> */}
 
-                </ScrollView>
-
+                <BottomBar />
             </View>
 
-            <BottomBar />
-
-        </View>
+        </ImageBackground>
     );
 };
 
