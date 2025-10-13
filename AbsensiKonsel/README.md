@@ -1,97 +1,123 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 📱 AbsensiKonsel
 
-# Getting Started
+**AbsensiKonsel** is a **mobile-based online attendance application** designed for **civil servants (ASN)** within the **Konawe Selatan Regency Government**.  
+This mobile version serves as an **integral part of the AbsensiKonsel backend system**, which manages authentication and attendance records.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+The app leverages **Face Recognition** and **Geolocation** technologies to ensure attendance verification is both **accurate and location-based**.
 
-## Step 1: Start Metro
+---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 🚀 Key Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- 🔐 **Secure authentication** for ASN through backend integration.
+- 📍 **Location-based attendance (Geolocation)** verification.
+- 🧠 **Face Recognition** for biometric identity validation.
+- 📅 **Attendance history tracking** and status updates.
+- 📱 **Cross-platform support**: Android & iOS.
 
-```sh
-# Using npm
-npm start
+---
 
-# OR using Yarn
-yarn start
+## ⚙️ Technical Specifications
+
+| Component               | Version / Specification |
+| ----------------------- | ----------------------- |
+| **Gradle Plugin**       | 8.14.1                  |
+| **Java**                | 17.0.10                 |
+| **Node.js**             | ≥ 20.19.0               |
+| **React**               | 19.1.0                  |
+| **React Native**        | 0.80.1                  |
+| **Build Tools Version** | 35.0.0                  |
+| **Min SDK Version**     | 24                      |
+| **Compile SDK Version** | 35                      |
+| **Target SDK Version**  | 35                      |
+| **NDK Version**         | 27.1.12297006           |
+| **Kotlin Version**      | 2.1.20                  |
+
+---
+
+## 🧩 Installation & Setup
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/username/AbsensiKonsel.git
+cd AbsensiKonsel
 ```
 
-## Step 2: Build and run your app
+### 2️⃣ Install dependencies
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+npm install
 ```
 
-### iOS
+### 3️⃣ iOS setup
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+Navigate to the iOS directory and install pods:
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```bash
+cd ios
+pod install
 ```
 
-Then, and every time you update your native dependencies, run:
+---
 
-```sh
-bundle exec pod install
+## ▶️ Running the Application
+
+### 🔹 Android
+
+Ensure your Android emulator is running, then execute:
+
+```bash
+npx react-native run-android
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### 🔹 iOS
 
-```sh
-# Using npm
-npm run ios
+Make sure **Xcode** and an iOS emulator are installed, then run:
 
-# OR using Yarn
-yarn ios
+```bash
+npx react-native run-ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+---
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## 🧠 Technologies Used
 
-## Step 3: Modify your app
+- **React Native** → Mobile app framework
+- **Face Recognition** → Biometric attendance validation
+- **Geolocation API** → Location verification
+- **Backend Server (AbsensiKonsel-Server)** → Data management and authentication
 
-Now that you have successfully run the app, let's make changes!
+---
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## 🏗️ System Architecture
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+```
+[Mobile App (AbsensiKonsel)]
+        │
+        ▼
+[Face Recognition & GPS Validation]
+        │
+        ▼
+[Backend Server]
+        │
+        ▼
+[Database & Admin Panel]
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+---
 
-## Congratulations! :tada:
+## 🧑‍💻 Contributors
 
-You've successfully run and modified your React Native App. :partying_face:
+- **IT Development Team of Konawe Selatan Regency Government**
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## 📄 License
 
-# Troubleshooting
+This project is developed for the internal use of the **Konawe Selatan Regency Government**.  
+© 2025 Department of Communication and Informatics (Diskominfo) Konawe Selatan. All rights reserved.
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+---
 
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+> “Accurate, transparent, and verified attendance — for a more professional ASN workforce.”
