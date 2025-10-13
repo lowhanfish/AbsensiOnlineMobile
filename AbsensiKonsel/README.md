@@ -40,7 +40,7 @@ The app leverages **Face Recognition** and **Geolocation** technologies to ensur
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/username/AbsensiKonsel.git
+git clone https://github.com/lowhanfish/AbsensiOnlineMobile.git
 cd AbsensiKonsel
 ```
 
@@ -76,7 +76,7 @@ npx react-native run-android
 Make sure **Xcode** and an iOS emulator are installed, then run:
 
 ```bash
-npx react-native run-ios
+npx run-ios
 ```
 
 ---
