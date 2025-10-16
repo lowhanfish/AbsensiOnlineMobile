@@ -1,7 +1,9 @@
-import { Text, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity } from "react-native"
+import React, { useState } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
+import CheckBox from '@react-native-community/checkbox';
 
 
 
@@ -9,6 +11,12 @@ const { height, width } = Dimensions.get('window');
 
 const Darurat = () => {
     const navigation = useNavigation();
+    const [isChecked, setIsChecked] = useState(false);
+    const [text, setText] = useState('');
+
+    const handleButtonPress = () => {
+        console.log('Filter Data By Text', text);
+    };
 
     const data = [
     { id: 1, status: '1' },
@@ -47,22 +55,33 @@ const Darurat = () => {
 
     return (
         <View style={{ flex: 1 }}>
+            <TouchableOpacity style={styles.backBtn}>
+                <ImageLib urix={require('../../assets/images/icon/back.png')} style={styles.iconBack}/>
+                <Text style={styles.backTitle}>KEMBALI</Text>
+            </TouchableOpacity>
             <ScrollView>
                 <View style={{ flex: 1 }}>
-
-                    <TouchableOpacity style={styles.backBtn}>
-                        <Text style={styles.backTitle}>KEMBALI</Text>
-                    </TouchableOpacity>
                     <View style={styles.daruratTitle}>
                         <Text style={[styles.fontTitle, Stylex.shaddowText]}>ABSEN DARURAT</Text>
                     </View>
 
-
                     <View style={styles.container} >
                         <ImageBackground style={{ flex: 1 }} resizeMode="stretch" source={require('../../assets/images/bg1.png')}>
                         <View style={styles.daruratHeader}>
-                            <Text style={styles.dateContent}>Pilih Semua Dokumen</Text>
-                            <Text style={[styles.dateContent]}>Jumlah Tampil</Text>
+                            <View style={styles.checkboxContainer}>
+                                <CheckBox value={isChecked} onValueChange={setIsChecked} />
+                                <Text style={styles.dateContent}>Pilih Semua Dokumen</Text>
+                            </View>
+                            <View style={styles.jumlahContainer}>
+                                <Text style={styles.dateContent}>Jumlah Tampil</Text>
+                                <Text style={styles.jumlahTampil}>10</Text>
+                            </View>
+                        </View>
+                        <View style={styles.inputWrapper}>
+                            <TextInput style={styles.inputDarurat} placeholder="Filter Data" value={text} onChangeText={setText} />
+                            <TouchableOpacity onPress={handleButtonPress} style={styles.button}>
+                                <ImageLib urix={require('../../assets/images/icon/filter.png')} style={styles.icon}/>
+                            </TouchableOpacity>
                         </View>
                         {data.map((item) => (
                         <TouchableOpacity style={[styles.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
@@ -98,16 +117,24 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     backBtn : {
+        flexDirection : 'row',
         position : 'absolute',
-        top : 35,
+        textAlignVertical: 'center',
+        top : 30,
         left : 30,
-        zIndex:9
+        zIndex: 9
+    },
+    iconBack: {
+        width: 14,
+        textAlignVertical: 'center',
     },
     backTitle : {
         fontSize : 10,
         color : '#FFFFFF',
         fontWeight : '700',
         fontFamily: 'Almarai-Bold', 
+        textAlignVertical: 'center',
+        paddingLeft : 5,
     },
     daruratTitle:{
         paddingTop :75,
@@ -127,8 +154,73 @@ const styles = StyleSheet.create({
         marginTop: 30,
         marginBottom: 15,
     },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    jumlahContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    jumlahTampil: {
+        fontSize : 8,
+        color : '#636363',
+        fontWeight : '400',
+        fontFamily: 'Almarai-Regular', 
+        marginLeft: 10,
+        borderWidth: 1,
+        borderColor: '#CCCCCC',
+        backgroundColor: '#D9D9D9',
+        paddingVertical: 2,
+        paddingHorizontal: 4,
+    },
     headerContainer : {
         flex :1,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        marginHorizontal: 20,
+        borderColor: '#DEDEDE',
+        borderTopLeftRadius: 5,
+        borderBottomLeftRadius: 5,
+        borderRadius: 5,
+        marginBottom: 18,
+        backgroundColor: '#fff',
+        paddingVertical: 0,
+        height: 35
+    },
+    inputDarurat: {
+        flex: 1,
+        fontSize: 8,
+        paddingHorizontal: 10,
+        height: 35,
+        lineHeight: 35, 
+        textAlignVertical: 'center',
+    },
+    button: {
+        padding: 10,
+        height: 35,
+        borderTopRightRadius: 5,
+        borderBottomRightRadius: 5,
+        backgroundColor: '#B193F0',
+    },
+    icon: {
+        width: 15,
+    },
+    daruratSearch: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 25,
+        marginBottom: 15,
+    },
+    daruratInput: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginTop: 10,
+        paddingHorizontal: 10,
     },
     daruratContent : {
         marginHorizontal: 20,
