@@ -46,43 +46,44 @@ const Darurat = () => {
   };
 
     return (
+        <View style={{ flex: 1 }}>
+            <ScrollView>
+                <View style={{ flex: 1 }}>
 
-        <ScrollView>
-            <View style={{ flex: 1 }}>
+                    <TouchableOpacity style={styles.backBtn}>
+                        <Text style={styles.backTitle}>KEMBALI</Text>
+                    </TouchableOpacity>
+                    <View style={styles.daruratTitle}>
+                        <Text style={[styles.fontTitle, Stylex.shaddowText]}>ABSEN DARURAT</Text>
+                    </View>
 
-                <TouchableOpacity style={styles.backBtn}>
-                    <Text style={styles.backTitle}>KEMBALI</Text>
-                </TouchableOpacity>
-                <View style={styles.daruratTitle}>
-                    <Text style={[styles.fontTitle, Stylex.shaddowText]}>ABSEN DARURAT</Text>
+
+                    <View style={styles.container} >
+                        <ImageBackground style={{ flex: 1 }} resizeMode="stretch" source={require('../../assets/images/bg1.png')}>
+                        <View style={styles.daruratHeader}>
+                            <Text style={styles.dateContent}>Pilih Semua Dokumen</Text>
+                            <Text style={[styles.dateContent]}>Jumlah Tampil</Text>
+                        </View>
+                        {data.map((item) => (
+                        <TouchableOpacity style={[styles.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
+                        <ImageLib style={{ width: 41, margin: 8 }} urix={require('../../assets/images/icon/absenDarurat.png')} />
+                        <View style={styles.textContent}>
+                            <Text style={styles.titleContent}>ABSENSI DARURAT</Text>
+                            <Text style={[styles.dateContent]}>20 Sep 2025 - 22 Sept 2025</Text>
+                            <Text style={styles.nameContent}>Kiken Sukma Batara, S.Si.,MT</Text>
+                        </View>
+                        <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
+                        </TouchableOpacity>
+                        ))}
+                        </ImageBackground>
+                    </View>
                 </View>
+            </ScrollView>
 
-
-                <View style={styles.container} >
-                    <ImageBackground style={{ flex: 1 }} resizeMode="stretch" source={require('../../assets/images/bg1.png')}>
-                    <View style={styles.daruratHeader}>
-                        <Text style={styles.dateContent}>Pilih Semua Dokumen</Text>
-                        <Text style={[styles.dateContent]}>Jumlah Tampil</Text>
-                    </View>
-                    {data.map((item) => (
-                    <View style={[styles.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
-                    <ImageLib style={{ width: 41, margin: 8 }} urix={require('../../assets/images/icon/absenDarurat.png')} />
-                    <View style={styles.textContent}>
-                        <Text style={styles.titleContent}>ABSENSI DARURAT</Text>
-                        <Text style={[styles.dateContent]}>20 Sep 2025 - 22 Sept 2025</Text>
-                        <Text style={styles.nameContent}>Kiken Sukma Batara, S.Si.,MT</Text>
-                    </View>
-                    <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
-                    </View>
-                    ))}
-                    </ImageBackground>
-
-                </View>
-            </View>
-
-
-
-        </ScrollView>
+            <TouchableOpacity style={{ position: 'absolute', bottom: 16, right: 26, elevation: 5, }} onPress={() => console.log('FAB Pressed')} >
+                <ImageLib style={{ width: 61, height: 61 }} urix={require('../../assets/images/icon/addBtn.png')}/>
+            </TouchableOpacity>
+      </View>
 
 
 
