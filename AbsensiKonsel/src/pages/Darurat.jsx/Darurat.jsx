@@ -1,9 +1,9 @@
-import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
 import React, { useState } from 'react';
-// import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
 import CheckBox from '@react-native-community/checkbox';
+// import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 
 
@@ -13,6 +13,8 @@ const Darurat = () => {
     // const navigation = useNavigation();
     const [isChecked, setIsChecked] = useState(false);
     const [text, setText] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
     const handleButtonPress = () => {
         console.log('Filter Data By Text', text);
@@ -53,6 +55,21 @@ const Darurat = () => {
     }
   };
 
+  const openPopup = (item) => {
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
+
+  const closePopup = () => {
+    setModalVisible(false);
+    setSelectedItem(null);
+  };
+
+  const handleAction = (action) => {
+    console.log(`${action} clicked for item ID:`, selectedItem?.id);
+    closePopup();
+  };
+
     return (
         <View style={{ flex: 1 }}>
             <TouchableOpacity style={Stylex.backBtn}>
@@ -84,7 +101,7 @@ const Darurat = () => {
                             </TouchableOpacity>
                         </View>
                         {data.map((item) => (
-                        <TouchableOpacity style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
+                        <TouchableOpacity key={item.id} onPress={() => openPopup(item)} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
                         <ImageLib style={{ width: 41, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
                         <View style={Stylex.textContent}>
                             <Text style={Stylex.titleContent}>ABSENSI DARURAT</Text>
@@ -102,6 +119,32 @@ const Darurat = () => {
             <TouchableOpacity style={{ position: 'absolute', bottom: 16, right: 26, elevation: 5, }} onPress={() => console.log('FAB Pressed')} >
                 <ImageLib style={{ width: 61, height: 61 }} urix={require('../../assets/images/icon/addBtn.png')}/>
             </TouchableOpacity>
+
+            <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
+              <View style={Stylex.overlay}>
+                <View style={Stylex.popup}>
+                  <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
+                    <Text style={Stylex.closeText}>✕</Text>
+                  </TouchableOpacity>
+                  <Text style={Stylex.popupTitle}>Settings</Text>
+                  <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => handleAction('Detail')} >
+                    <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C4C080' }]} onPress={() => handleAction('Update')} >
+                    <Text style={[Stylex.popupButtonText, { color: '#C4C080' }]}>Update</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => handleAction('Delete')} >
+                    <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={[Stylex.popupButton, { backgroundColor: '#C66963', borderColor: '#C66963' }]} onPress={closePopup} >
+                    <Text style={[Stylex.popupButtonText, { color: '#FFFFFF' }]}>Batal</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
       </View>
 
 

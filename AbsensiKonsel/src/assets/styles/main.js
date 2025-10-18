@@ -245,6 +245,54 @@ export const Stylex = StyleSheet.create({
         fontWeight : '700',
         fontFamily: 'Almarai-Bold', 
     },
+
     // Page Darurat, Izin, Apel
+
+    // Modal Styles
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    popup: {
+      width: 255,
+      backgroundColor: '#fff',
+      borderRadius: 11,
+      padding: 20,
+      elevation: 10,
+    },
+    popupTitle: {
+      fontSize: 12,
+      fontWeight: '400',
+      marginBottom: 15,
+      marginTop: 20,
+      color: '#747474ff',
+    },
+    popupButton: {
+      width: '100%',
+      borderWidth: 1,
+      borderRadius: 5,
+      paddingVertical: 7.5,
+      marginBottom: 10,
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+    },
+    popupButtonText: {
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 0,
+      right: 2.5,
+      padding: 5,
+      zIndex: 1,
+    },
+    closeText: {
+      fontSize: 15,
+      color: '#000',
+    },
+    // Modal Styles
 
 });
