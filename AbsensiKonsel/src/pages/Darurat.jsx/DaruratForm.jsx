@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, ImageBackground, ScrollView, Platform,
+  View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, ImageBackground, Platform,
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import { Picker } from '@react-native-picker/picker';
@@ -103,9 +103,15 @@ const DaruratForm = () => {
                 activeOpacity={0.8}
                 onPress={() => openPicker('dari')}
               >
-                <Text style={[styles.pickerText, { marginLeft: 12 }]}>
-                  {dariTanggal ? formatDateDisplay(dariTanggal) : '-- Pilih Tanggal --'}
-                </Text>
+                <View style={styles.inputRow}>
+                <Text style={styles.pickerText}>
+                    {dariTanggal ? formatDateDisplay(dariTanggal) : '-- Pilih Tanggal --'}
+                  </Text>
+                  <ImageLib
+                    urix={require('../../assets/images/icon/calendar.png')}
+                    style={styles.calendarIcon}
+                  />
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -119,9 +125,18 @@ const DaruratForm = () => {
                 activeOpacity={0.8}
                 onPress={() => openPicker('sampai')}
               >
-                <Text style={[styles.pickerText, { marginLeft: 12 }]}>
+                {/* <Text style={[styles.pickerText, { marginLeft: 12 }]}>
                   {sampaiTanggal ? formatDateDisplay(sampaiTanggal) : '-- Pilih Tanggal --'}
-                </Text>
+                </Text> */}
+                <View style={styles.inputRow}>
+                  <Text style={styles.pickerText}>
+                    {sampaiTanggal ? formatDateDisplay(sampaiTanggal) : '-- Pilih Tanggal --'}
+                  </Text>
+                  <ImageLib
+                    urix={require('../../assets/images/icon/calendar.png')}
+                    style={styles.calendarIcon}
+                  />
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -176,7 +191,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 24,
     left: 28,
-    width: 295,
+    right: 28,
     height: 41
   },
   textform: {
@@ -330,6 +345,20 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     tintColor: '#fff',
+  },
+
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    height: '100%',
+  },
+  
+  calendarIcon: {
+    width: 20,
+    height: 20,
+    opacity: 0.7,   
   },
 });
 

@@ -32,16 +32,16 @@ const ContentStack = createNativeStackNavigator();
 const ContentAll = () => {
     return (
         <ContentStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
-            <ContentStack.Screen name="IzinForm" component={IzinForm} />
-            <ContentStack.Screen name="DaruratForm" component={DaruratForm} />
             <ContentStack.Screen name="Dashboard" component={Dashboard} />
             <ContentStack.Screen name="Absensi" component={Absensi} />
             <ContentStack.Screen name="AbsensiFaceRecognation" component={AbsensiFaceRecognation} />
             <ContentStack.Screen name="Darurat" component={Darurat} />
             <ContentStack.Screen name="DaruratDetail" component={DaruratDetail} />
+            <ContentStack.Screen name="DaruratForm" component={DaruratForm} />
             <ContentStack.Screen name="Apel" component={Apel} />
             <ContentStack.Screen name="ApelDetail" component={ApelDetail} />
             <ContentStack.Screen name="Izin" component={Izin} />
+            <ContentStack.Screen name="IzinForm" component={IzinForm} />
         </ContentStack.Navigator>
     );
 };
