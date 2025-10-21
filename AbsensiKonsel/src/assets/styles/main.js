@@ -99,4 +99,200 @@ export const Stylex = StyleSheet.create({
         color : '#A4A4A4'
 
     },
+
+    // Page Darurat, Izin, Apel
+
+    backBtn : {
+        flexDirection : 'row',
+        position : 'absolute',
+        textAlignVertical: 'center',
+        top : 30,
+        left : 30,
+        zIndex: 9
+    },
+    iconBack: {
+        width: 14,
+        textAlignVertical: 'center',
+    },
+    backTitle : {
+        fontSize : 10,
+        color : '#FFFFFF',
+        fontWeight : '700',
+        fontFamily: 'Almarai-Bold', 
+        textAlignVertical: 'center',
+        paddingLeft : 5,
+    },
+    daruratTitle:{
+        paddingTop :75,
+        paddingLeft :28
+    },
+    fontTitle : {
+        fontSize : 24,
+        color : '#FFFFFF',
+        fontWeight : '400',
+        fontFamily: 'Audiowide-Regular', 
+    },
+    daruratHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginHorizontal: 25,
+        marginTop: 30,
+        marginBottom: 15,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    jumlahContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    jumlahTampil: {
+        fontSize : 8,
+        color : '#636363',
+        fontWeight : '400',
+        fontFamily: 'Almarai-Regular', 
+        marginLeft: 10,
+        borderWidth: 1,
+        borderColor: '#CCCCCC',
+        backgroundColor: '#D9D9D9',
+        paddingVertical: 2,
+        paddingHorizontal: 4,
+    },
+    headerContainer : {
+        flex :1,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        marginHorizontal: 20,
+        borderColor: '#DEDEDE',
+        borderTopLeftRadius: 5,
+        borderBottomLeftRadius: 5,
+        borderRadius: 5,
+        marginBottom: 18,
+        backgroundColor: '#fff',
+        paddingVertical: 0,
+        height: 35
+    },
+    inputDarurat: {
+        flex: 1,
+        fontSize: 8,
+        paddingHorizontal: 10,
+        height: 35,
+        lineHeight: 35, 
+        textAlignVertical: 'center',
+    },
+    button: {
+        padding: 10,
+        height: 35,
+        borderTopRightRadius: 5,
+        borderBottomRightRadius: 5,
+        backgroundColor: '#B193F0',
+    },
+    icon: {
+        width: 15,
+    },
+    daruratSearch: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 25,
+        marginBottom: 15,
+    },
+    daruratInput: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginTop: 10,
+        paddingHorizontal: 10,
+    },
+    daruratContent : {
+        marginHorizontal: 20,
+        border: '2px solid #EBEBEB',
+        borderRadius: 10,
+
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3,
+
+        elevation: 3,
+
+        flexDirection : 'row',
+    },
+    textContent : {
+        flex :1,
+        flexDirection : 'column',
+        marginVertical : 6
+    },
+    titleContent : {
+        fontSize : 10,
+        color : '#636363',
+        fontWeight : '700',
+        fontFamily: 'Almarai-Bold', 
+    },
+    dateContent : {
+        fontSize : 8,
+        color : '#8D8D8D',
+        fontWeight : '400',
+        fontFamily: 'Almarai-Regular', 
+    },
+    nameContent : {
+        fontSize : 8,
+        color : '#A4A4A4',
+        fontWeight : '700',
+        fontFamily: 'Almarai-Bold', 
+    },
+
+    // Page Darurat, Izin, Apel
+
+    // Modal Styles
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    popup: {
+      width: 255,
+      backgroundColor: '#fff',
+      borderRadius: 11,
+      padding: 20,
+      elevation: 10,
+    },
+    popupTitle: {
+      fontSize: 12,
+      fontWeight: '400',
+      marginBottom: 15,
+      marginTop: 20,
+      color: '#747474ff',
+    },
+    popupButton: {
+      width: '100%',
+      borderWidth: 1,
+      borderRadius: 5,
+      paddingVertical: 7.5,
+      marginBottom: 10,
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+    },
+    popupButtonText: {
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 0,
+      right: 2.5,
+      padding: 5,
+      zIndex: 1,
+    },
+    closeText: {
+      fontSize: 15,
+      color: '#000',
+    },
+    // Modal Styles
+
 });
