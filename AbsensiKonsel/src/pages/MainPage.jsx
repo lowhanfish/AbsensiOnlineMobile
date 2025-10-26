@@ -25,10 +25,10 @@ const ContentStack = createNativeStackNavigator();
 const ContentAll = () => {
     return (
         <ContentStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
-            <ContentStack.Screen name="Absensi" component={Absensi} />
-            <ContentStack.Screen name="Dashboard" component={Dashboard} />
-            <ContentStack.Screen name="AbsensiFaceRecognation" component={AbsensiFaceRecognation} />
             <ContentStack.Screen name="Darurat" component={Darurat} />
+            <ContentStack.Screen name="Dashboard" component={Dashboard} />
+            <ContentStack.Screen name="Absensi" component={Absensi} />
+            <ContentStack.Screen name="AbsensiFaceRecognation" component={AbsensiFaceRecognation} />
             <ContentStack.Screen name="DaruratDetail" component={DaruratDetail} />
             <ContentStack.Screen name="DaruratForm" component={DaruratForm} />
             <ContentStack.Screen name="Apel" component={Apel} />
@@ -41,6 +41,10 @@ const ContentAll = () => {
 
 // create a component
 const MainPage = () => {
+
+    const navigation = useNavigation();
+
+
     return (
 
         <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
@@ -52,7 +56,7 @@ const MainPage = () => {
 
                 <ContentAll />
 
-                <BottomBar />
+                <BottomBar navigation={navigation} />
             </View>
 
         </ImageBackground>

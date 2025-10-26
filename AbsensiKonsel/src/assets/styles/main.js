@@ -35,33 +35,7 @@ export const Stylex = StyleSheet.create({
 
     },
     
-    bottomBarContainer : {
-        position : 'absolute',
-        bottom : 0,
-        width : '100%',
-    },
-    bottomBar : {
-        flex:1,
-        alignItems :'center',
-        flexDirection : 'row',
-        borderWidth : 2,
-        borderColor : '#EBEBEB',
-        backgroundColor :'#FFFFFF'
-        
-    },
-    bottomBarItem : {
-        // backgroundColor : 'pink',
-        height : bottomHeight,
-        flex :1,
-        // borderWidth :1,
-        // borderColor :'black',
-        justifyContent : 'center',
-        alignItems : 'center'
-    },
-    bottomBarText : {
-        color : '#9C9C9C',
-        fontSize : 9,
-    },
+    
 
 
 
