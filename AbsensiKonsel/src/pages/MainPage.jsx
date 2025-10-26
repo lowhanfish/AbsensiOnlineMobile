@@ -5,35 +5,28 @@ import { View, ImageBackground, Text, StyleSheet, ScrollView, TouchableOpacity }
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from "@react-navigation/native";
 
-
 import Dashboard from './Dashboard/dashboard';
-import Absensi from './absensi/Absensi';
-import AbsensiFaceRecognation from './absensi/AbsensiFaceRecognation';
+import Absensi from './Absensi/Absensi';
+import AbsensiFaceRecognation from './Absensi/AbsensiFaceRecognation';
 import Darurat from './Darurat.jsx/Darurat';
 import DaruratDetail from './Darurat.jsx/DaruratDetail';
 import DaruratForm from './Darurat.jsx/DaruratForm';
-import Apel from './apel/Apel';
-import ApelDetail from './apel/ApelDetail';
-import Izin from './izin/Izin';
-import IzinForm from './izin/IzinForm';
-
+import Apel from './Apel/Apel';
+import ApelDetail from './Apel/ApelDetail';
+import Izin from './Izin/Izin';
+import IzinForm from './Izin/IzinForm';
 
 import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
 import BottomBar from '../components/BottomBar';
 
-
-
-
-
 const ContentStack = createNativeStackNavigator();
-
 
 const ContentAll = () => {
     return (
         <ContentStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
-            <ContentStack.Screen name="Dashboard" component={Dashboard} />
             <ContentStack.Screen name="Absensi" component={Absensi} />
+            <ContentStack.Screen name="Dashboard" component={Dashboard} />
             <ContentStack.Screen name="AbsensiFaceRecognation" component={AbsensiFaceRecognation} />
             <ContentStack.Screen name="Darurat" component={Darurat} />
             <ContentStack.Screen name="DaruratDetail" component={DaruratDetail} />
@@ -57,10 +50,7 @@ const MainPage = () => {
                     <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
                 </TouchableOpacity>
 
-
                 <ContentAll />
-
-
 
                 <BottomBar />
             </View>
