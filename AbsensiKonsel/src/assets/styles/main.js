@@ -74,6 +74,17 @@ export const Stylex = StyleSheet.create({
 
     },
 
+    subTitleContainer:{
+        paddingVertical : 10,
+        justifyContent : 'center',
+        alignItems : 'center'
+    },
+    h_subTitle1 : {
+        color : '#575757',
+        fontSize : 12,
+        fontWeight : 'bold' 
+    },
+
     // Page Darurat, Izin, Apel
 
     backBtn : {
@@ -183,38 +194,41 @@ export const Stylex = StyleSheet.create({
         paddingHorizontal: 10,
     },
     daruratContent : {
-        marginHorizontal: 20,
+        // marginHorizontal: 20,
         border: '2px solid #EBEBEB',
         borderRadius: 10,
 
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 0 },
+        shadowOffset: { width: 1, height: 1 },
         shadowOpacity: 0.25,
-        shadowRadius: 3,
+        shadowRadius: 2,
 
-        elevation: 3,
+        elevation: 2,
 
         flexDirection : 'row',
     },
     textContent : {
         flex :1,
         flexDirection : 'column',
-        marginVertical : 6
+        marginVertical : 6,
+        // alignItems : 'center'
+        justifyContent : 'center'
     },
     titleContent : {
-        fontSize : 10,
+        fontSize : 11,
         color : '#636363',
         fontWeight : '700',
         fontFamily: 'Almarai-Bold', 
     },
     dateContent : {
-        fontSize : 8,
+        marginTop : 5,
+        fontSize : 10,
         color : '#8D8D8D',
         fontWeight : '400',
         fontFamily: 'Almarai-Regular', 
     },
     nameContent : {
-        fontSize : 8,
+        fontSize : 10,
         color : '#A4A4A4',
         fontWeight : '700',
         fontFamily: 'Almarai-Bold', 
@@ -268,5 +282,10 @@ export const Stylex = StyleSheet.create({
       color: '#000',
     },
     // Modal Styles
+    barLine : {
+        height : 12,
+        backgroundColor : '#D0DFFF',
+        marginTop : 15,
+    }
 
 });
