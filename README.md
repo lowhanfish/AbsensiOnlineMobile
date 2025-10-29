@@ -139,6 +139,11 @@ npm install @react-native-ml-kit/face-detection
 
 # Install Vision Camera
 npm install react-native-vision-camera
+```
+Adding line for camera permission in android/app/src/main/AndroidManifest.xml
+```bash
+<uses-permission android:name="android.permission.CAMERA" />
+```
 
 
 ---
