@@ -51,7 +51,7 @@ npm install
 ```
 
 ### 3️⃣ iOS setup
-
+›
 Navigate to the iOS directory and install pods:
 
 ```bash
@@ -63,7 +63,7 @@ pod install
 
 ## ▶️ Running the Application
 
-### 🔹 Android
+### 🔹 Android››
 
 Ensure your Android emulator is running, then execute:
 
@@ -104,6 +104,46 @@ npx run-ios
         ▼
 [Database & Admin Panel]
 ```
+
+---
+
+## 🌿 Branch Information
+
+### 🔸 New Branch: `hi_dayat`
+This branch is created for **development and testing** of the new Face Recognition feature in the attendance module.
+
+#### 🧠 Purpose
+- Implement face recognition-based attendance.
+- Enhance security and reliability in attendance validation.
+- Optimize camera performance for real-time processing.
+
+#### 🧩 Included Libraries
+- `@react-native-ml-kit/face-detection` — Face Detection module.
+- `react-native-vision-camera` — Camera component for React Native.
+
+---
+
+## 🛠️ Recent Changes
+- 🧠 Added Face Detection & Recognition using **ML Kit**.  
+- 📸 Implemented camera permission handling with **react-native-vision-camera**.
+
+---
+
+## ⚙️ Library Installation
+
+To support Face Recognition and Camera functionality, make sure to install the following dependencies:
+
+```bash
+# Install ML Kit Face Detection
+npm install @react-native-ml-kit/face-detection
+
+# Install Vision Camera
+npm install react-native-vision-camera
+
+### 🤝 Regards,  
+**Hidayat Darmawan**  
+_Developer & Maintainer of the `hi_dayat` Branch_  
+
 
 ---
 
