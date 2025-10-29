@@ -5,7 +5,8 @@ import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-
+import { Provider } from 'react-redux';
+import store from './src/redux/store';
 
 import Login from './src/pages/Auth/Login';
 import MainPage from './src/pages/MainPage';
@@ -45,7 +46,7 @@ function AppStack() {
 function RootStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
+      <Stack.Screen name="MainPage" component={MainPage} />
       <Stack.Screen name="Login" component={Login} />
     </Stack.Navigator>
   );
@@ -53,8 +54,10 @@ function RootStack() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <RootStack />
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <RootStack />
+      </NavigationContainer>
+    </Provider>
   );
 }

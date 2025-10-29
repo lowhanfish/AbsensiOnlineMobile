@@ -4,25 +4,79 @@ import { View, ImageBackground, Text, StyleSheet, Button, ScrollView, TouchableO
 import { Stylex } from '../../assets/styles/main';
 import ImageLib from '../../components/ImageLib';
 import Checkbox from '../../components/Checkbox';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 // create a component
 const Login = () => {
 
     const [ingat, setIngat] = useState(false);
     const [pesan, setPesan] = useState('');
 
-    const handleLogin = () => {
-        // Simulate a login attempt
-        const isSuccess = Math.random() > 0.5; // Randomly succeed or fail
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState(''); 
 
-        if (isSuccess) {
-            setPesan('');
-            alert('Login Berhasil');
-            return true;
-        } else {
-            setPesan('Username atau Password Salah');
-            return false;
+    const dispatch = useDispatch(); 
+    const loginUrl = useSelector(state => state.URL.LOGIN_URL); 
+    const navigation = useNavigation();
+
+    // const handleLogin = () => {
+    //     // Simulate a login attempt
+    //     const isSuccess = Math.random() > 0.5; // Randomly succeed or fail
+
+    //     if (isSuccess) {
+    //         setPesan('');
+    //         alert('Login Berhasil');
+    //         return true;
+    //     } else {
+    //         setPesan('Username atau Password Salah');
+    //         return false;
+    //     }
+    // };
+
+    const handleLogin = async () => {
+        if (!username || !password) {
+            setPesan('Username dan Password harus diisi');
+            return;
+        }
+        try {
+           
+            const response = await fetch(loginUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Data Login:', data);
+                dispatch({
+                    type: 'LOGIN_SUCCESS',
+                    payload: {
+                        token: data.token, 
+                        profile: data.profile,
+                        unit_kerja: data.unit_kerja,
+                        id_profile: data.id_profile,
+                        nip: data.nip,
+                    },
+                });
+                setPesan('');
+                alert('Login Berhasil');
+                navigation.navigate('MainPage');
+            } else {
+                setPesan('Username atau Password Salah');
+            }
+        } catch (error) {
+            setPesan('Terjadi kesalahan jaringan');
+            console.error('Login error:', error);
         }
     };
+
+    
+
 
 
     const handleCheckboxChange = (newValue) => {
@@ -47,10 +101,25 @@ const Login = () => {
 
                 <View style={[{ flexDirection: 'column', alignItems: 'stretch' }]}>
                     <View style={[styles.containerInputx]}> 
-                        <TextInput style={[styles.inputx]} placeholder="Username" placeholderTextColor="#999"   />
+                        {/* <TextInput style={[styles.inputx]} placeholder="Username" placeholderTextColor="#999"   /> */}
+                        <TextInput 
+                            style={[styles.inputx]} 
+                            placeholder="Username" 
+                            placeholderTextColor="#999"   
+                            value={username} // Tambahan: Bind ke state
+                            onChangeText={setUsername} // Tambahan: Update state
+                        />
                     </View> 
                     <View style={[styles.containerInputx]}>
-                        <TextInput style={[styles.inputx]} placeholder="Password" placeholderTextColor="#999"   secureTextEntry />
+                        {/* <TextInput style={[styles.inputx]} placeholder="Password" placeholderTextColor="#999"   secureTextEntry /> */}
+                        <TextInput 
+                            style={[styles.inputx]} 
+                            placeholder="Password" 
+                            placeholderTextColor="#999"   
+                            secureTextEntry 
+                            value={password} // Tambahan: Bind ke state
+                            onChangeText={setPassword} // Tambahan: Update state
+                        />
                     </View> 
                     {pesan !== '' && (
                         <Text style={[{marginHorizontal: 30, marginTop: 5, color: 'red', fontSize: 12}]}>{pesan}</Text>

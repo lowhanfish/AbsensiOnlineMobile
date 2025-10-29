@@ -1,6 +1,6 @@
 //import liraries
-import React, { Component } from 'react';
-import { View, ImageBackground, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { Component, useEffect } from 'react';
+import { View, ImageBackground, Text, StyleSheet, ScrollView, TouchableOpacity, BackHandler, Alert } from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from "@react-navigation/native";
@@ -21,6 +21,8 @@ import IzinForm from './Izin/IzinForm';
 import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
 import BottomBar from '../components/BottomBar';
+
+import { useDispatch } from 'react-redux'; 
 
 
 
@@ -48,12 +50,57 @@ const ContentAll = () => {
 
 // create a component
 const MainPage = () => {
+    const navigation = useNavigation();
+    const dispatch = useDispatch();
+    useEffect(() => {
+        const backAction = () => {
+            Alert.alert("Logout Required", "Silakan logout melalui tombol Logout untuk kembali ke Login.", [
+                { text: "OK" }
+            ]);
+            return true; // Mencegah back button berfungsi
+        };
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+        return () => backHandler.remove(); // Cleanup listener saat unmount
+    }, []);
     return (
 
         <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
 
             <View style={[Stylex.body]}>
-                <TouchableOpacity style={[Stylex.btnSetting]}>
+                {/* <TouchableOpacity style={[Stylex.btnSetting]}
+                 onPress={() => {
+                    dispatch({ type: 'LOGOUT' });
+                    navigation.replace('Login'); 
+                }}>
+                    <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
+                    
+                </TouchableOpacity> */}
+                <TouchableOpacity 
+                    style={[Stylex.btnSetting]} 
+                    onPress={() => {
+                        Alert.alert(
+                            "Konfirmasi Logout",
+                            "Apakah Anda yakin ingin logout?",
+                            [
+                                {
+                                    text: "Tidak",
+                                    onPress: () => console.log("Logout dibatalkan"),
+                                    style: "cancel"
+                                },
+                                {
+                                    text: "Ya",
+                                    onPress: () => {
+                                        dispatch({ type: 'LOGOUT' }); 
+                                        navigation.replace('Login'); 
+                                    }
+                                }
+                            ]
+                        );
+                    }}
+                >
                     <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
                 </TouchableOpacity>
 
