@@ -140,10 +140,6 @@ npm install @react-native-ml-kit/face-detection
 # Install Vision Camera
 npm install react-native-vision-camera
 
-### 🤝 Regards,  
-**Hidayat Darmawan**  
-_Developer & Maintainer of the `hi_dayat` Branch_  
-
 
 ---
 
