@@ -15,7 +15,6 @@
     "@react-native-community/datetimepicker": "^8.4.2",
     "@react-native-documents/picker": "^10.1.7",
     "@react-native-documents/viewer": "^1.0.1",
-    "@react-native-ml-kit/face-detection": "^2.0.1",
     "@react-native-picker/picker": "^2.11.2",
     "@react-native/new-app-screen": "0.80.1",
     "@react-navigation/elements": "^2.6.4",
