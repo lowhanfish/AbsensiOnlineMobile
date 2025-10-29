@@ -1,11 +1,13 @@
 //import liraries
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { View, ImageBackground, Text, StyleSheet, Button, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import ImageLib from '../../components/ImageLib';
 import Checkbox from '../../components/Checkbox';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // create a component
 const Login = () => {
 
@@ -18,6 +20,25 @@ const Login = () => {
     const dispatch = useDispatch(); 
     const loginUrl = useSelector(state => state.URL.LOGIN_URL); 
     const navigation = useNavigation();
+    useEffect(() => {
+        const loadRememberedCredentials = async () => {
+            try {
+                const remembered = await AsyncStorage.getItem('rememberPassword');
+                if (remembered === 'true') {
+                    const savedUsername = await AsyncStorage.getItem('username');
+                    const savedPassword = await AsyncStorage.getItem('password');
+                    if (savedUsername && savedPassword) {
+                        setUsername(savedUsername);
+                        setPassword(savedPassword);
+                        setIngat(true);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading remembered credentials:', error);
+            }
+        };
+        loadRememberedCredentials();
+    }, []);
 
     // const handleLogin = () => {
     //     // Simulate a login attempt
@@ -64,7 +85,17 @@ const Login = () => {
                     },
                 });
                 setPesan('');
-                alert('Login Berhasil');
+                if (ingat) {
+                    await AsyncStorage.setItem('rememberPassword', 'true');
+                    await AsyncStorage.setItem('username', username);
+                    await AsyncStorage.setItem('password', password);
+                } else {
+                    // Jika tidak ingat, hapus data yang tersimpan
+                    await AsyncStorage.removeItem('rememberPassword');
+                    await AsyncStorage.removeItem('username');
+                    await AsyncStorage.removeItem('password');
+                }
+                // alert('Login Berhasil');
                 navigation.navigate('MainPage');
             } else {
                 setPesan('Username atau Password Salah');

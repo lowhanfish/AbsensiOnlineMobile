@@ -53,17 +53,17 @@ const MainPage = () => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     useEffect(() => {
-        const backAction = () => {
-            Alert.alert("Logout Required", "Silakan logout melalui tombol Logout untuk kembali ke Login.", [
-                { text: "OK" }
-            ]);
-            return true; // Mencegah back button berfungsi
-        };
+        // const backAction = () => {
+        //     Alert.alert("Logout Required", "Silakan logout melalui tombol Logout untuk kembali ke Login.", [
+        //         { text: "OK" }
+        //     ]);
+        //     return true; 
+        // };
         const backHandler = BackHandler.addEventListener(
             "hardwareBackPress",
-            backAction
+            // backAction
         );
-        return () => backHandler.remove(); // Cleanup listener saat unmount
+        return () => backHandler.remove();
     }, []);
     return (
 
