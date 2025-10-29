@@ -22,7 +22,7 @@
     "axios": "^1.11.0",
     "joi": "^17.13.3",
     "react": "19.1.0",
-    "react-native": "0.80.1",
+    "react-native": "^0.80.1",
     "react-native-blob-util": "^0.22.2",
     "react-native-pdf": "^6.7.7",
     "react-native-picker-select": "^9.3.1",
