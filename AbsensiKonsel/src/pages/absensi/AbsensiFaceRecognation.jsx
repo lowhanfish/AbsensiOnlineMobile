@@ -394,11 +394,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         zIndex: 20,
     },
-    // loadingText: {
-    //     marginTop: 15,
-    //     color: '#FFFFFF',
-    //     fontSize: 16,
-    // }
+    loadingText: {
+        marginTop: 15,
+        color: '#FFFFFF',
+        fontSize: 16,
+    }
 });
 
 //make this component available to the app
