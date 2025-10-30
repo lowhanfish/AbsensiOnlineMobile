@@ -1,40 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { FaceDetection } from 'react-native-mediapipe';
 
 const AbsensiFaceRecognation = () => {
     const [hasPermission, setHasPermission] = useState(false);
+    const [faces, setFaces] = useState([]);
     const devices = useCameraDevices();
-
-    // 🔧 Pemilihan kamera dengan fallback ke TrueDepth atau back
     const device =
         devices.front ||
-        Object.values(devices).find(
-            (d) =>
-                d.id?.toLowerCase().includes('truedepth') ||
-                d.position === 'front'
+        Object.values(devices).find((d) =>
+            d.id?.toLowerCase().includes('truedepth') || d.position === 'front'
         ) ||
-        devices.back ||
-        devices[0];
+        devices.back;
+
+    const detectorRef = useRef(null);
 
     useEffect(() => {
         const requestPermission = async () => {
             const status = await Camera.requestCameraPermission();
-            console.log('📸 Camera permission:', status);
+            console.log('Camera permission:', status);
             setHasPermission(status === 'authorized' || status === 'granted');
         };
         requestPermission();
     }, []);
 
-    // Log semua kamera yang terdeteksi
     useEffect(() => {
-        if (devices) {
-            console.log('🔍 Semua kamera terdeteksi:', devices);
-            Object.values(devices).forEach((d) =>
-                console.log(`📷 ${d.position} — ${d.id}`)
-            );
-        }
-    }, [devices]);
+        const faceDetector = new FaceDetection({
+            selfieMode: true,
+            minDetectionConfidence: 0.5,
+        });
+
+        faceDetector.onResults((results) => {
+            const detectedFaces = results.detections || [];
+            setFaces(detectedFaces);
+        });
+
+        detectorRef.current = faceDetector;
+        console.log('Face detector initialized');
+
+        return () => {
+            faceDetector.close();
+        };
+    }, []);
 
     if (!hasPermission) {
         return (
@@ -47,7 +55,7 @@ const AbsensiFaceRecognation = () => {
     if (!device) {
         return (
             <View style={styles.center}>
-                <Text style={styles.text}>Kamera depan tidak ditemukan</Text>
+                <Text style={styles.text}>Kamera tidak ditemukan</Text>
             </View>
         );
     }
@@ -61,7 +69,9 @@ const AbsensiFaceRecognation = () => {
             />
             <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                    Arahkan wajah Anda ke kamera depan
+                    {faces.length > 0
+                        ? `Wajah terdeteksi: ${faces.length}`
+                        : 'Arahkan wajah Anda ke kamera'}
                 </Text>
             </View>
         </View>
