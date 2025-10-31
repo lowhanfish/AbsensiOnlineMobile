@@ -1785,6 +1785,35 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-geolocation (3.4.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-maps (1.26.0):
     - react-native-maps/Maps (= 1.26.0)
   - react-native-maps/Generated (1.26.0):
@@ -2833,6 +2862,7 @@ DEPENDENCIES:
   - react-native-blob-util (from `../node_modules/react-native-blob-util`)
   - "react-native-document-picker (from `../node_modules/@react-native-documents/picker`)"
   - "react-native-document-viewer (from `../node_modules/@react-native-documents/viewer`)"
+  - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-pdf (from `../node_modules/react-native-pdf`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
@@ -2988,6 +3018,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-documents/picker"
   react-native-document-viewer:
     :path: "../node_modules/@react-native-documents/viewer"
+  react-native-geolocation:
+    :path: "../node_modules/@react-native-community/geolocation"
   react-native-maps:
     :path: "../node_modules/react-native-maps"
   react-native-pdf:
@@ -3141,6 +3173,7 @@ SPEC CHECKSUMS:
   react-native-blob-util: a9a07801b63e97d1bbdcf4eba3b98ff16c249bd5
   react-native-document-picker: bc1ceddeb38b7bf020a236cfa78f0ab41ac5f231
   react-native-document-viewer: 6201d32adf16138e2742140a6e84c1bfe1b75544
+  react-native-geolocation: f01ad4718ad1d015d0c0dd12a6f707354022530e
   react-native-maps: 3abff614dbab65fe1ae5818f079393973dde1b98
   react-native-pdf: e2ca5f26b33bd581474404a954bc1023a3322cb0
   react-native-render-html: 5afc4751f1a98621b3009432ef84c47019dcb2bd

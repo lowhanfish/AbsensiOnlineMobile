@@ -29,8 +29,8 @@ export const Stylex = StyleSheet.create({
 
     btnSetting : {
         position : 'absolute',
-        top : 30,
-        right : 30,
+        top : 20,
+        right : 20,
         zIndex:9
 
     },

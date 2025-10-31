@@ -36,7 +36,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Aplikasi membutuhkan akses lokasi Anda untuk fitur absensi dan penentuan posisi.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Aplikasi membutuhkan akses lokasi Anda untuk menampilkan posisi di peta.</string>
+	<string>Aplikasi membutuhkan lokasi Anda untuk fitur absensi</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses mikrofon (jika Anda merekam video untuk absensi).</string>
 	<key>RCTNewArchEnabled</key>

@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import {
     Text,
     Image,
@@ -6,35 +7,89 @@ import {
     Dimensions,
     Alert,
     TouchableOpacity,
-    Platform
+    Platform,
+    PermissionsAndroid
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+import Geolocation from '@react-native-community/geolocation';
+
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
 import { useNavigation } from "@react-navigation/native";
 
 const { height, width } = Dimensions.get('window');
 
-// Lokasi awal peta (Bisa kamu ubah sesuai kebutuhan)
-const LokasiAwal = {
-    latitude: -4.3324188,
-    longitude: 122.2809425,
-    latitudeDelta: 0.003,
-    longitudeDelta: 0.003,
-};
-
 const Absensi = () => {
     const navigation = useNavigation();
 
-    // Fungsi untuk tombol fingerprint
+    // 🔹 LokasiAwal sekarang jadi useState
+    const [lokasi, setLokasi] = useState({
+        latitude: -4.3324188,
+        longitude: 122.2809425,
+        latitudeDelta: 0.003,
+        longitudeDelta: 0.003,
+    });
+
+    const [errorMsg, setErrorMsg] = useState(null);
+
+    // === Tombol fingerprint ===
     const tombolAbsensi = () => {
         navigation.navigate('AbsensiFaceRecognation');
     };
 
-    // Fungsi untuk tombol lokasi
-    const tombolCekLokasi = () => {
-        Alert.alert("Lokasi", "Menampilkan posisi Anda saat ini!");
+    // === Tombol cek lokasi ===
+    const tombolCekLokasi = async () => {
+        await getLocation();
+        Alert.alert(
+            "Lokasi Anda",
+            `Latitude: ${lokasi.latitude}\nLongitude: ${lokasi.longitude}`
+        );
     };
+
+    // === Ambil lokasi ===
+    const getLocation = async () => {
+        try {
+            if (Platform.OS === 'android') {
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                    {
+                        title: 'Izin Lokasi',
+                        message: 'Aplikasi membutuhkan akses lokasi Anda',
+                        buttonPositive: 'OK',
+                    }
+                );
+                if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                    Alert.alert('Akses Ditolak', 'Izin lokasi tidak diberikan');
+                    return;
+                }
+            }
+
+            Geolocation.getCurrentPosition(
+                position => {
+                    console.log('Lokasi saat ini:', position.coords);
+                    setLokasi(prev => ({
+                        ...prev,
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                    }));
+                    setErrorMsg(null);
+                },
+                error => {
+                    console.error('Gagal ambil lokasi:', error);
+                    setErrorMsg(error.message);
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+            );
+        } catch (err) {
+            console.error('Error izin lokasi:', err);
+            setErrorMsg(err.message);
+        }
+    };
+
+    // === Jalankan saat mount ===
+    useEffect(() => {
+        getLocation();
+    }, []);
 
     return (
         <View style={styles.wrappermap}>
@@ -42,10 +97,10 @@ const Absensi = () => {
             <MapView
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 style={styles.map}
-                initialRegion={LokasiAwal}
+                region={lokasi}
                 showsUserLocation={true}
             >
-                <Marker coordinate={LokasiAwal} />
+                <Marker coordinate={lokasi} title="Lokasi Saya" />
             </MapView>
 
             {/* Tombol Kembali */}
@@ -105,7 +160,7 @@ const Absensi = () => {
 const styles = StyleSheet.create({
     wrappermap: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: "#eaeaea", // tambahan supaya kelihatan area map
+        backgroundColor: "#eaeaea",
     },
     map: {
         ...StyleSheet.absoluteFillObject,

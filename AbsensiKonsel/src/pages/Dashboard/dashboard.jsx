@@ -115,7 +115,7 @@ const Dashboard = () => {
         <ScrollView>
             <View style={{ flex: 1 }}>
                 {/* 🔹 Tombol Logout sementara */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     onPress={handleLogout}
                     style={{
                         position: 'absolute',
@@ -128,7 +128,7 @@ const Dashboard = () => {
                         borderRadius: 8,
                     }}>
                     <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>Logout</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 <View style={Stylex.titleContainer}>
                     <Text style={[Stylex.h_title1, Stylex.shaddowText]}>Selamat Datang</Text>

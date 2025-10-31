@@ -73,26 +73,18 @@ const MainPage = () => {
     }, [token]);
 
     // ✅ Fungsi Logout
-    const handleLogout = () => {
-        Alert.alert('Konfirmasi Logout', 'Apakah Anda yakin ingin logout?', [
-            {
-                text: 'Tidak',
-                style: 'cancel',
-            },
-            {
-                text: 'Ya',
-                onPress: async () => {
-                    try {
-                        await AsyncStorage.removeItem('userToken');
-                        await AsyncStorage.removeItem('userProfile');
-                        dispatch({ type: 'LOGOUT' });
-                        navigation.replace('Login');
-                    } catch (error) {
-                        console.error('Gagal logout:', error);
-                    }
-                },
-            },
-        ]);
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userProfile');
+
+            dispatch({ type: 'LOGOUT' });
+
+            // Tidak perlu navigation.reset() di sini
+            console.log('✅ Logout berhasil, tunggu navigasi otomatis dari App.tsx');
+        } catch (error) {
+            console.error('❌ Gagal logout:', error);
+        }
     };
 
     return (
@@ -100,8 +92,8 @@ const MainPage = () => {
             <View style={[Stylex.body]}>
                 <TouchableOpacity style={[Stylex.btnSetting]} onPress={handleLogout}>
                     <ImageLib
-                        style={{ width: 25 }}
-                        urix={require('../assets/images/icon/setting.png')}
+                        style={{ width: 35 }}
+                        urix={require('../assets/images/icon/Enter.png')}
                     />
                 </TouchableOpacity>
 
