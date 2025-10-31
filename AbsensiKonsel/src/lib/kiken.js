@@ -81,8 +81,8 @@ export const CheckWaktuAbsen = (URL, token) => {
 
     return new Promise((resolve, reject) => {
         
-        console.log("yeaaaa");
-        console.log(URL)
+        // console.log("yeaaaa");
+        // console.log(URL)
 
         axios.get(URL, {
             "content-type": "application/json"
@@ -92,7 +92,7 @@ export const CheckWaktuAbsen = (URL, token) => {
             // console.log("=============================")
             resolve(result.data)
         }).catch(error =>{
-            console.log(error)
+            // console.log(error)
             reject(error)
         })
     })
@@ -149,19 +149,14 @@ export const CheckWaktuAbsen = (URL, token) => {
 //   }
 // }
 
-// export const JamRealtime = (storeWaktu, storeDispatch) => {
-//     var hours = new Date().getHours(); 
-//     var min = new Date().getMinutes(); 
-//     var timeNow = Conversi00(hours) + ':' + Conversi00(min);
-    
-//     // Panggil cekWaktu dengan waktu saat ini dan properti WAKTU dari store
-//     const { keterangan, status } = cekWaktu(timeNow, storeWaktu);
+export const JamRealtime = (storeWaktu, storeDispatch) => {
+    var hours = new Date().getHours(); 
+    var min = new Date().getMinutes(); 
+    var timeNow = Conversi00(hours) + ':' + Conversi00(min);
+    const { keterangan, status } = cekWaktu(timeNow, storeWaktu);
 
-//     // Jika Anda ingin memperbarui store, Anda harus melakukannya di luar file utilitas 
-//     // atau menggunakan fungsi dispatch yang dilewatkan sebagai argumen.
-    
-//     return Conversi00(hours) + ':' + Conversi00(min) +':'+Conversi00(new Date().getSeconds());
-// }
+    return Conversi00(hours) + ':' + Conversi00(min) +':'+Conversi00(new Date().getSeconds());
+}
 
 // // ⚠️ CATATAN: Fungsi ini memanggil AsyncStorage dan memutasi state Redux secara langsung.
 // // Sebaiknya fungsi ini hanya mengembalikan data, dan pembaruan Redux dilakukan di Component/Thunk.

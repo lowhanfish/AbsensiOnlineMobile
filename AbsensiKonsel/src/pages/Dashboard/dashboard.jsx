@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from "../../components/ImageLib";
-import { CheckWaktuAbsen } from '../../lib/kiken';
+import { CheckWaktuAbsen, JamRealtime, cekWaktu } from '../../lib/kiken';
 
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -31,7 +31,9 @@ const Dashboard = () => {
     const url = useSelector(state => state.URL)
     const token = useSelector(state => state.TOKEN)
 
-    console.log(tetapanWaktuAbsen)
+    const [currentDate, setCurrentDate] = useState('00:00:00');
+
+    // console.log(tetapanWaktuAbsen)
 
 
 
@@ -101,6 +103,14 @@ const Dashboard = () => {
     useEffect(() => {
         // console.log("test")
         getWaktuAbsen();
+
+        let secTimer = setInterval(() => {
+            setCurrentDate(JamRealtime)
+            const datatampil = cekWaktu(currentDate, tetapanWaktuAbsen)
+            dispatch({ type: 'SET_WAKTU_DATA', payload: datatampil })
+            // console.log(datatampil)
+        }, 1000)
+        return () => clearInterval(secTimer);
     }, [])
 
     return (
@@ -109,6 +119,11 @@ const Dashboard = () => {
                 <View style={Stylex.titleContainer}>
                     <Text style={[Stylex.h_title1, Stylex.shaddowText]}>Selamat Datang</Text>
                     <Text style={Stylex.h_title2}>Kiken Sukma Batara, S.Si.,MT</Text>
+
+
+                    <Text style={[Stylex.shaddowText, { paddingTop: 1, fontWeight: 'bold', fontSize: 14, color: 'white' }]}>
+                        {tetapanWaktuAbsen.keterangan} ({currentDate}) { }
+                    </Text>
                 </View>
 
                 <View style={styles.container}>
@@ -239,7 +254,7 @@ const styles = StyleSheet.create({
         flex: 1,
         minHeight: height,
         paddingHorizontal: 16,
-        paddingTop: 75
+        paddingTop: 65
     },
     navContainer: {
         display: 'flex',
