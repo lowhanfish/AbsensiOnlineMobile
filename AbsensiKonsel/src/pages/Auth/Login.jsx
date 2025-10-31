@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Alert,
     View,
@@ -47,8 +47,8 @@ const loginSchema = Joi.object({
 });
 
 const Login = () => {
-    const [username, setUsername] = useState('monkeydluffy');
-    const [password, setPassword] = useState('monkeydluffy');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [ingat, setIngat] = useState(false);
     const [errors, setErrors] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -98,6 +98,17 @@ const Login = () => {
             await AsyncStorage.setItem('userToken', token);
             await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
 
+            // 🔹 Simpan username & password jika "ingat" dicentang
+            if (ingat) {
+                await AsyncStorage.setItem('savedUsername', username);
+                await AsyncStorage.setItem('savedPassword', password);
+                await AsyncStorage.setItem('rememberMe', 'true');
+            } else {
+                await AsyncStorage.removeItem('savedUsername');
+                await AsyncStorage.removeItem('savedPassword');
+                await AsyncStorage.setItem('rememberMe', 'false');
+            }
+
             // === Simpan juga ke Redux (state global) ===
             dispatch(loginSuccess(token, profile));
 
@@ -114,8 +125,30 @@ const Login = () => {
     // === Checkbox handler ===
     const handleCheckboxChange = (newValue) => {
         setIngat(newValue);
-        console.log('Checkbox is now:', newValue);
+        console.log(newValue ? '🔹 Mode ingat sandi aktif' : '🔸 Mode ingat sandi dimatikan');
     };
+
+    // === Load data login tersimpan saat pertama kali dibuka ===
+    useEffect(() => {
+        const loadSavedCredentials = async () => {
+            try {
+                const savedUsername = await AsyncStorage.getItem('savedUsername');
+                const savedPassword = await AsyncStorage.getItem('savedPassword');
+                const savedRemember = await AsyncStorage.getItem('rememberMe');
+
+                if (savedRemember === 'true' && savedUsername && savedPassword) {
+                    setUsername(savedUsername);
+                    setPassword(savedPassword);
+                    setIngat(true);
+                    console.log('🔹 Username & password terakhir dimuat otomatis');
+                }
+            } catch (error) {
+                console.log('Gagal memuat data login tersimpan:', error);
+            }
+        };
+
+        loadSavedCredentials();
+    }, []);
 
     return (
         <ImageBackground style={{ flex: 1 }} source={require('../../assets/images/bg.png')}>
