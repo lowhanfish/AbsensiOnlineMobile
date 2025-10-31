@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Text,
     ScrollView,
@@ -10,16 +10,32 @@ import {
     Platform,
 } from "react-native";
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from "../../components/ImageLib";
+import { CheckWaktuAbsen } from '../../lib/kiken';
+
+import { useDispatch, useSelector } from 'react-redux'
+
+
+
+
 
 const { height, width } = Dimensions.get('window');
 
 const Dashboard = () => {
     const navigation = useNavigation();
+
     const dispatch = useDispatch();
+    const tetapanWaktuAbsen = useSelector(state => state.WAKTU)
+    const url = useSelector(state => state.URL)
+    const token = useSelector(state => state.TOKEN)
+
+    console.log(tetapanWaktuAbsen)
+
+
+
+    // console.log(token)
 
     const [isChecked, setIsChecked] = useState(false);
     const [text, setText] = useState('');
@@ -74,62 +90,22 @@ const Dashboard = () => {
         navigation.navigate("MainPage", { screen: routexx });
     };
 
-    // ✅ Fungsi Logout sudah benar dan berfungsi
-    // const handleLogout = async () => {
-    //     try {
-    //         // 1️⃣ Hapus semua data login di AsyncStorage
-    //         await AsyncStorage.removeItem('userToken');
-    //         await AsyncStorage.removeItem('userProfile');
 
-    //         // 2️⃣ Reset Redux state
-    //         dispatch({ type: 'LOGOUT' });
-
-    //         // 3️⃣ Arahkan user ke halaman Login
-    //         navigation.reset({
-    //             index: 0,
-    //             routes: [{ name: 'Login' }],
-    //         });
-
-    //         console.log('✅ Logout berhasil. User kembali ke halaman Login.');
-    //     } catch (error) {
-    //         console.error('❌ Gagal logout:', error);
-    //     }
-    // };
+    const getWaktuAbsen = async () => {
+        const xxx = await CheckWaktuAbsen(url.URL_MasterWaktuAbsen + "viewOne", token);
+        dispatch({ type: 'SET_WAKTU_DATA', payload: xxx })
+    }
 
 
-    const handleLogout = async () => {
-        try {
-            await AsyncStorage.removeItem('userToken');
-            await AsyncStorage.removeItem('userProfile');
 
-            dispatch({ type: 'LOGOUT' });
-
-            // Tidak perlu navigation.reset() di sini
-            console.log('✅ Logout berhasil, tunggu navigasi otomatis dari App.tsx');
-        } catch (error) {
-            console.error('❌ Gagal logout:', error);
-        }
-    };
+    useEffect(() => {
+        // console.log("test")
+        getWaktuAbsen();
+    }, [])
 
     return (
         <ScrollView>
             <View style={{ flex: 1 }}>
-                {/* 🔹 Tombol Logout sementara */}
-                {/* <TouchableOpacity
-                    onPress={handleLogout}
-                    style={{
-                        position: 'absolute',
-                        top: 50,
-                        right: 20,
-                        zIndex: 99,
-                        backgroundColor: '#FF6B6B',
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 8,
-                    }}>
-                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>Logout</Text>
-                </TouchableOpacity> */}
-
                 <View style={Stylex.titleContainer}>
                     <Text style={[Stylex.h_title1, Stylex.shaddowText]}>Selamat Datang</Text>
                     <Text style={Stylex.h_title2}>Kiken Sukma Batara, S.Si.,MT</Text>

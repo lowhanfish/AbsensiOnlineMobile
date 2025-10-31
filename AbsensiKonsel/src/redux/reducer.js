@@ -1,6 +1,18 @@
 // src/redux/reducer.js
 
 // =============================
+// 1. IMPOR TIPE AKSI (PERBAIKAN UTAMA)
+// =============================
+
+// Mengimpor semua Tipe Aksi dari file actions.js
+// Ini menghilangkan kebutuhan untuk mendefinisikan konstanta secara lokal di sini.
+import {
+    LOGIN_SUCCESS,
+    LOGOUT,
+    SET_WAKTU_DATA 
+} from './actions'; 
+
+// =============================
 // KONFIGURASI URL SERVER
 // =============================
 
@@ -104,9 +116,6 @@ const initialState = {
 // REDUCER
 // =============================
 
-const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
-const LOGOUT = 'LOGOUT';
-
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case LOGIN_SUCCESS:
@@ -129,6 +138,15 @@ const reducer = (state = initialState, action) => {
         ID_PROFILE: '',
         NIP: '',
         AUTH_STAT: 'false',
+      };
+
+    case SET_WAKTU_DATA:
+      return {
+        ...state, // Salin state lain
+        WAKTU: {
+          ...state.WAKTU, // Salin properti WAKTU yang lama
+          ...action.payload, // Timpa dengan data baru dari action
+        },
       };
 
     default:
