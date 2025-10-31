@@ -70,6 +70,12 @@ const Dashboard = () => {
         closePopup();
     };
 
+    const routex = (routexx) => {
+        // navigation.navigate(routexx)
+        // alert(routexx)
+        navigation.navigate("MainPage", { screen: routexx })
+    }
+
     return (
 
         <ScrollView>
@@ -90,7 +96,7 @@ const Dashboard = () => {
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.navButtonSubContainer}>
+                                    <TouchableOpacity onPress={() => routex('Absensi')} style={styles.navButtonSubContainer}>
                                         <View>
                                             <ImageLib urix={require('../../assets/images/icon/absensi.png')} style={styles.navButtonImage1} />
                                         </View>
@@ -101,7 +107,7 @@ const Dashboard = () => {
                                         </View>
                                     </TouchableOpacity>
                                 </View>
-                                <View style={[styles.navButtonContainer, { marginHorizontal: 26 }]}>
+                                <View style={[styles.navButtonContainer, { marginHorizontal: 15 }]}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
                                     </TouchableOpacity>
@@ -149,7 +155,7 @@ const Dashboard = () => {
                                         </View>
                                     </TouchableOpacity>
                                 </View>
-                                <View style={[styles.navButtonContainer, { marginHorizontal: 26 }]}>
+                                <View style={[styles.navButtonContainer, { marginHorizontal: 15 }]}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
                                     </TouchableOpacity>
@@ -235,17 +241,14 @@ const styles = StyleSheet.create({
 
     },
 
+
     navButtonContainer: {
-        // flex: 1, 
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 1, height: 1 },
-        shadowOpacity: 0.25,
-        shadowRadius: 2,
-
-        elevation: 2,
+        backgroundColor: 'transparent',
     },
+
+
     navButtonSubContainer: {
         display: 'flex',
         flex: 1,
@@ -254,8 +257,20 @@ const styles = StyleSheet.create({
         height: 85,
         width: 85,
         backgroundColor: 'white',
-        // elevation: 3,
-        borderRadius: 15
+        borderRadius: 15,
+
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 1, height: 1 },
+                shadowOpacity: 0.25,
+                shadowRadius: 2,
+            },
+            android: {
+                elevation: 5,
+            },
+        }),
+        // ------------------------------------
     },
     navButtonImage1: {
         width: 51,

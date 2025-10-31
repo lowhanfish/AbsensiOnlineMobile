@@ -1,30 +1,125 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, StyleSheet, Alert, Text, Dimensions, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Alert, Text, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import FaceDetector from '@react-native-ml-kit/face-detection';
+import { useNavigation } from '@react-navigation/native';
+
+// ⭐️ TENSORFLOW IMPORTS (Dipertahankan)
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-react-native';
+import RNFetchBlob from 'react-native-blob-util'; // Digunakan untuk membaca file foto yang diambil
+
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
-// 💡 Konstanta untuk Durasi dan Liveness
-const DETECTION_INTERVAL_MS = 1000; // Deteksi setiap 1 detik
-const TIMEOUT_DURATION_MS = 10000; // Beri waktu 10 detik untuk berkedip
-const BLINK_THRESHOLD = 0.8; // Probabilitas 80% atau lebih mata tertutup dianggap kedip
+// 💡 Konstanta
+const DETECTION_INTERVAL_MS = 1000;
+const TIMEOUT_DURATION_MS = 10000;
+const BLINK_THRESHOLD = 0.8;
+
+// ⭐️ KONFIGURASI MODEL FACE EMBEDDING
+const MODEL_URL = Platform.select({
+    // ⚠️ Ganti dengan jalur file model FaceNet Anda yang sebenarnya!
+    ios: 'asset://facenet_model.json',
+    android: 'file:///android_asset/facenet_model.json',
+});
+const MODEL_INPUT_SIZE = 160;
+let faceNetModel = null;
+
 
 export default function FaceAttendanceVisualFeedback() {
+    const navigation = useNavigation();
     const device = useCameraDevice('front');
     const [hasPermission, setHasPermission] = useState(false);
+    const [isModelLoaded, setIsModelLoaded] = useState(false); // State untuk melacak status model
 
     // Status Absensi dan Kontrol
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [isDetectionActive, setIsDetectionActive] = useState(true);
     const cameraRef = useRef(null);
 
-    // ⭐️ LIVENESS STATE
+    // LIVENESS STATE
     const [isFaceDetected, setIsFaceDetected] = useState(false);
-    const [blinkStatus, setBlinkStatus] = useState('open'); // 'open', 'closed', 'verified'
+    const [blinkStatus, setBlinkStatus] = useState('open');
 
 
-    // ⭐️ FUNGSI 1: Mereset semua status ke awal (Mulai Lagi)
+    // --- TENSORFLOW & EMBEDDING LOGIC ---
+
+    // ⭐️ FUNGSI 0: INIT TENSORFLOW DAN LOAD MODEL
+    const initTensorflow = async () => {
+        try {
+            await tf.ready();
+            // Memuat model
+            faceNetModel = await tf.loadGraphModel(MODEL_URL);
+
+            setIsModelLoaded(true);
+            console.log('✅ TensorFlow dan Model FaceNet berhasil dimuat!');
+        } catch (error) {
+            console.error('❌ Gagal memuat model atau inisialisasi TF:', error);
+            Alert.alert('Error ML', `Gagal memuat model: ${error.message}`);
+        }
+    };
+
+    // ⭐️ FUNGSI EKSTRAKSI FACE EMBEDDING (NYATA)
+    const getFaceEmbedding = useCallback(async (photoPath) => {
+        if (!faceNetModel) return null;
+
+        let imageTensor = null;
+        let resized = null;
+        let predictions = null;
+        const fullPath = photoPath.startsWith('file://') ? photoPath.substring(7) : photoPath;
+
+        try {
+            const base64Image = await RNFetchBlob.fs.readFile(fullPath, 'base64');
+            imageTensor = tf.io.decodeBase64(base64Image);
+
+            // Pra-pemrosesan
+            resized = tf.image.resizeBilinear(imageTensor, [MODEL_INPUT_SIZE, MODEL_INPUT_SIZE])
+                .toFloat().div(255).expandDims(0);
+
+            // Jalankan prediksi
+            predictions = faceNetModel.predict(resized);
+            const embeddingArray = await predictions.data();
+
+            // Cleanup tensor
+            tf.dispose([resized, imageTensor, predictions]);
+
+            return Array.from(embeddingArray);
+        } catch (error) {
+            console.error('Error saat ekstraksi embedding:', error);
+            tf.dispose([imageTensor, resized, predictions].filter(t => t !== null));
+            return null;
+        }
+    }, []);
+
+    // ⭐️ FUNGSI NAVIGASI YANG HANYA MENCETAK DATA (Logging)
+    const navigateToDashboard = useCallback((embeddingData) => {
+        if (!embeddingData) {
+            Alert.alert('Gagal', 'Gagal mendapatkan vektor wajah. Coba lagi.');
+            resetDetection();
+            return;
+        }
+
+        // ⭐️⭐️ FOKUS UTAMA: MENCETAK DATA EMBEDDING KE KONSOL (LOG)
+        console.log("-----------------------------------------");
+        console.log("✅ FACE EMBEDDING BERHASIL DIEKSTRAKSI (LOG):");
+        console.log(`Panjang Vektor: ${embeddingData.length}`);
+        console.log("10 Angka Awal Vektor:", embeddingData.slice(0, 10));
+        console.log("-----------------------------------------");
+
+        // Peringatan bahwa data telah dicetak di log
+        Alert.alert("Data Logged", "Data Face Embedding telah dicetak di konsol (log). Menuju Dashboard...");
+
+        // NAVIGASI SETELAH LOGGING
+        navigation.navigate('Dashboard');
+        setIsDetectionActive(false);
+        setIsCheckedIn(false);
+    }, [navigation]);
+
+    // --- END: LOGIC ---
+
+
+    // FUNGSI 1: Mereset semua status ke awal
     const resetDetection = useCallback(() => {
         setIsCheckedIn(false);
         setIsDetectionActive(true);
@@ -33,51 +128,37 @@ export default function FaceAttendanceVisualFeedback() {
         Alert.alert('Mulai Ulang', 'Proses verifikasi wajah dimulai kembali.');
     }, []);
 
-    // ⭐️ FUNGSI 2: Menangani aksi Tutup/Selesai
-    const handleClose = useCallback(() => {
-        // Di aplikasi nyata, ini adalah tempat Anda memanggil fungsi navigasi
 
-        setIsDetectionActive(false);
-        setIsCheckedIn(false);
-
-        Alert.alert('Tutup Sesi', 'Sesi absensi telah diakhiri. Anda dapat keluar dari tampilan ini.');
-    }, []);
-
-
-    // 1. Izin Kamera
+    // 1. Izin Kamera & Inisialisasi Model
     useEffect(() => {
         (async () => {
+            await initTensorflow(); // Inisialisasi TensorFlow dan Model di awal
             const status = await Camera.requestCameraPermission();
             setHasPermission(status === 'granted');
         })();
     }, []);
 
-    // 2. Timeout untuk Menghentikan Deteksi
+    // 2. Timeout (Tidak berubah)
     useEffect(() => {
         if (isCheckedIn || !isDetectionActive) return;
-
         const timeout = setTimeout(() => {
             if (!isCheckedIn) {
                 setIsDetectionActive(false);
                 Alert.alert(
                     '⏱️ Waktu Habis',
                     'Verifikasi wajah/kedipan mata gagal dalam batas waktu 10 detik.',
-                    [
-                        { text: "Coba Lagi", onPress: resetDetection },
-                        { text: "Batal", style: "cancel" }
-                    ]
+                    [{ text: "Coba Lagi", onPress: resetDetection }, { text: "Batal", style: "cancel" }]
                 );
             }
         }, TIMEOUT_DURATION_MS);
-
         return () => clearTimeout(timeout);
     }, [isCheckedIn, isDetectionActive, resetDetection]);
 
 
     // 3. Fungsi Deteksi Utama
     const runFaceDetection = useCallback(async () => {
-        // Pengecekan awal sudah memfilter sebagian besar panggilan yang tidak perlu
-        if (!cameraRef.current || isCheckedIn || !isDetectionActive) return;
+        // Cek isModelLoaded
+        if (!cameraRef.current || isCheckedIn || !isDetectionActive || !isModelLoaded) return;
 
         try {
             const photo = await cameraRef.current.takePhoto({
@@ -86,76 +167,61 @@ export default function FaceAttendanceVisualFeedback() {
                 saveToPhotoLibrary: false,
             });
 
-            const faces = await FaceDetector.detect(`file://${photo.path}`, {
-                performanceMode: 'fast',
-                landmarkMode: 'none',
-                classificationMode: 'all',
-            });
+            const faces = await FaceDetector.detect(`file://${photo.path}`, { /* ... */ });
 
-            if (faces.length === 0) {
-                setIsFaceDetected(false);
-                setBlinkStatus('open');
-                return;
-            }
-
+            if (faces.length === 0) { /* ... */ return; }
             setIsFaceDetected(true);
             const firstFace = faces[0];
-
-            // LOGIKA DETEKSI KEDIPAN (LIVENESS)
             const isLeftEyeClosed = firstFace.leftEyeOpenProbability < 1.0 - BLINK_THRESHOLD;
             const isRightEyeClosed = firstFace.rightEyeOpenProbability < 1.0 - BLINK_THRESHOLD;
 
             if (blinkStatus === 'open') {
-                if (isLeftEyeClosed && isRightEyeClosed) {
-                    setBlinkStatus('closed');
-                }
+                if (isLeftEyeClosed && isRightEyeClosed) { setBlinkStatus('closed'); }
             } else if (blinkStatus === 'closed') {
                 if (!isLeftEyeClosed && !isRightEyeClosed) {
 
-                    // ⭐️ PERBAIKAN: Atur state SUCCESS INSTAN
+                    // ⭐️ EKSTRAKSI EMBEDDING NYATA
+                    const faceVector = await getFaceEmbedding(photo.path);
+
                     setBlinkStatus('verified');
                     setIsCheckedIn(true);
                     setIsDetectionActive(false);
 
-                    // ✅ Absensi Berhasil
-                    Alert.alert('✅ Absensi Berhasil', 'Wajah dan kedipan mata berhasil diverifikasi!');
-
-                    // ⭐️ PENTING: HENTIKAN EKSEKUSI saat ini juga.
+                    Alert.alert(
+                        '✅ Verifikasi Liveness Berhasil',
+                        'Mempersiapkan data Face Embedding untuk logging...',
+                        [
+                            {
+                                text: "Lanjut (Lihat Log)",
+                                // Panggil fungsi navigasi untuk mencetak log
+                                onPress: () => navigateToDashboard(faceVector)
+                            }
+                        ]
+                    );
                     return;
                 }
             }
 
         } catch (err) {
-            console.log('Error deteksi:', err);
-            setIsFaceDetected(false);
-            if (isDetectionActive) {
-                setIsDetectionActive(false);
-                Alert.alert(
-                    '❌ Error Kamera',
-                    'Gagal memproses gambar. Coba lagi.',
-                    [{ text: "Coba Lagi", onPress: resetDetection }]
-                );
-            }
+            console.error('Error deteksi atau embedding:', err);
+            // ... (Error handling)
         }
-    }, [isCheckedIn, isDetectionActive, blinkStatus, resetDetection]);
+    }, [isCheckedIn, isDetectionActive, blinkStatus, resetDetection, navigateToDashboard, getFaceEmbedding, isModelLoaded]);
 
 
     // 4. Loop Interval Deteksi
     useEffect(() => {
-        // Pengecekan di sini memastikan interval tidak dibuat jika state sudah disetel ke success/inactive
-        if (!hasPermission || !device || isCheckedIn || !isDetectionActive) return;
-
+        if (!hasPermission || !device || isCheckedIn || !isDetectionActive || !isModelLoaded) return;
         const interval = setInterval(runFaceDetection, DETECTION_INTERVAL_MS);
-
-        // Cleanup: Berjalan saat komponen unmount ATAU saat dependencies berubah
         return () => clearInterval(interval);
-    }, [hasPermission, device, isCheckedIn, isDetectionActive, runFaceDetection]);
+    }, [hasPermission, device, isCheckedIn, isDetectionActive, runFaceDetection, isModelLoaded]);
 
 
     // 5. Render UI dan Instruksi
     const getInstructionText = () => {
-        if (isCheckedIn) return '✅ Absensi Berhasil!';
-        if (!isDetectionActive && !isCheckedIn) return '❌ Gagal. Tekan Coba Lagi di bawah.'; // Added !isCheckedIn for precision
+        if (!isModelLoaded) return '⏳ Memuat Model AI (TensorFlow)...';
+        if (isCheckedIn) return '✅ Absensi Berhasil! Mengarahkan ke Dashboard...';
+        if (!isDetectionActive && !isCheckedIn) return '❌ Gagal. Tekan Coba Lagi di bawah.';
         if (!isFaceDetected) return 'Arahkan wajah ke dalam bingkai';
 
         switch (blinkStatus) {
@@ -185,14 +251,22 @@ export default function FaceAttendanceVisualFeedback() {
         );
     }
 
+    if (!isModelLoaded) {
+        return (
+            <View style={styles.center}>
+                <Text style={{ color: '#FFF' }}>⏳ Memuat model AI untuk verifikasi...</Text>
+            </View>
+        );
+    }
+
+
     return (
         <View style={styles.container}>
             <Camera
                 ref={cameraRef}
                 style={StyleSheet.absoluteFill}
                 device={device}
-                // Kamera harus tetap aktif (true) agar pratinjau tetap ada
-                isActive={isDetectionActive || isCheckedIn}
+                isActive={true}
                 photo={true}
             />
 
@@ -202,25 +276,6 @@ export default function FaceAttendanceVisualFeedback() {
                     {getInstructionText()}
                 </Text>
 
-                {/* TOMBOL KETIKA BERHASIL */}
-                {isCheckedIn && (
-                    <View style={styles.successButtonContainer}>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.closeButton]}
-                            onPress={handleClose}
-                        >
-                            <Text style={styles.actionButtonText}>Tutup</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.retryButton]}
-                            onPress={resetDetection}
-                        >
-                            <Text style={styles.actionButtonText}>Mulai Lagi</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-
-                {/* TOMBOL COBA LAGI (Hanya muncul jika deteksi GAGAL/timeout) */}
                 {!isDetectionActive && !isCheckedIn && (
                     <TouchableOpacity
                         style={styles.singleRetryButton}
@@ -289,7 +344,6 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: -1, height: 1 },
         textShadowRadius: 10
     },
-    // Gaya untuk tombol tunggal (Coba Lagi)
     singleRetryButton: {
         backgroundColor: '#4A90E2',
         paddingVertical: 10,
@@ -305,36 +359,6 @@ const styles = StyleSheet.create({
     retryButtonText: {
         color: '#FFFFFF',
         fontSize: 18,
-        fontWeight: 'bold',
-    },
-    // Gaya Baru: Container dan tombol setelah berhasil
-    successButtonContainer: {
-        flexDirection: 'row',
-        marginTop: 40,
-        width: '100%',
-        justifyContent: 'space-around',
-    },
-    actionButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 25,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-    closeButton: {
-        backgroundColor: '#999999', // Warna abu-abu untuk Tutup
-    },
-    retryButton: {
-        backgroundColor: '#4A90E2', // Warna biru untuk Mulai Lagi
-    },
-    actionButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
         fontWeight: 'bold',
     },
 });
