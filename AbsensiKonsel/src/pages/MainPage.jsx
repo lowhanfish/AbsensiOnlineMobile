@@ -1,9 +1,18 @@
 //import liraries
-import React, { Component, useEffect } from 'react';
-import { View, ImageBackground, Text, StyleSheet, ScrollView, TouchableOpacity, BackHandler, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import {
+    View,
+    ImageBackground,
+    Alert,
+    StyleSheet,
+    TouchableOpacity,
+    BackHandler,
+} from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Dashboard from './Dashboard/dashboard';
 import Absensi from './Absensi/Absensi';
@@ -20,20 +29,16 @@ import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
 import BottomBar from '../components/BottomBar';
 
-<<<<<<< HEAD
-=======
-import { useDispatch } from 'react-redux'; 
-
-
-
-
-
->>>>>>> origin/chelsea
 const ContentStack = createNativeStackNavigator();
 
 const ContentAll = () => {
     return (
-        <ContentStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
+        <ContentStack.Navigator
+            screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: 'transparent' },
+            }}
+        >
             <ContentStack.Screen name="Dashboard" component={Dashboard} />
             <ContentStack.Screen name="Absensi" component={Absensi} />
             <ContentStack.Screen name="Darurat" component={Darurat} />
@@ -50,72 +55,60 @@ const ContentAll = () => {
 
 // create a component
 const MainPage = () => {
-<<<<<<< HEAD
-
-    const navigation = useNavigation();
-
-
-=======
     const navigation = useNavigation();
     const dispatch = useDispatch();
+    const token = useSelector(state => state.TOKEN);
+
     useEffect(() => {
-        // const backAction = () => {
-        //     Alert.alert("Logout Required", "Silakan logout melalui tombol Logout untuk kembali ke Login.", [
-        //         { text: "OK" }
-        //     ]);
-        //     return true; 
-        // };
-        const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            // backAction
-        );
+        // Cegah tombol back di Android keluar dari aplikasi
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
         return () => backHandler.remove();
     }, []);
->>>>>>> origin/chelsea
+
+    // ✅ Proteksi jika token kosong (misalnya AsyncStorage terhapus)
+    useEffect(() => {
+        if (!token || token === '') {
+            navigation.replace('Login');
+        }
+    }, [token]);
+
+    // ✅ Fungsi Logout
+    const handleLogout = () => {
+        Alert.alert('Konfirmasi Logout', 'Apakah Anda yakin ingin logout?', [
+            {
+                text: 'Tidak',
+                style: 'cancel',
+            },
+            {
+                text: 'Ya',
+                onPress: async () => {
+                    try {
+                        await AsyncStorage.removeItem('userToken');
+                        await AsyncStorage.removeItem('userProfile');
+                        dispatch({ type: 'LOGOUT' });
+                        navigation.replace('Login');
+                    } catch (error) {
+                        console.error('Gagal logout:', error);
+                    }
+                },
+            },
+        ]);
+    };
+
     return (
-
         <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
-
             <View style={[Stylex.body]}>
-                {/* <TouchableOpacity style={[Stylex.btnSetting]}
-                 onPress={() => {
-                    dispatch({ type: 'LOGOUT' });
-                    navigation.replace('Login'); 
-                }}>
-                    <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
-                    
-                </TouchableOpacity> */}
-                <TouchableOpacity 
-                    style={[Stylex.btnSetting]} 
-                    onPress={() => {
-                        Alert.alert(
-                            "Konfirmasi Logout",
-                            "Apakah Anda yakin ingin logout?",
-                            [
-                                {
-                                    text: "Tidak",
-                                    onPress: () => console.log("Logout dibatalkan"),
-                                    style: "cancel"
-                                },
-                                {
-                                    text: "Ya",
-                                    onPress: () => {
-                                        dispatch({ type: 'LOGOUT' }); 
-                                        navigation.replace('Login'); 
-                                    }
-                                }
-                            ]
-                        );
-                    }}
-                >
-                    <ImageLib style={{ width: 25 }} urix={require('../assets/images/icon/setting.png')} />
+                <TouchableOpacity style={[Stylex.btnSetting]} onPress={handleLogout}>
+                    <ImageLib
+                        style={{ width: 25 }}
+                        urix={require('../assets/images/icon/setting.png')}
+                    />
                 </TouchableOpacity>
 
                 <ContentAll />
 
                 <BottomBar navigation={navigation} />
             </View>
-
         </ImageBackground>
     );
 };

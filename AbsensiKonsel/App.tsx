@@ -1,60 +1,67 @@
-// In App.js in a new project
-
-import * as React from 'react';
-import { View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import { Provider } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './src/redux/store';
 
+// Pages
 import Login from './src/pages/Auth/Login';
 import MainPage from './src/pages/MainPage';
-import Dashboard from './src/pages/Dashboard/dashboard';
-import Absensi from './src/pages/Absensi/Absensi';
-
-
-
-
-
 
 const Stack = createNativeStackNavigator();
 
-function AuthStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={Login} />
-    </Stack.Navigator>
-  );
-}
-
-
-function AppStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* MainPage akan menjadi layar utama setelah login */}
-      <Stack.Screen name="MainPage" component={MainPage} />
-      {/* Tambahkan layar lain yang hanya bisa diakses setelah login */}
-      {/* <Stack.Screen name="Home" component={Home} /> */}
-      {/* <Stack.Screen name="Profile" component={Profile} /> */}
-    </Stack.Navigator>
-  );
-}
-
-
-
-
 function RootStack() {
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
+  const AUTH_STAT = useSelector(state => state.AUTH_STAT); // 🧠 Pantau dari Redux
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const profile = await AsyncStorage.getItem('userProfile');
+
+        if (token && profile) {
+          const parsedProfile = JSON.parse(profile);
+
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: {
+              token,
+              profile: parsedProfile,
+              unit_kerja: parsedProfile?.unit_kerja || '',
+              id_profile: parsedProfile?.id || '',
+              nip: parsedProfile?.nip || '',
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-<<<<<<< HEAD
-      {/* <Stack.Screen name="Absensi" component={Absensi} /> */}
-      <Stack.Screen name="MainPage" component={MainPage} />
-      {/* <Stack.Screen name="Login" component={Login} /> */}
-=======
-      <Stack.Screen name="MainPage" component={MainPage} />
-      <Stack.Screen name="Login" component={Login} />
->>>>>>> origin/chelsea
+      {AUTH_STAT === 'true' ? (
+        <Stack.Screen name="MainPage" component={MainPage} />
+      ) : (
+        <Stack.Screen name="Login" component={Login} />
+      )}
     </Stack.Navigator>
   );
 }

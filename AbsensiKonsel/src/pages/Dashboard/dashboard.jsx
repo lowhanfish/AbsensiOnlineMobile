@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
-import { Text, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity } from "react-native"
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+    Text,
+    ScrollView,
+    View,
+    StyleSheet,
+    Dimensions,
+    ImageBackground,
+    TouchableOpacity,
+    Platform,
+} from "react-native";
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from "../../components/ImageLib";
-
-
 
 const { height, width } = Dimensions.get('window');
 
 const Dashboard = () => {
     const navigation = useNavigation();
+    const dispatch = useDispatch();
 
-
-    // const navigation = useNavigation();
     const [isChecked, setIsChecked] = useState(false);
     const [text, setText] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
@@ -22,7 +30,6 @@ const Dashboard = () => {
         console.log('Filter Data By Text', text);
     };
 
-
     const data = [
         { id: 1, status: '1' },
         { id: 2, status: '1' },
@@ -30,28 +37,21 @@ const Dashboard = () => {
         { id: 4, status: '3' },
         { id: 5, status: '3' },
         { id: 6, status: '2' },
-
     ];
 
     const getBackgroundColor = (status) => {
         switch (status) {
-            case '1':
-                return '#FFF8E0';
-            case '2':
-                return '#F7EEFF';
-            case '3':
-                return '#FFE0E0';
+            case '1': return '#FFF8E0';
+            case '2': return '#F7EEFF';
+            case '3': return '#FFE0E0';
         }
     };
 
     const getStatusImage = (status) => {
         switch (status) {
-            case '1':
-                return require('../../assets/images/icon/process.png');
-            case '2':
-                return require('../../assets/images/icon/true.png');
-            case '3':
-                return require('../../assets/images/icon/false.png');
+            case '1': return require('../../assets/images/icon/process.png');
+            case '2': return require('../../assets/images/icon/true.png');
+            case '3': return require('../../assets/images/icon/false.png');
         }
     };
 
@@ -71,25 +71,76 @@ const Dashboard = () => {
     };
 
     const routex = (routexx) => {
-        // navigation.navigate(routexx)
-        // alert(routexx)
-        navigation.navigate("MainPage", { screen: routexx })
-    }
+        navigation.navigate("MainPage", { screen: routexx });
+    };
+
+    // ✅ Fungsi Logout sudah benar dan berfungsi
+    // const handleLogout = async () => {
+    //     try {
+    //         // 1️⃣ Hapus semua data login di AsyncStorage
+    //         await AsyncStorage.removeItem('userToken');
+    //         await AsyncStorage.removeItem('userProfile');
+
+    //         // 2️⃣ Reset Redux state
+    //         dispatch({ type: 'LOGOUT' });
+
+    //         // 3️⃣ Arahkan user ke halaman Login
+    //         navigation.reset({
+    //             index: 0,
+    //             routes: [{ name: 'Login' }],
+    //         });
+
+    //         console.log('✅ Logout berhasil. User kembali ke halaman Login.');
+    //     } catch (error) {
+    //         console.error('❌ Gagal logout:', error);
+    //     }
+    // };
+
+
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userProfile');
+
+            dispatch({ type: 'LOGOUT' });
+
+            // Tidak perlu navigation.reset() di sini
+            console.log('✅ Logout berhasil, tunggu navigasi otomatis dari App.tsx');
+        } catch (error) {
+            console.error('❌ Gagal logout:', error);
+        }
+    };
 
     return (
-
         <ScrollView>
             <View style={{ flex: 1 }}>
+                {/* 🔹 Tombol Logout sementara */}
+                <TouchableOpacity
+                    onPress={handleLogout}
+                    style={{
+                        position: 'absolute',
+                        top: 50,
+                        right: 20,
+                        zIndex: 99,
+                        backgroundColor: '#FF6B6B',
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                    }}>
+                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>Logout</Text>
+                </TouchableOpacity>
 
                 <View style={Stylex.titleContainer}>
                     <Text style={[Stylex.h_title1, Stylex.shaddowText]}>Selamat Datang</Text>
                     <Text style={Stylex.h_title2}>Kiken Sukma Batara, S.Si.,MT</Text>
                 </View>
 
-
-                <View style={styles.container} >
-                    <ImageBackground style={{ flex: 1 }} resizeMode="stretch" source={require('../../assets/images/bg1.png')}>
-
+                <View style={styles.container}>
+                    <ImageBackground
+                        style={{ flex: 1 }}
+                        resizeMode="stretch"
+                        source={require('../../assets/images/bg1.png')}
+                    >
                         <View style={{ flex: 1, paddingHorizontal: 30 }}>
                             <View style={[styles.navContainer, { marginTop: -39 }]}>
                                 <View style={styles.navButtonContainer}>
@@ -101,12 +152,11 @@ const Dashboard = () => {
                                             <ImageLib urix={require('../../assets/images/icon/absensi.png')} style={styles.navButtonImage1} />
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <Text style={styles.navButtonImagetext}>
-                                                ABSENSI
-                                            </Text>
+                                            <Text style={styles.navButtonImagetext}>ABSENSI</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
+
                                 <View style={[styles.navButtonContainer, { marginHorizontal: 15 }]}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
@@ -116,12 +166,11 @@ const Dashboard = () => {
                                             <ImageLib urix={require('../../assets/images/icon/darurat.png')} style={styles.navButtonImage1} />
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <Text style={styles.navButtonImagetext}>
-                                                DARURAT
-                                            </Text>
+                                            <Text style={styles.navButtonImagetext}>DARURAT</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
+
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
@@ -131,14 +180,12 @@ const Dashboard = () => {
                                             <ImageLib urix={require('../../assets/images/icon/izin.png')} style={styles.navButtonImage1} />
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <Text style={styles.navButtonImagetext}>
-                                                IZIN
-                                            </Text>
+                                            <Text style={styles.navButtonImagetext}>IZIN</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
-
                             </View>
+
                             <View style={[styles.navContainer, { marginTop: 15 }]}>
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
@@ -149,12 +196,11 @@ const Dashboard = () => {
                                             <ImageLib urix={require('../../assets/images/icon/kinerja.png')} style={styles.navButtonImage1} />
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <Text style={styles.navButtonImagetext}>
-                                                E-KINERJA
-                                            </Text>
+                                            <Text style={styles.navButtonImagetext}>E-KINERJA</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
+
                                 <View style={[styles.navButtonContainer, { marginHorizontal: 15 }]}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
@@ -164,12 +210,11 @@ const Dashboard = () => {
                                             <ImageLib urix={require('../../assets/images/icon/tte.png')} style={styles.navButtonImage1} />
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <Text style={styles.navButtonImagetext}>
-                                                TTE
-                                            </Text>
+                                            <Text style={styles.navButtonImagetext}>TTE</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
+
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
@@ -179,23 +224,23 @@ const Dashboard = () => {
                                             <ImageLib urix={require('../../assets/images/icon/apel.png')} style={styles.navButtonImage1} />
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <Text style={styles.navButtonImagetext}>
-                                                APEL/UPACARA
-                                            </Text>
+                                            <Text style={styles.navButtonImagetext}>APEL/UPACARA</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
-
                             </View>
+
                             <View style={Stylex.barLine}></View>
 
                             <View style={Stylex.subTitleContainer}>
                                 <Text style={Stylex.h_subTitle1}>PENGAJUAN TERAHIR</Text>
                             </View>
 
-
                             {data.map((item) => (
-                                <TouchableOpacity key={item.id} onPress={() => openPopup(item)} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
+                                <TouchableOpacity
+                                    key={item.id}
+                                    onPress={() => openPopup(item)}
+                                    style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
                                     <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
                                     <View style={Stylex.textContent}>
                                         <Text style={Stylex.titleContent}>ABSENSI DARURAT</Text>
@@ -206,24 +251,12 @@ const Dashboard = () => {
                                 </TouchableOpacity>
                             ))}
                         </View>
-
-
-
-
-
                     </ImageBackground>
-
                 </View>
             </View>
-
-
-
         </ScrollView>
-
-
-
-    )
-}
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -232,23 +265,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 75
     },
-
     navContainer: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-
     },
-
-
     navButtonContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'transparent',
     },
-
-
     navButtonSubContainer: {
         display: 'flex',
         flex: 1,
@@ -258,7 +285,6 @@ const styles = StyleSheet.create({
         width: 85,
         backgroundColor: 'white',
         borderRadius: 15,
-
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -270,11 +296,8 @@ const styles = StyleSheet.create({
                 elevation: 5,
             },
         }),
-        // ------------------------------------
     },
-    navButtonImage1: {
-        width: 51,
-    },
+    navButtonImage1: { width: 51 },
     navButtonImageNoticeContainer: {
         marginTop: -20,
         position: 'absolute',
@@ -289,19 +312,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         zIndex: 9
     },
-    navButtonTextNotice: {
-        fontSize: 7,
-        color: 'white'
-
-    },
-    navButtonImagetext: {
-        fontSize: 8,
-        fontWeight: 'bold',
-        color: '#8B8B8B'
-
-    },
-
+    navButtonTextNotice: { fontSize: 7, color: 'white' },
+    navButtonImagetext: { fontSize: 8, fontWeight: 'bold', color: '#8B8B8B' },
 });
 
-
-export default Dashboard
+export default Dashboard;
