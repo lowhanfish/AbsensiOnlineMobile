@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react'; // << Tambahkan useRef
 import {
     Text,
     ScrollView,
@@ -9,16 +9,14 @@ import {
     TouchableOpacity,
     Platform,
 } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from "../../components/ImageLib";
 import { CheckWaktuAbsen, JamRealtime, cekWaktu } from '../../lib/kiken';
 
 import { useDispatch, useSelector } from 'react-redux'
-
-
-
+import { setWaktuData } from '../../redux/actions';
 
 
 const { height, width } = Dimensions.get('window');
@@ -31,18 +29,25 @@ const Dashboard = () => {
     const url = useSelector(state => state.URL)
     const token = useSelector(state => state.TOKEN)
 
+    // 🚀 LANGKAH 1: Buat ref untuk menyimpan nilai Redux terbaru
+    const latestWaktuRef = useRef(tetapanWaktuAbsen);
+
+    // 🚀 LANGKAH 2: useEffect untuk mengupdate ref setiap kali Redux state berubah
+    // Ini memastikan timer selalu memiliki akses ke state terbaru.
+    React.useEffect(() => {
+        latestWaktuRef.current = tetapanWaktuAbsen;
+    }, [tetapanWaktuAbsen]);
+
+
+    // State Lokal
     const [currentDate, setCurrentDate] = useState('00:00:00');
-
-    // console.log(tetapanWaktuAbsen)
-
-
-
-    // console.log(token)
-
+    // ... State lainnya ...
     const [isChecked, setIsChecked] = useState(false);
     const [text, setText] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+
+    // --- Fungsi Bantuan ---
 
     const handleButtonPress = () => {
         console.log('Filter Data By Text', text);
@@ -94,24 +99,54 @@ const Dashboard = () => {
 
 
     const getWaktuAbsen = async () => {
-        const xxx = await CheckWaktuAbsen(url.URL_MasterWaktuAbsen + "viewOne", token);
-        dispatch({ type: 'SET_WAKTU_DATA', payload: xxx })
+        try {
+            const xxx = await CheckWaktuAbsen(url.URL_MasterWaktuAbsen + "viewOne", token);
+            dispatch(setWaktuData(xxx));
+        } catch (error) {
+            console.error("Gagal mengambil waktu absen dari API:", error);
+        }
     }
 
 
+    // =================================================================
+    // useFocusEffect + useRef
+    // =================================================================
+    useFocusEffect(
+        React.useCallback(() => {
 
-    useEffect(() => {
-        // console.log("test")
-        getWaktuAbsen();
+            getWaktuAbsen();
 
-        let secTimer = setInterval(() => {
-            setCurrentDate(JamRealtime)
-            const datatampil = cekWaktu(currentDate, tetapanWaktuAbsen)
-            dispatch({ type: 'SET_WAKTU_DATA', payload: datatampil })
-            // console.log(datatampil)
-        }, 1000)
-        return () => clearInterval(secTimer);
-    }, [])
+            let secTimer = setInterval(() => {
+
+                // Mengambil waktu BARU
+                const newTime = JamRealtime();
+
+                // 1. Perbarui state lokal (Memicu re-render UI jam)
+                setCurrentDate(newTime);
+
+                // 2. Akses state Redux terbaru melalui REF (Menghindari Stale Closure)
+                const latestWaktu = latestWaktuRef.current;
+
+                // 3. Cek status baru
+                const datatampil = cekWaktu(newTime, latestWaktu);
+
+                // 4. Update state Redux (Memicu re-render komponen secara keseluruhan)
+                dispatch(setWaktuData(datatampil));
+
+
+            }, 1000);
+
+            // 5. Cleanup: Hentikan timer saat layar hilang fokus
+            return () => {
+                clearInterval(secTimer);
+                console.log("Timer Dashboard dihentikan.");
+            };
+
+            // Dependensi hanya [dispatch] (atau bahkan [ ] jika tidak ada dispatch di luar timer)
+            // Kita hanya perlu memastikan timer berjalan. Kita TIDAK MEMASUKKAN tetapanWaktuAbsen di sini!
+        }, [dispatch])
+    );
+
 
     return (
         <ScrollView>
@@ -122,6 +157,7 @@ const Dashboard = () => {
 
 
                     <Text style={[Stylex.shaddowText, { paddingTop: 1, fontWeight: 'bold', fontSize: 14, color: 'white' }]}>
+                        {/* currentDate berasal dari state lokal yang diupdate setiap detik. */}
                         {tetapanWaktuAbsen.keterangan} ({currentDate}) { }
                     </Text>
                 </View>
