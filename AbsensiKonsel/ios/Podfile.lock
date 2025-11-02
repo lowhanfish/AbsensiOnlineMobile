@@ -2682,6 +2682,8 @@ PODS:
     - Yoga
   - RNDeviceInfo (14.1.1):
     - React-Core
+  - RNFS (2.20.0):
+    - React-Core
   - RNMLKitFaceDetection (2.0.1):
     - GoogleMLKit/FaceDetection (= 8.0.0)
     - React
@@ -2941,6 +2943,7 @@ DEPENDENCIES:
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
+  - RNFS (from `../node_modules/react-native-fs`)
   - "RNMLKitFaceDetection (from `../node_modules/@react-native-ml-kit/face-detection`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
@@ -3146,6 +3149,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNDeviceInfo:
     :path: "../node_modules/react-native-device-info"
+  RNFS:
+    :path: "../node_modules/react-native-fs"
   RNMLKitFaceDetection:
     :path: "../node_modules/@react-native-ml-kit/face-detection"
   RNScreens:
@@ -3261,6 +3266,7 @@ SPEC CHECKSUMS:
   RNCPicker: a0b804b489974349cde24b41b654ce9d5eefa504
   RNDateTimePicker: ee4eeae8d57f78b2b95d9bd152b4dadb4e758dc2
   RNDeviceInfo: bcce8752b5043a623fe3c26789679b473f705d3c
+  RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNMLKitFaceDetection: c5a2215b44e8a8bfcbe79c5f423b6ffb3a7a78f9
   RNScreens: f35bcc83b6e3a871635b1c28728e63c9560f159a
   RNWorklets: 87c6ebbd068acaed7c6d7ca78576df9e67587352
