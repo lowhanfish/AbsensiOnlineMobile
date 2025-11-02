@@ -7,16 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0428BB821F0147A7B1B1D6AE /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BE2C9EF200BC43BD957D73FF /* Colors.xcassets */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8804B7296B3E407399A5A532 /* Audiowide-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC042CA3AB8F44D2ABDFF2AE /* Audiowide-Regular.ttf */; };
 		CAE837AF151EA0D05D183C00 /* libPods-AbsensiKonsel.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C4370FF1397B3911B2FB98 /* libPods-AbsensiKonsel.a */; };
 		D232D892EBA34637AAF0A7C9 /* Almarai-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 800398FE4C9140EF8BF7D777 /* Almarai-Regular.ttf */; };
+		D7AA0470EE5C44268574B7E3 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 05F46F2B15464A908E49EBC4 /* BootSplash.storyboard */; };
 		F93932CD2F80C6A8D5713A8A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		05F46F2B15464A908E49EBC4 /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = AbsensiKonsel/BootSplash.storyboard; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* AbsensiKonsel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AbsensiKonsel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AbsensiKonsel/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AbsensiKonsel/Info.plist; sourceTree = "<group>"; };
@@ -26,6 +29,7 @@
 		800398FE4C9140EF8BF7D777 /* Almarai-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Almarai-Regular.ttf"; path = "../src/assets/fonts/Almarai-Regular.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AbsensiKonsel/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A5C4370FF1397B3911B2FB98 /* libPods-AbsensiKonsel.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AbsensiKonsel.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE2C9EF200BC43BD957D73FF /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = AbsensiKonsel/Colors.xcassets; sourceTree = "<group>"; };
 		DC042CA3AB8F44D2ABDFF2AE /* Audiowide-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Audiowide-Regular.ttf"; path = "../src/assets/fonts/Audiowide-Regular.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F3C480A9A011EE81C0B4B552 /* Pods-AbsensiKonsel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AbsensiKonsel.debug.xcconfig"; path = "Target Support Files/Pods-AbsensiKonsel/Pods-AbsensiKonsel.debug.xcconfig"; sourceTree = "<group>"; };
@@ -51,6 +55,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				05F46F2B15464A908E49EBC4 /* BootSplash.storyboard */,
+				BE2C9EF200BC43BD957D73FF /* Colors.xcassets */,
 			);
 			name = AbsensiKonsel;
 			sourceTree = "<group>";
@@ -177,6 +183,8 @@
 				F93932CD2F80C6A8D5713A8A /* PrivacyInfo.xcprivacy in Resources */,
 				8804B7296B3E407399A5A532 /* Audiowide-Regular.ttf in Resources */,
 				D232D892EBA34637AAF0A7C9 /* Almarai-Regular.ttf in Resources */,
+				D7AA0470EE5C44268574B7E3 /* BootSplash.storyboard in Resources */,
+				0428BB821F0147A7B1B1D6AE /* Colors.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

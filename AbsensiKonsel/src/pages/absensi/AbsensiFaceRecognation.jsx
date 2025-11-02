@@ -11,7 +11,7 @@ const DETECTION_INTERVAL_MS = 1000;
 const TIMEOUT_DURATION_MS = 10000;
 const BLINK_THRESHOLD = 0.8;
 
-export default function FaceAttendanceVisualFeedback() {
+export default function AbsensiFaceRecognation() {
 
     const navigation = useNavigation();
 
