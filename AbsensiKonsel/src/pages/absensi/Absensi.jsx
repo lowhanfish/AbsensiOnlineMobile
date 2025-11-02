@@ -16,13 +16,18 @@ import Geolocation from '@react-native-community/geolocation';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from 'react-redux';
+import { hitungJarak } from '../../lib/kiken';
+
 
 const { height, width } = Dimensions.get('window');
 
 const Absensi = () => {
     const navigation = useNavigation();
+    // Diasumsikan AbsenLoc adalah Array lokasi: [{lat: ..., lng: ..., rad: ...}, ...]
+    const AbsenLoc = useSelector(state => state.PROFILE.profile.lokasi_absen)
 
-    // 🔹 LokasiAwal sekarang jadi useState
+
     const [lokasi, setLokasi] = useState({
         latitude: -4.3324188,
         longitude: 122.2809425,
@@ -31,10 +36,22 @@ const Absensi = () => {
     });
 
     const [errorMsg, setErrorMsg] = useState(null);
+    const [statusx, setStatusx] = useState(false) // Status boleh/tidak boleh absen
+    const [jarakMinimal, setJarakMinimal] = useState(null); // Tambah state untuk info jarak
 
     // === Tombol fingerprint ===
+    // Tambahkan pengecekan statusx agar tombol hanya berfungsi jika statusx true
     const tombolAbsensi = () => {
-        navigation.navigate('AbsensiFaceRecognation');
+        if (statusx) {
+            console.log('Absen Diizinkan!');
+            navigation.navigate('AbsensiFaceRecognation');
+        } else {
+            const jarakInfo = jarakMinimal !== null ? `${jarakMinimal.toFixed(2)} meter` : 'tidak diketahui';
+            Alert.alert(
+                "Jarak Terlalu Jauh",
+                `Anda berada ${jarakInfo} dari titik absen terdekat. Absen ditolak.`
+            );
+        }
     };
 
     // === Tombol cek lokasi ===
@@ -64,9 +81,18 @@ const Absensi = () => {
                 }
             }
 
+            // Set statusx ke false/loading sebelum ambil lokasi baru (Opsional)
+            // setStatusx(false); 
+            // setJarakMinimal(null);
+
             Geolocation.getCurrentPosition(
                 position => {
                     console.log('Lokasi saat ini:', position.coords);
+
+                    // 1. Panggil CekJarakAbsen menggunakan koordinat terbaru
+                    CekJarakAbsen(position.coords);
+
+                    // 2. Update state lokasi untuk map marker
                     setLokasi(prev => ({
                         ...prev,
                         latitude: position.coords.latitude,
@@ -77,6 +103,7 @@ const Absensi = () => {
                 error => {
                     console.error('Gagal ambil lokasi:', error);
                     setErrorMsg(error.message);
+                    setStatusx(false); // Pastikan status absen false jika gagal ambil lokasi
                 },
                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
             );
@@ -86,10 +113,54 @@ const Absensi = () => {
         }
     };
 
+    // 🚀 FUNGSI PERBAIKAN: Hitung Jarak Terdekat dan Tentukan statusx Sekali Saja
+    const CekJarakAbsen = (lokasix) => {
+        if (!AbsenLoc || AbsenLoc.length === 0) {
+            console.warn("Data Lokasi Absen tidak ditemukan.");
+            setStatusx(false);
+            setJarakMinimal(null);
+            return;
+        }
+
+        // 1. Inisialisasi status menjadi false sebelum pengecekan
+        let isInsideRadius = false;
+        let minJarak = Infinity;
+
+        AbsenLoc.forEach(element => {
+            const jarakSaatIni = hitungJarak(lokasix.latitude, lokasix.longitude, element.lat, element.lng);
+            console.log(`Jarak ke Lokasi (rad ${element.rad}m): ${jarakSaatIni.toFixed(2)} meter`);
+
+            // Cek apakah jarak saat ini adalah jarak minimal
+            if (jarakSaatIni < minJarak) {
+                minJarak = jarakSaatIni;
+            }
+
+            // Cek apakah jarak sudah memenuhi syarat (percabangan utama)
+            if (jarakSaatIni < element.rad) {
+                isInsideRadius = true;
+            }
+        });
+
+        // 2. Update state SETELAH SEMUA ITERASI SELESAI
+        setJarakMinimal(minJarak);
+        setStatusx(isInsideRadius);
+
+        console.log(`Status Absen Final: ${isInsideRadius ? 'TRUE (Boleh Absen)' : 'FALSE (Jarak Jauh)'}`);
+    }
+
     // === Jalankan saat mount ===
+    // Jalankan getLocation HANYA SEKALI saat komponen dimuat
     useEffect(() => {
         getLocation();
     }, []);
+
+    // Perhatikan: Menghapus [statusx] dari dependency array di atas.
+    // Memasukkan [statusx] akan menyebabkan loop tak terbatas jika setStatusx(true) dipanggil.
+
+    // Tambahkan useEffect untuk log perubahan statusx
+    useEffect(() => {
+        console.log(`STATUSX BERUBAH MENJADI: ${statusx}`);
+    }, [statusx])
 
     return (
         <View style={styles.wrappermap}>
@@ -100,6 +171,16 @@ const Absensi = () => {
                 region={lokasi}
                 showsUserLocation={true}
             >
+                {/* Tambahkan Marker Lokasi Absen */}
+                {AbsenLoc.map((loc, index) => (
+                    <Marker
+                        key={index}
+                        coordinate={{ latitude: loc.lat, longitude: loc.lng }}
+                        title={`Absen Point ${index + 1}`}
+                        pinColor="blue"
+                    />
+                ))}
+
                 <Marker coordinate={lokasi} title="Lokasi Saya" />
             </MapView>
 
@@ -126,7 +207,10 @@ const Absensi = () => {
             <View style={styles.absenSection}>
                 <Text style={styles.absenTitle}>ABSENSI</Text>
                 <Text style={styles.absenSubtitle}>
+                    {/* Tampilkan status */}
                     Sebelum melakukan pengabsenan, pastikan anda berada di posisi yang tepat
+                    {`\nStatus: ${statusx ? '✅ Diizinkan' : '❌ Ditolak'}`}
+                    {jarakMinimal !== null && ` | Jarak Terdekat: ${jarakMinimal.toFixed(2)}m`}
                 </Text>
             </View>
 
@@ -144,9 +228,10 @@ const Absensi = () => {
 
             {/* Tombol Fingerprint */}
             <TouchableOpacity
-                style={styles.fingerprintBtn}
+                style={[styles.fingerprintBtn, { opacity: statusx ? 1 : 0.5 }]}
                 onPress={tombolAbsensi}
                 activeOpacity={0.8}
+                disabled={!statusx} // Nonaktifkan jika belum diizinkan
             >
                 <ImageLib
                     urix={require("../../assets/images/icon/fingerprint3.png")}
@@ -158,6 +243,7 @@ const Absensi = () => {
 };
 
 const styles = StyleSheet.create({
+    // ... (styles Anda yang lain) ...
     wrappermap: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "#eaeaea",
