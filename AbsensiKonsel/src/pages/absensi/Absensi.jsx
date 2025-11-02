@@ -10,7 +10,7 @@ import {
     Platform,
     PermissionsAndroid,
 } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker, Circle } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 
 import DeviceInfo from 'react-native-device-info';
@@ -209,15 +209,26 @@ const Absensi = () => {
                 region={lokasi}
                 showsUserLocation={true}
             >
+                {/* Lokasi Absen + Radius */}
                 {AbsenLoc.map((loc, index) => (
-                    <Marker
-                        key={index}
-                        coordinate={{ latitude: loc.lat, longitude: loc.lng }}
-                        title={`Absen Point ${index + 1}`}
-                        pinColor="blue"
-                    />
+                    <React.Fragment key={index}>
+
+                        <Circle
+                            center={{ latitude: loc.lat, longitude: loc.lng }}
+                            radius={loc.rad}
+                            strokeColor="rgba(0, 128, 0, 0.5)"
+                            fillColor="#67940933"
+                            strokeWidth={2}
+                        />
+                    </React.Fragment>
                 ))}
-                <Marker coordinate={lokasi} title="Lokasi Saya" />
+
+                {/* Lokasi Pengguna */}
+                <Marker
+                    coordinate={lokasi}
+                    title="Lokasi Saya"
+                    image={require('../../assets/images/icon/pin.png')}
+                />
             </MapView>
 
             <TouchableOpacity style={Stylex.backBtn} onPress={() => navigation.goBack()}>
