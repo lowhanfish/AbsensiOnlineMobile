@@ -2,11 +2,11 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, StyleSheet, Alert, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import FaceDetector from '@react-native-ml-kit/face-detection';
-import RNFS from 'react-native-fs';
-import axios from 'axios'; // 👈 Tambahkan axios
+import RNFS from 'react-native-fs'; // 🧹 Tambahan: untuk hapus file
 import { useNavigation } from '@react-navigation/native';
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
+
 const DETECTION_INTERVAL_MS = 1000;
 const TIMEOUT_DURATION_MS = 10000;
 const BLINK_THRESHOLD = 0.8;
@@ -82,6 +82,7 @@ export default function AbsensiFaceRecognation() {
                 classificationMode: 'all',
             });
 
+            // 🧹 DELETE TEMP PHOTO — hapus file setelah diproses
             RNFS.unlink(photo.path)
                 .then(() => console.log('🧹 Foto sementara dihapus:', photo.path))
                 .catch(err => console.log('⚠️ Gagal hapus foto:', err));
@@ -107,37 +108,10 @@ export default function AbsensiFaceRecognation() {
                     setIsCheckedIn(true);
                     setIsDetectionActive(false);
 
-                    // 🚀 Upload ke server
-                    try {
-                        const finalPhoto = await cameraRef.current.takePhoto({
-                            qualityPrioritization: 'quality',
-                            skipMetadata: true,
-                            saveToPhotoLibrary: false,
-                        });
-
-                        const base64Image = await RNFS.readFile(finalPhoto.path, 'base64');
-
-                        const response = await axios.post('https://server-kamu.com/api/verify-face', {
-                            image: base64Image,
-                            userId: '12345', // ubah sesuai user login
-                        });
-
-                        if (response.data.success) {
-                            Alert.alert('✅ Absensi Berhasil', 'Wajah cocok dengan data server!', [
-                                { text: 'OK', onPress: navigateToDashboard },
-                            ]);
-                        } else {
-                            Alert.alert('❌ Wajah Tidak Cocok', 'Silakan coba lagi.', [
-                                { text: 'OK', onPress: resetDetection },
-                            ]);
-                        }
-
-                        // hapus foto lokal
-                        RNFS.unlink(finalPhoto.path).catch(() => { });
-                    } catch (error) {
-                        console.error('Upload error:', error);
-                        Alert.alert('⚠️ Gagal mengirim ke server', 'Periksa koneksi atau coba lagi.');
-                    }
+                    Alert.alert('✅ Absensi Berhasil', 'Wajah dan kedipan mata berhasil diverifikasi!', [
+                        { text: 'OK', onPress: navigateToDashboard },
+                    ]);
+                    return;
                 }
             }
         } catch (err) {
@@ -150,6 +124,7 @@ export default function AbsensiFaceRecognation() {
                 ]);
             }
         } finally {
+            // 🧹 Backup — pastikan foto dihapus jika error
             if (photo?.path) {
                 RNFS.unlink(photo.path).catch(() => { });
             }

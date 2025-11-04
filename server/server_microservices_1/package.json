@@ -1,0 +1,40 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "kiken_s_batara",
+  "license": "ISC",
+  "dependencies": {
+    "asyncforeach": "^1.0.0-beta.13",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "fcm-notification": "^2.0.0",
+    "firebase-admin": "^10.0.2",
+    "joi": "^14.3.1",
+    "json-groupby": "^1.1.0",
+    "jsonwebtoken": "^8.4.0",
+    "lodash": "^4.17.15",
+    "mocha": "^5.2.0",
+    "mongodb": "^3.5.3",
+    "mongoose": "^5.9.2",
+    "monk": "^7.1.2",
+    "multer": "^1.4.1",
+    "mysql": "^2.16.0",
+    "node-fetch": "^2.6.7",
+    "node-mysql-nesting": "0.0.3",
+    "node-schedule": "^1.3.2",
+    "nodemailer": "^6.3.1",
+    "openssl": "^1.1.0",
+    "socket.io": "^2.2.0",
+    "uniqid": "^5.0.3",
+    "volleyball": "^1.5.1"
+  }
+}

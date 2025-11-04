@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Circle } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
+import NetInfo from '@react-native-community/netinfo'; // ✅ Tambahan
 
 import DeviceInfo from 'react-native-device-info';
 import JailMonkey from 'jail-monkey';
@@ -38,52 +39,36 @@ const Absensi = () => {
     const [errorMsg, setErrorMsg] = useState(null);
     const [statusx, setStatusx] = useState(false);
     const [jarakMinimal, setJarakMinimal] = useState(null);
+    const [isOnline, setIsOnline] = useState(true); // ✅ Tambahan
+
+    /** 🔌 Cek status koneksi internet */
+    useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener(state => {
+            const connected = !!state.isConnected;
+            setIsOnline(connected);
+            console.log(`📶 Koneksi: ${connected ? 'Online' : 'Offline'}`);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     /** 🔒 Verifikasi keamanan device & lokasi */
     const verifyDeviceSecurity = async (position) => {
         try {
-            // 1️⃣ Deteksi Emulator
             const isEmulator = await DeviceInfo.isEmulator();
-            if (isEmulator) {
-                return { trusted: false, reason: 'Perangkat emulator terdeteksi' };
-            }
+            if (isEmulator) return { trusted: false, reason: 'Perangkat emulator terdeteksi' };
+            if (JailMonkey.isJailBroken?.()) return { trusted: false, reason: 'Perangkat di-root / jailbreak' };
 
-            // 2️⃣ Deteksi Jailbreak / Root
-            if (JailMonkey.isJailBroken?.()) {
-                return { trusted: false, reason: 'Perangkat telah di-root atau di-jailbreak' };
-            }
-
-            // 3️⃣ Deteksi Mock Location (Android)
             if (Platform.OS === 'android') {
-                if (JailMonkey.canMockLocation?.()) {
-                    return { trusted: false, reason: 'Perangkat dapat menggunakan lokasi palsu (mock location)' };
-                }
-
-                const mockedBySystem = position?.mocked === true || position?.coords?.mocked === true;
-                if (mockedBySystem) {
-                    return { trusted: false, reason: 'Lokasi palsu (mock) terdeteksi oleh sistem Android' };
-                }
-
-                if (JailMonkey.isOnExternalStorage?.()) {
-                    return { trusted: false, reason: 'Aplikasi dijalankan dari penyimpanan eksternal (tidak aman)' };
-                }
-
-                if (JailMonkey.hookDetected?.()) {
-                    return { trusted: false, reason: 'Aplikasi terdeteksi mengalami hooking atau modifikasi' };
-                }
+                if (JailMonkey.canMockLocation?.()) return { trusted: false, reason: 'Mock location diizinkan' };
+                if (position?.mocked) return { trusted: false, reason: 'Lokasi palsu terdeteksi' };
+                if (JailMonkey.isOnExternalStorage?.()) return { trusted: false, reason: 'Aplikasi di eksternal storage' };
+                if (JailMonkey.hookDetected?.()) return { trusted: false, reason: 'Hooking terdeteksi' };
             }
 
-            // 4️⃣ Deteksi Mode Debug (kalau tersedia)
-            if (typeof JailMonkey.isDebugged === 'function' && JailMonkey.isDebugged()) {
-                return { trusted: false, reason: 'Aplikasi sedang berjalan dalam mode debug' };
-            }
+            if (JailMonkey.isDebugged?.()) return { trusted: false, reason: 'Aplikasi sedang di-debug' };
+            if (JailMonkey.trustFall?.()) return { trusted: false, reason: 'Pemeriksaan trustFall gagal' };
 
-            // 5️⃣ trustFall() – pemeriksaan lengkap gabungan
-            if (JailMonkey.trustFall?.()) {
-                return { trusted: false, reason: 'Perangkat gagal lulus pemeriksaan keamanan (trustFall)' };
-            }
-
-            // ✅ Semua aman
             return { trusted: true };
         } catch (err) {
             console.error('verifyDeviceSecurity error:', err);
@@ -93,6 +78,11 @@ const Absensi = () => {
 
     /** Tombol fingerprint */
     const tombolAbsensi = () => {
+        if (!isOnline) {
+            Alert.alert('Tidak Ada Koneksi', 'Harap aktifkan koneksi internet untuk melanjutkan absensi.');
+            return;
+        }
+
         if (statusx) {
             navigation.navigate('AbsensiFaceRecognation');
         } else {
@@ -132,28 +122,25 @@ const Absensi = () => {
                 async (position) => {
                     console.log('Lokasi saat ini:', position.coords);
 
-                    // 🔒 Verifikasi keamanan
                     const security = await verifyDeviceSecurity(position);
                     if (!security.trusted) {
                         Alert.alert('Perangkat Tidak Aman', security.reason);
                         setStatusx(false);
-                        setLokasi((prev) => ({
-                            ...prev,
+                        setLokasi({
+                            ...lokasi,
                             latitude: position.coords.latitude,
                             longitude: position.coords.longitude,
-                        }));
+                        });
                         return;
                     }
 
-                    // Cek jarak absen
                     CekJarakAbsen(position.coords);
 
-                    // Update lokasi
-                    setLokasi((prev) => ({
-                        ...prev,
+                    setLokasi({
+                        ...lokasi,
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
-                    }));
+                    });
                     setErrorMsg(null);
                 },
                 (error) => {
@@ -183,23 +170,17 @@ const Absensi = () => {
 
         AbsenLoc.forEach((element) => {
             const jarakSaatIni = hitungJarak(lokasix.latitude, lokasix.longitude, element.lat, element.lng);
-            console.log(`Jarak ke Lokasi (rad ${element.rad}m): ${jarakSaatIni.toFixed(2)} meter`);
             if (jarakSaatIni < minJarak) minJarak = jarakSaatIni;
             if (jarakSaatIni < element.rad) isInsideRadius = true;
         });
 
         setJarakMinimal(minJarak);
         setStatusx(isInsideRadius);
-        console.log(`Status Absen Final: ${isInsideRadius ? 'TRUE (Boleh Absen)' : 'FALSE (Jarak Jauh)'}`);
     };
 
     useEffect(() => {
         getLocation();
     }, []);
-
-    useEffect(() => {
-        console.log(`STATUSX BERUBAH MENJADI: ${statusx}`);
-    }, [statusx]);
 
     return (
         <View style={styles.wrappermap}>
@@ -209,10 +190,8 @@ const Absensi = () => {
                 region={lokasi}
                 showsUserLocation={true}
             >
-                {/* Lokasi Absen + Radius */}
                 {AbsenLoc.map((loc, index) => (
                     <React.Fragment key={index}>
-
                         <Circle
                             center={{ latitude: loc.lat, longitude: loc.lng }}
                             radius={loc.rad}
@@ -223,13 +202,19 @@ const Absensi = () => {
                     </React.Fragment>
                 ))}
 
-                {/* Lokasi Pengguna */}
                 <Marker
                     coordinate={lokasi}
                     title="Lokasi Saya"
                     image={require('../../assets/images/icon/pin.png')}
                 />
             </MapView>
+
+            {/* 🔌 Indikator koneksi */}
+            <View style={[styles.netStatus, { backgroundColor: isOnline ? '#4CAF50' : '#E53935' }]}>
+                <Text style={styles.netText}>
+                    {isOnline ? 'Online' : 'Offline (mode GPS-only)'}
+                </Text>
+            </View>
 
             <TouchableOpacity style={Stylex.backBtn} onPress={() => navigation.goBack()}>
                 <ImageLib
@@ -238,26 +223,17 @@ const Absensi = () => {
                 />
             </TouchableOpacity>
 
-
-
             <View style={styles.absenSection}>
                 <Text style={styles.absenTitle}>ABSENSI</Text>
                 <Text style={styles.absenSubtitle}>
                     Sebelum melakukan pengabsenan, pastikan anda berada di posisi yang tepat
                     {`\nStatus: ${statusx ? '✅ Diizinkan' : '❌ Ditolak'}`}
-                    {jarakMinimal !== null && ` | Jarak Terdekat: ${jarakMinimal.toFixed(2)}m`}
+                    {jarakMinimal !== null && ` | Jarak: ${jarakMinimal.toFixed(2)}m`}
                 </Text>
             </View>
 
-            <TouchableOpacity
-                style={styles.locationBtn}
-                onPress={tombolCekLokasi}
-                activeOpacity={0.8}
-            >
-                <ImageLib
-                    urix={require('../../assets/images/icon/Iconlokasi.png')}
-                    style={styles.iconLocation}
-                />
+            <TouchableOpacity style={styles.locationBtn} onPress={tombolCekLokasi} activeOpacity={0.8}>
+                <ImageLib urix={require('../../assets/images/icon/Iconlokasi.png')} style={styles.iconLocation} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -276,13 +252,8 @@ const Absensi = () => {
 };
 
 const styles = StyleSheet.create({
-    wrappermap: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#eaeaea',
-    },
-    map: {
-        ...StyleSheet.absoluteFillObject,
-    },
+    wrappermap: { ...StyleSheet.absoluteFillObject, backgroundColor: '#eaeaea' },
+    map: { ...StyleSheet.absoluteFillObject },
     fingerprintBtn: {
         position: 'absolute',
         bottom: 100,
@@ -291,15 +262,8 @@ const styles = StyleSheet.create({
         borderRadius: 100,
         padding: 1,
         elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
     },
-    fingerprint: {
-        width: 110,
-        height: 110,
-    },
+    fingerprint: { width: 110, height: 110 },
     locationBtn: {
         position: 'absolute',
         top: 155,
@@ -308,33 +272,27 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         padding: 1,
         elevation: 4,
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 1 },
     },
-    iconLocation: {
-        width: 45,
-        height: 45,
-    },
-    absenSection: {
-        top: 75,
-        left: 28,
-        paddingHorizontal: 20,
-    },
+    iconLocation: { width: 45, height: 45 },
+    absenSection: { top: 75, left: 28, paddingHorizontal: 20 },
     absenTitle: {
         fontSize: 32,
         color: '#FFFFFF',
         fontFamily: 'Audiowide-Regular',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowColor: 'rgba(0,0,0,0.3)',
         textShadowOffset: { width: 2, height: 2 },
         textShadowRadius: 4,
     },
-    absenSubtitle: {
-        top: 1,
-        color: '#555555',
-        fontFamily: 'Almarai-Regular',
-        fontSize: 8,
+    absenSubtitle: { top: 1, color: '#555', fontFamily: 'Almarai-Regular', fontSize: 8 },
+    netStatus: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 10,
     },
+    netText: { color: '#fff', fontSize: 10, fontWeight: '600' },
 });
 
 export default Absensi;

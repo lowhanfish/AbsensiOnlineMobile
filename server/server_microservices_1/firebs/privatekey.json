@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "absensionline-cf493",
+  "private_key_id": "9e183efba2f34c0a4876aaad69135f98caf9c2c3",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCp0auHFmVCmmZh\nOJasqmrbL23S4vdudDHbFC33MNqh2AuOSfI37qassCVnkZ7dXCxZmqLBbBB0QAKC\nfRddhfSOnt8pX6QN0GSw7L1IVtyA2UzyGxHZJjzSUwAFJR12Mo47E3hhIWKJ8YN9\n2M1FeMq6KpZ4o1Lktr39Y+IcQhFOFWbYi8Xv+1CLGM37+Z/bec7LxEkabKJQa1nv\nmWEledY+4dsxANb90wyClTxA62Ut3zyFr2UGewQR1fyfDMkYXLPwpYYNNQJPbdUq\nvX2hHOOtMsx2yqHysNW8PThGQruT1gv0Vh5AHQ4puNQFeylbHuFYHlcnfGETDuhJ\n/THBGyANAgMBAAECggEAEZobBmiK3Gl2nTMpYwJTCx8Sah5+eSNwG34u+YVF1Cq5\nn+kIQ0XoXtPvPJn6doVcT3lYz2WtGu+bkvz2VApTfAj5pqc0MP5dwXz4bawbNPvR\nHvMxWWm+OirCQMZFFIBO/86X1rGILjYrY/r54+6OTNenOx/qsqxCayZURIuQkaA5\nAaD3VNcBq3iKv9W6BWfx0yjIehdFk1Ki7ODFpWPmHxXVG9EEMz1BNOF25sZaPhWR\n+dMty4OJ24hMmsz4tajq259F9esigyVMk6No8ghSyrpwmyhW8wDiALwzJ/CETUa9\n9SdHN8U9G0yHO6OJJVoXc2H0BO8hbR+I5/l/rMhzQQKBgQDZ8E74wwdmT5kvWJ1Z\ne/JqR1Qw2qdxN3yW9Dasfu1zzUhrLvBVv61thjlx9fltS+DQqT/Ij7lK8RerUI09\nB2N2u+23BzMKUMU9BYRWWkYQhO9VKLqnaxyebGpp8ot/ZqM9fa+tKJyY0JFfKkLK\nr2f2VAOW129EwBka2twRBllJMQKBgQDHegHmZQ3mJPRTEFR6trw4MeIIY1ruJRji\nlL2fM4K3ujjEGTLpUkqv5tCMl40LgCsdTxINMaDY21H3MiyoHlQUhcZ79OUMJWgf\n0RvjH7+xPPHAIRFLKhYxv6rc8aG+umfb/yOyD3UenOOtYPnbakhuOGWxd/4ZHHfH\npiKvqU3NnQKBgDS6X2DwTqoCOB2sYuVzh4MPHt9zB2/s7MfY7iFt1CVgVVUZVixo\n45zMDLn1uRMoeIwDZtsvarUm/4MDSiip0Pa5IRpXM5IbWJ0a6Jm73ZfBkeYYpJA8\n6f+qW1SmyflY68XE0uwiF0EhtQpBP0eqiIygZv3nwZPwpiJJMVUtJA0BAoGBAKsB\nblWMNlEhRw9ahYG53Du0j9ivDEnyJZZA+xpa92n4TCfYjmu1b2/CyPBuD61XUB7N\nJWWIMSMXSfpH2j652UzKrjCf7ifufYghJO4dzqDr5TfXYVL1npdBgAHvZ8DxXo4b\n+Qbx926qAwkkhK5UPAm5cXylqIDwhcLzKvM6igeFAoGBAIvm6VQvDC/4l6cK/Ipq\nJOU10QApwosiVH/ZxB2NZDW3Wp7bIxw/Fcd3vbGGBp0o3si0ptz5SZod5lIRQTaQ\nG1pH1Ihm6vxCI9yWU298hW19ZUq+PWwWHEIjy8DabdNQzgF9MxKymqDulCiR/4GY\nI0kvC+TUl95eOYaxARIUmZmV\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-5xsum@absensionline-cf493.iam.gserviceaccount.com",
+  "client_id": "102734995570361427813",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-5xsum%40absensionline-cf493.iam.gserviceaccount.com"
+}

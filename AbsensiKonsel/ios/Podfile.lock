@@ -1816,6 +1816,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-geolocation-service (5.3.1):
+    - React
   - react-native-maps (1.26.0):
     - react-native-maps/Maps (= 1.26.0)
   - react-native-maps/Generated (1.26.0):
@@ -1877,6 +1879,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-netinfo (11.4.1):
+    - React-Core
   - react-native-pdf (6.7.7):
     - boost
     - DoubleConversion
@@ -2899,7 +2903,9 @@ DEPENDENCIES:
   - "react-native-document-picker (from `../node_modules/@react-native-documents/picker`)"
   - "react-native-document-viewer (from `../node_modules/@react-native-documents/viewer`)"
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
+  - react-native-geolocation-service (from `../node_modules/react-native-geolocation-service`)
   - react-native-maps (from `../node_modules/react-native-maps`)
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pdf (from `../node_modules/react-native-pdf`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -3061,8 +3067,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-documents/viewer"
   react-native-geolocation:
     :path: "../node_modules/@react-native-community/geolocation"
+  react-native-geolocation-service:
+    :path: "../node_modules/react-native-geolocation-service"
   react-native-maps:
     :path: "../node_modules/react-native-maps"
+  react-native-netinfo:
+    :path: "../node_modules/@react-native-community/netinfo"
   react-native-pdf:
     :path: "../node_modules/react-native-pdf"
   react-native-render-html:
@@ -3222,7 +3232,9 @@ SPEC CHECKSUMS:
   react-native-document-picker: bc1ceddeb38b7bf020a236cfa78f0ab41ac5f231
   react-native-document-viewer: 6201d32adf16138e2742140a6e84c1bfe1b75544
   react-native-geolocation: f01ad4718ad1d015d0c0dd12a6f707354022530e
+  react-native-geolocation-service: 32b2c2a3b91e70ce2a8d0c684801aaeb0a07e0ec
   react-native-maps: 3abff614dbab65fe1ae5818f079393973dde1b98
+  react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pdf: e2ca5f26b33bd581474404a954bc1023a3322cb0
   react-native-render-html: 5afc4751f1a98621b3009432ef84c47019dcb2bd
   react-native-safe-area-context: 01f6d357d42395422eed7c3bfe715614728f2989
