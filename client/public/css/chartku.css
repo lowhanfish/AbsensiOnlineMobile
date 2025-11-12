@@ -1,0 +1,10 @@
+.padding1-5{
+    padding : 1.5%
+}
+
+
+.frameChart{
+    padding : 5%;
+    /* background-color: rgba(116, 116, 116, 0.376); */
+    border-radius: 2%;
+}

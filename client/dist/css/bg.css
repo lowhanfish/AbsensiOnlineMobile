@@ -1,0 +1,44 @@
+.transAbu{
+    background-color: #2c2c2c78;
+    color: white;
+}
+
+.merahGrad{
+    background-image: linear-gradient(to left, #f09999, #e37976, #d35a53, #c0382f, #aa0707);
+}
+
+.orageGrad{
+    background-image: linear-gradient(to left, #fdc99a, #ffb778, #ffa457, #ff9034, #ff7a00);
+}
+
+.abuGrad {
+    background-image: linear-gradient(to left, #d6d6d5, #b9b8b7, #9c9b9b, #7f7f7f, #646464);
+}
+
+.abuMudaGrad{
+    background-image: linear-gradient(to right top, #dedede, #e6e6e6, #eeeeee, #f7f7f7, #ffffff);
+}
+
+.birumudaGrad {
+    background-image: linear-gradient(to right top, #b8e2f9, #95d3fa, #71c4fc, #49b3fe, #00a2ff);
+}
+
+.biruSangatmudaGrad {
+    background-image: linear-gradient(to right top, #ffffff, #f3f5ff, #e1edff, #c9e6ff, #ace1ff);
+}
+
+.hijauMudaGrad{
+    background-image: linear-gradient(to right bottom, #a6d584, #a6d584, #a6d584, #a6d584, #a6d584, #a3d97e, #a0dc77, #9de070, #94e85f, #8af04d, #7ef734, #6fff00);
+}
+
+.hijauMudaGrad1{
+    background: rgb(78,176,1);
+background: linear-gradient(180deg, rgba(78,176,1,1) 14%, rgba(113,180,61,1) 36%, rgba(151,226,91,1) 100%);
+}
+
+
+.putihTrans{
+    background-color: rgba(255, 255, 255, 0.39);
+}
+
+

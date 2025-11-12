@@ -1,0 +1,48 @@
+{
+  "name": "absensi",
+  "version": "1.2.9",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.0.0",
+    "core-js": "^3.6.4",
+    "joi": "^14.3.1",
+    "quasar": "^1.0.0",
+    "register-service-worker": "^1.7.1",
+    "sass": "^1.56.1",
+    "socket.io-client": "^2.2.0",
+    "sweetalert2": "^11.0.18",
+    "uniqid": "^5.0.3",
+    "vue": "^2.6.11",
+    "vue-browser-geolocation": "^1.8.0",
+    "vue-html-to-paper": "^1.4.4",
+    "vue-multi-date-picker": "^1.5.0",
+    "vue-pdf-app": "^2.1.0",
+    "vue-router": "^3.1.6",
+    "vue-search-select": "^2.9.5",
+    "vue-session": "^1.0.0",
+    "vue-sweetalert2": "^1.6.3",
+    "vue2-autocomplete-js": "^0.2.2",
+    "vue2-editor": "^2.10.3",
+    "vue2-google-maps": "^0.10.7",
+    "vuex": "^3.1.3"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.4.0",
+    "@vue/cli-plugin-pwa": "^4.4.0",
+    "@vue/cli-service": "^4.4.0",
+    "babel-plugin-transform-imports": "1.5.0",
+    "postcss-rtl": "^1.2.3",
+    "sass-loader": "^8.0.2",
+    "vue-cli-plugin-quasar": "^2.0.2",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 3 versions",
+    "not dead"
+  ]
+}
