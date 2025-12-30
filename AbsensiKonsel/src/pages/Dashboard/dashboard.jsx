@@ -153,7 +153,7 @@ const Dashboard = () => {
             <View style={{ flex: 1 }}>
                 <View style={Stylex.titleContainer}>
                     <Text style={[Stylex.h_title1, Stylex.shaddowText]}>Selamat Datang</Text>
-                    <Text style={Stylex.h_title2}>Kiken Sukma Batara, S.Si.,MT</Text>
+                    <Text style={Stylex.h_title2}>Kiken Sukma Batara, S.Si.,MTx</Text>
 
 
                     <Text style={[Stylex.shaddowText, { paddingTop: 1, fontWeight: 'bold', fontSize: 14, color: 'white' }]}>
