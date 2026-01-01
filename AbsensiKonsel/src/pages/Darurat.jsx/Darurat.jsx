@@ -3,14 +3,16 @@ import React, { useState } from 'react';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
 import CheckBox from '@react-native-community/checkbox';
-// import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+
+
 
 
 
 const { height, width } = Dimensions.get('window');
 
 const Darurat = () => {
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
   const [isChecked, setIsChecked] = useState(false);
   const [text, setText] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -64,6 +66,7 @@ const Darurat = () => {
     setModalVisible(false);
     setSelectedItem(null);
   };
+
 
   const handleAction = (action) => {
     console.log(`${action} clicked for item ID:`, selectedItem?.id);
@@ -121,10 +124,11 @@ const Darurat = () => {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={{ position: 'absolute', bottom: 16, right: 26, elevation: 5, }} onPress={() => console.log('FAB Pressed')} >
+      <TouchableOpacity onPress={() => { navigation.navigate("MainPage", { screen: "DaruratForm" }); }} style={{ position: 'absolute', bottom: 16, right: 26, elevation: 5, }}>
         <ImageLib style={{ width: 61, height: 61 }} urix={require('../../assets/images/icon/addBtn.png')} />
       </TouchableOpacity>
 
+      {/* <Text>asda</Text> */}
       <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
         <View style={Stylex.overlay}>
           <View style={Stylex.popup}>
@@ -150,6 +154,8 @@ const Darurat = () => {
           </View>
         </View>
       </Modal>
+
+
     </View>
 
 

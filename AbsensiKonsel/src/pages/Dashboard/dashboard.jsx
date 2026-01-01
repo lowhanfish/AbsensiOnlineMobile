@@ -188,7 +188,7 @@ const Dashboard = () => {
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>999</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.navButtonSubContainer}>
+                                    <TouchableOpacity onPress={() => routex('Darurat')} style={styles.navButtonSubContainer}>
                                         <View>
                                             <ImageLib urix={require('../../assets/images/icon/darurat.png')} style={styles.navButtonImage1} />
                                         </View>
