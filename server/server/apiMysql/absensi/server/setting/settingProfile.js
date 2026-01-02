@@ -41,28 +41,28 @@ router.post('/view', (req, res) => {
 });
 
 
-router.post('/addData',upload.single("file"), (req,res)=>{
-    // console.log(req.body)
-    // console.log(req.file);
-    // var insert = '';
+// router.post('/addData',upload.single("file"), (req,res)=>{
+//     // console.log(req.body)
+//     // console.log(req.file);
+//     // var insert = '';
 
-    var data = req.user.profile
-    var NIP = data.NIP
+//     var data = req.user.profile
+//     var NIP = data.NIP
     
-    var insert = `INSERT INTO fotosample (file, nip) 
-    VALUES ('`+req.file.filename+`' ,'`+NIP+`' )
-    `;
+//     var insert = `INSERT INTO fotosample (file, nip) 
+//     VALUES ('`+req.file.filename+`' ,'`+NIP+`' )
+//     `;
   
-    db.query(insert, (err, row)=>{
-        if(err) {
-            console.log(err);
-            res.send(err);
-        }else{
-            res.send(row);
-        }
-    })
-    // console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-});
+//     db.query(insert, (err, row)=>{
+//         if(err) {
+//             console.log(err);
+//             res.send(err);
+//         }else{
+//             res.send(row);
+//         }
+//     })
+//     // console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+// });
 
 
 

@@ -14,6 +14,8 @@ var upload = require('../../../../db/multer/pdf');
 
 router.post('/view', (req, res) => {
 
+    // console.log('=================================================================');
+    console.log(req.body);
 
     var data_batas = 8;
 

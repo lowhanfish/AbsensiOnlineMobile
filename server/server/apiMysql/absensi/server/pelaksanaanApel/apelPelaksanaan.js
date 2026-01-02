@@ -8,11 +8,6 @@ var upload = require('../../../../db/multer/pdf');
 var uniqid = require('uniqid');
 const router = express.Router();
 
-var fetch = require('node-fetch');
-const configurasi = require('../../../library/configurasi');
-const url_micro_7 = configurasi.url_micro_7
-
-
 
 
 
@@ -227,130 +222,107 @@ router.post('/view', (req, res) => {
 
 
 
-router.post('/viewList', async (req, res) => {
+router.post('/viewList', (req, res) => {
     // console.log(req.body)
-    // var data_batas = 10;
-    // if (req.body.page_limit == null || req.body.page_limit == undefined || req.body.page_limit == '') {
-    //     data_batas = 10
-    // } else {
-    //     data_batas = req.body.page_limit
-    // }
-
-    // var data_star = (req.body.data_ke - 1)* data_batas;
-    // var cari = req.body.cari_value;
-    // var halaman = 1; 
-
-    // let jml_data = `
-    //     SELECT 
-    //     jadwalapel.* 
-    //     FROM absensi.jadwalapel jadwalapel
-
-    //     JOIN egov.users users
-    //     ON jadwalapel.createdBy = users.id
-
-    //     JOIN simpeg.biodata biodata
-    //     ON users.nama_nip = biodata.nip
-
-    //     JOIN simpeg.unit_kerja unit_kerja
-    //     ON jadwalapel.unit_kerja = unit_kerja.id
-
-
-    //     WHERE 
-    //     jadwalapel.uraian LIKE '%`+cari+`%' 
-    // `
-
-    // let view = `
-    //     SELECT 
-    //     jadwalapel.*,
-    //     jenisapel.uraian as jenisapel_uraian, 
-    //     biodata.nama as biodata_nama,
-    //     biodata.nip as biodata_nip,
-    //     unit_kerja.unit_kerja as unit_kerja_unit_kerja
-
-
-
-    //     FROM absensi.jadwalapel jadwalapel
-
-    //     LEFT JOIN absensi.jenisapel jenisapel
-    //     ON jadwalapel.jenisapel = jenisapel.id
-
-    //     LEFT JOIN egov.users users
-    //     ON jadwalapel.createdBy = users.id
-
-    //     LEFT JOIN simpeg.biodata biodata
-    //     ON users.nama_nip = biodata.nip
-
-    //     LEFT JOIN simpeg.unit_kerja unit_kerja
-    //     ON jadwalapel.unit_kerja = unit_kerja.id
-
-
-    //     WHERE 
-    //     jadwalapel.uraian LIKE '%`+cari+`%' 
-    //     ORDER BY jadwalapel.id DESC
-    //     LIMIT `+data_star+`,`+data_batas+`
-    // `
-
-
-    // // var akses_menu = req.menu_akses
-    // // const levelAkses = akses_menu.find(({ route }) => route === '/apelPelaksanaan');
-
-    // // if (levelAkses.readx == 1) {
-
-    // // } else {
-    // //     res.json("ANDA TIDAK MEMILIKI HAK AKSES..!!")
-    // // }
-
-
-
-    // db.query(jml_data, (err, row)=>{
-    //     if (err) {
-    //         // console.log(err)
-    //         res.json(err)
-    //     }else{
-    //         halaman = Math.ceil(row.length/data_batas);
-    //         if(halaman<1){halaman = 1}
-    //         // ========================
-    //         db.query(view, (err2, result)=>{
-    //             if (err2) {
-    //                 // console.log(err2)
-    //                 res.json(err)
-    //             }
-    //             else{
-    //                 halaman = Math.ceil(row.length/data_batas);
-    //                 if(halaman<1){halaman = 1}
-    //                 res.json({
-    //                     data : result,
-    //                     jml_data : halaman
-    //                 })
-    //             }
-    //         })
-    //         // ========================
-
-    //     }
-    // })
-
-
-    const body = req.body;
-    body.user_id = req.user._id
-    try {
-        const response = await fetch(url_micro_7+'/micro_7/apelPelaksanaan/viewList', {
-            method: 'post',
-            body: JSON.stringify(body),
-            headers: {'Content-Type': 'application/json'}
-        });
-        const data = await response.json();
-        // console.log(data);
-        // console.log("DATA DI DAPAT");
-        res.json(data)
-    } catch (error) {
-        console.log("Respon error dari absensi/server/apelPelaksanaan/apelPelaksanaan.js, utk server Kominfo");
-        res.json({})
+    var data_batas = 10;
+    if (req.body.page_limit == null || req.body.page_limit == undefined || req.body.page_limit == '') {
+        data_batas = 10
+    } else {
+        data_batas = req.body.page_limit
     }
 
+    var data_star = (req.body.data_ke - 1)* data_batas;
+    var cari = req.body.cari_value;
+    var halaman = 1; 
+
+    let jml_data = `
+        SELECT 
+        jadwalapel.* 
+        FROM absensi.jadwalapel jadwalapel
+
+        JOIN egov.users users
+        ON jadwalapel.createdBy = users.id
+
+        JOIN simpeg.biodata biodata
+        ON users.nama_nip = biodata.nip
+
+        JOIN simpeg.unit_kerja unit_kerja
+        ON jadwalapel.unit_kerja = unit_kerja.id
+
+
+        WHERE 
+        jadwalapel.uraian LIKE '%`+cari+`%' 
+    `
+
+    let view = `
+        SELECT 
+        jadwalapel.*,
+        jenisapel.uraian as jenisapel_uraian, 
+        biodata.nama as biodata_nama,
+        biodata.nip as biodata_nip,
+        unit_kerja.unit_kerja as unit_kerja_unit_kerja
 
 
 
+        FROM absensi.jadwalapel jadwalapel
 
+        LEFT JOIN absensi.jenisapel jenisapel
+        ON jadwalapel.jenisapel = jenisapel.id
+
+        LEFT JOIN egov.users users
+        ON jadwalapel.createdBy = users.id
+
+        LEFT JOIN simpeg.biodata biodata
+        ON users.nama_nip = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON jadwalapel.unit_kerja = unit_kerja.id
+
+
+        WHERE 
+        jadwalapel.uraian LIKE '%`+cari+`%' 
+        ORDER BY jadwalapel.id DESC
+        LIMIT `+data_star+`,`+data_batas+`
+    `
+
+
+    // var akses_menu = req.menu_akses
+    // const levelAkses = akses_menu.find(({ route }) => route === '/apelPelaksanaan');
+
+    // if (levelAkses.readx == 1) {
+
+    // } else {
+    //     res.json("ANDA TIDAK MEMILIKI HAK AKSES..!!")
+    // }
+
+
+
+    db.query(jml_data, (err, row)=>{
+        if (err) {
+            // console.log(err)
+            res.json(err)
+        }else{
+            halaman = Math.ceil(row.length/data_batas);
+            if(halaman<1){halaman = 1}
+            // ========================
+            db.query(view, (err2, result)=>{
+                if (err2) {
+                    // console.log(err2)
+                    res.json(err)
+                }
+                else{
+                    halaman = Math.ceil(row.length/data_batas);
+                    if(halaman<1){halaman = 1}
+                    res.json({
+                        data : result,
+                        jml_data : halaman
+                    })
+                }
+            })
+            // ========================
+
+        }
+    })
 });
 
 

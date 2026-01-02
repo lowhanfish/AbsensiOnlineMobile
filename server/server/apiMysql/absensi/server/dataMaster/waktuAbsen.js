@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.get('/aa', (req, res) => {
 
-    // console.log(req.body)
+    console.log(req.body)
     res.send('oke')
 
 });
@@ -60,7 +60,7 @@ router.post('/Add', (req, res) => {
 
 
 router.post('/view', (req, res) => {
-    // console.log(req.body)
+    console.log(req.body)
     var data_batas = 6;
     var data_star = (req.body.data_ke - 1)* data_batas;
     var cari = req.body.cari_value;
@@ -85,7 +85,7 @@ router.post('/view', (req, res) => {
 
     var akses_menu = req.menu_akses
     const levelAkses = akses_menu.find(({ route }) => route === '/waktuAbsen');
-    // console.log(levelAkses);
+    console.log(levelAkses);
 
     if (levelAkses.readx == 1) {
         db.query(jml_data, (err, row)=>{

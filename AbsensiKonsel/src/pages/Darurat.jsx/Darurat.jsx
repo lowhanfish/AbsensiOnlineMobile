@@ -1,4 +1,4 @@
-import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Image } from "react-native"
 import React, { useEffect, useState } from 'react';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
@@ -41,7 +41,7 @@ const Darurat = () => {
     // console.log(URL.URL_AbsenHarian + 'viewListDarurat');
     // console.log("token :", token)
 
-    axios.post(URL.URL_AbsenHarian + 'viewListDarurat', JSON.stringify({
+    axios.post(URL.URL_AbsenHarian + 'viewListDarurat_v2', JSON.stringify({
       data_ke: pageFirst,
       cari_value: cariValue
     }), {
@@ -81,25 +81,27 @@ const Darurat = () => {
   ];
 
   const getBackgroundColor = (status) => {
-    switch (status) {
-      case '1':
-        return '#FFF8E0';
-      case '2':
-        return '#F7EEFF';
-      case '3':
-        return '#FFE0E0';
+    const statusStr = String(status);
+    if (statusStr === '1') {
+      return '#FFF8E0';
+    } else if (statusStr === '2') {
+      return '#F7EEFF';
+    } else if (statusStr === '3') {
+      return '#FFE0E0';
     }
+    return '#FFF8E0'; // default
   };
 
   const getStatusImage = (status) => {
-    switch (status) {
-      case '1':
-        return require('../../assets/images/icon/process.png');
-      case '2':
-        return require('../../assets/images/icon/true.png');
-      case '3':
-        return require('../../assets/images/icon/false.png');
+    const statusStr = String(status);
+    if (statusStr === '1') {
+      return require('../../assets/images/icon/process.png');
+    } else if (statusStr === '2') {
+      return require('../../assets/images/icon/true.png');
+    } else if (statusStr === '3') {
+      return require('../../assets/images/icon/false.png');
     }
+    return require('../../assets/images/icon/process.png'); // default
   };
 
   const openPopup = (item) => {
@@ -163,14 +165,15 @@ const Darurat = () => {
                   <ImageLib urix={require('../../assets/images/icon/filter.png')} style={Stylex.icon} />
                 </TouchableOpacity>
               </View>
-              {data.map((item) => (
+              {listData.map((item) => (
                 <TouchableOpacity key={item.id} onPress={() => openPopup(item)} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
                   <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
                   <View style={Stylex.textContent}>
-                    <Text style={Stylex.titleContent}>ABSENSI DARURAT</Text>
+                    <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
                     <Text style={[Stylex.dateContent]}>20 Sep 2025 - 22 Sept 2025</Text>
-                    <Text style={Stylex.nameContent}>Kiken Sukma Batara, S.Si.,MT</Text>
+                    <Text style={Stylex.nameContent}>Kiken Sukma Batara, S.Si.,MT </Text>
                   </View>
+
                   <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
                 </TouchableOpacity>
               ))}

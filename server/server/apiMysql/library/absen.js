@@ -35,6 +35,7 @@ const AddAbsenHarian = (req, res, db, jam, dd, mm, yy)=>{
             '`+req.body.unit_kerja+`',
             '`+req.user._id+`'
         )
+        
     `
     
     db.query(query, (err2, rows2)=>{

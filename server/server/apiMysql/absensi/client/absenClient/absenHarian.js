@@ -34,8 +34,8 @@ router.post('/Add', async (req, res) => {
     body.lokasi_absen_unit = profile_login.lokasi_absen
     body._id = req.user._id
 
-    // console.log("ABSEN HARIAN DI PANGGIL");
-    // console.log(body);
+     console.log("ABSEN HARIAN DI PANGGIL");
+     console.log(body);
 
     try {
         const response = await fetch(url_micro_4+'/micro_4/Add_Absen/Add', {
@@ -56,10 +56,14 @@ router.post('/Add', async (req, res) => {
 });
 
 router.post('/AddIzin', upload.array('file', 12), (req, res) => {
+
+    console.log("Add Darurat/izin dipanggil");
+    console.log("===========================================");
     // console.log(req)
     // console.log(req.file)
-    // console.log(req.body)
+    console.log(req.body)
     // console.log(req.files)
+    console.log("===========================================");
     var fileRef = uniqid();
     libIzin.addIzin(req, res, db, fileRef);
 
@@ -157,16 +161,14 @@ router.post('/viewListIzin', (req, res) => {
 
         }
     })
-
-
-    // res.send("WOW")
-
-
 });
 
+
+
+// DI GUNAKAN PADA ABSENSI VERSI LAMA (TANPA FACE ID)
 router.post('/viewListDarurat', (req, res) => {
-    console.log("viewListDarurat dipanggil")
-    console.log(req.body);
+    console.log("LIST DARURAT DI PANGGIL")
+    console.log(req.body)
     var data_batas = 5;
     var data_star = (req.body.data_ke - 1)* data_batas;
     var cari = req.body.cari_value;
@@ -175,7 +177,7 @@ router.post('/viewListDarurat', (req, res) => {
 
     let jml_data = `
         SELECT 
-        count(usulanizin.id) as jumlah
+        COUNT(usulanizin.id) as jumlah
 
         FROM absensi.usulanizin usulanizin
 
@@ -185,8 +187,6 @@ router.post('/viewListDarurat', (req, res) => {
         LEFT JOIN simpeg.unit_kerja unit_kerja
         ON usulanizin.unit_kerja = unit_kerja.id
 
-        LEFT JOIN absensi.jenisizin jenisizin
-        ON  usulanizin.jenisizin = jenisizin.id
 
         LEFT JOIN absensi.jeniskategori jeniskategori
         ON  usulanizin.jenisKategori = jeniskategori.id
@@ -196,7 +196,9 @@ router.post('/viewListDarurat', (req, res) => {
         usulanizin.jenisKategori <> 0 AND
         (jeniskategori.uraian LIKE '%`+cari+`%' 
         OR biodata.nama LIKE '%`+cari+`%'
-        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%'
+        ) 
+
     `
 
     let view = `
@@ -222,46 +224,35 @@ router.post('/viewListDarurat', (req, res) => {
         LEFT JOIN absensi.jeniskategori jeniskategori
         ON  usulanizin.jenisKategori = jeniskategori.id
 
+
         WHERE 
         usulanizin.jenisKategori <> 0 AND
         (jeniskategori.uraian LIKE '%`+cari+`%' 
         OR biodata.nama LIKE '%`+cari+`%'
-        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%''
+        ) 
         AND usulanizin.createdBy = '`+req.user._id+`'
 
         
         ORDER BY usulanizin.createdAt DESC
-        LIMIT 8
+        LIMIT 10
     `
-
-
     db.query(jml_data, (err, row)=>{
-        console.log("aaaa")
-
-
         if (err) {
-            console.log("ada error1")
             console.log(err)
             res.json(err)
         }else{
-            halaman = Math.ceil(row[0].jumlah/data_batas);
+            halaman = Math.ceil(row.length/data_batas);
             if(halaman<1){halaman = 1}
             // ========================
             db.query(view, (err2, result)=>{
-
-
-
-
                 if (err2) {
                     console.log(err2)
                     res.json(err2)
                 }
                 else{
-                    halaman = Math.ceil(row.length/data_batas);
+                    halaman = Math.ceil(row[0].jumlah/data_batas);
                     if(halaman<1){halaman = 1}
-
-                    console.log(result)
-
                     res.json({
                         data : result,
                         jml_data : halaman
@@ -269,6 +260,108 @@ router.post('/viewListDarurat', (req, res) => {
                 }
             })
             // ========================
+
+        }
+    })
+});
+
+
+// DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
+router.post('/viewListDarurat_v2', (req, res) => {
+    console.log("LIST DARURAT DI PANGGIL")
+    console.log(req.body)
+    var data_batas = 5;
+    var data_star = (req.body.data_ke - 1)* data_batas;
+    var cari = req.body.cari_value;
+    var halaman = 1; 
+
+
+    let jml_data = `
+        SELECT 
+        COUNT(usulanizin.id) as jumlah
+
+        FROM absensi.usulanizin usulanizin
+
+        LEFT JOIN simpeg.biodata biodata
+        ON usulanizin.NIP = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON usulanizin.unit_kerja = unit_kerja.id
+
+
+        LEFT JOIN absensi.jeniskategori jeniskategori
+        ON  usulanizin.jenisKategori = jeniskategori.id
+
+
+        WHERE 
+        usulanizin.jenisKategori <> 0 AND
+        (jeniskategori.uraian LIKE '%`+cari+`%' 
+        OR biodata.nama LIKE '%`+cari+`%'
+        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%'
+        ) 
+
+    `
+
+    let view = `
+        SELECT usulanizin.*,
+        jenisizin.uraian as jenisizin_uraian,
+        biodata.nama as biodata_nama,
+        biodata.gelar_belakang as biodata_gelar_belakang,
+        biodata.gelar_depan as biodata_gelar_depan,
+        unit_kerja.unit_kerja as unit_kerja_uraian,
+        jeniskategori.uraian as jeniskategori_uraian
+
+        FROM absensi.usulanizin usulanizin
+
+        LEFT JOIN simpeg.biodata biodata
+        ON usulanizin.NIP = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON usulanizin.unit_kerja = unit_kerja.id
+
+        LEFT JOIN absensi.jenisizin jenisizin
+        ON  usulanizin.jenisizin = jenisizin.id
+
+        LEFT JOIN absensi.jeniskategori jeniskategori
+        ON  usulanizin.jenisKategori = jeniskategori.id
+
+
+        WHERE 
+        usulanizin.jenisKategori <> 0 AND
+        (jeniskategori.uraian LIKE '%`+cari+`%' 
+        OR biodata.nama LIKE '%`+cari+`%'
+        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%''
+        ) 
+        AND usulanizin.createdBy = '`+req.user._id+`'
+
+        
+        ORDER BY usulanizin.createdAt DESC
+        LIMIT 10
+    `
+    db.query(jml_data, (err, row)=>{
+        if (err) {
+            console.log(err)
+            res.json(err)
+        }else{
+            halaman = Math.ceil(row.length/data_batas);
+            if(halaman<1){halaman = 1}
+            // ========================
+            db.query(view, (err2, result)=>{
+                if (err2) {
+                    console.log(err2)
+                    res.json(err2)
+                }
+                else{
+                    halaman = Math.ceil(row[0].jumlah/data_batas);
+                    if(halaman<1){halaman = 1}
+                    res.json({
+                        data : result,
+                        jml_data : halaman
+                    })
+                }
+            })
+            // ========================
+
         }
     })
 });
@@ -290,15 +383,6 @@ router.post('/AddMockLocation', (req, res) => {
             })
         }
    })
-
-    // res.send([
-    //     {id:1, uraian:'qoq1'},
-    //     {id:2, uraian:'qoq2'},
-    //     {id:3, uraian:'qoq3'},
-
-    // ])
-
-
 });
 
 router.post('/statistik', async (req, res) => {

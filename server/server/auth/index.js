@@ -26,13 +26,11 @@ const schema = Joi.object().keys({
 
 router.get('/', (req, res) => {
     res.json({
-        message: 'kiken-login cess'
+        message: 'kiken-login'
     });
 });
 
 router.post('/signup', (req, res, next) => {
-
-    console.log("SIGN UP ASSU")
 
     const request = {
         username : req.body.username,
@@ -106,8 +104,8 @@ function respondError422(res, next, text){
 }
 
 router.post('/login', async(req, res, next) =>{
-    console.log("ADA YG LOGIN")
-    console.log("INI DATANYA")
+    // console.log("ADA YG LOGIN")
+    // console.log("INI DATANYA")
     // console.log(req.body)
 
     const result = Joi.validate(req.body, schema);

@@ -40,6 +40,7 @@ router.post('/view', (req, res) => {
         
         (
             jenisLokasi.jeniskategorilokasi = 1 AND jenisLokasi.unit_kerja = '`+req.body.unit_kerja+`'
+            
         )
         OR
         (
@@ -59,6 +60,11 @@ router.post('/view', (req, res) => {
     })
     // ========================
 });
+
+
+
+
+
 
 
 module.exports = router;

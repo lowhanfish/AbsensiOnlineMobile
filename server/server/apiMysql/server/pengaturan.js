@@ -16,6 +16,10 @@ const router = express.Router();
 router.post('/aa', (req, res) => {
 
     console.log(req.body)
+
+
+
+
     res.send('oke')
 
 });

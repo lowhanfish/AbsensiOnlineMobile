@@ -22,7 +22,7 @@ router.get('/aa', (req, res) => {
 
 
 router.post('/Add', (req, res) => {
-    // console.log(req.body)
+   //  console.log(req.body)
     var query = `
         INSERT INTO jenisizin (uraian, keterangan, createdBy, createdAt)
         VALUES
@@ -31,11 +31,12 @@ router.post('/Add', (req, res) => {
 
     db.query(query, (err, row)=>{
         if (err) {
-            console.log(err)
+            // console.log(err)
             res.send(err);
         } else {
             // res.status(500).send('Sukses Update');
-            res.send('OK');
+ 	console.log(err);    
+       res.send('OK');
         }
     })
 
@@ -45,7 +46,7 @@ router.post('/Add', (req, res) => {
 
 
 router.post('/view', async (req, res) => {
-   
+//	console.log(req.user)   
     const body = req.body;
     try {
         const response = await fetch(url_micro_1+'/api/v1/presensi_lapHarian/view', {

@@ -35,7 +35,16 @@ var upload = multer({
         // cb(null, true);
 
 
-            if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg" || file.mimetype == "application/pdf") {
+            if (file.mimetype == "image/png" ||
+                file.mimetype == "image/jpg" ||
+                file.mimetype == "image/jpeg" ||
+              //  file.mimetype == "video/mp4" ||
+              //  file.mimetype == "video/webm" ||
+              //  file.mimetype == "video/mpeg" ||
+              //  file.mimetype == "video/quicktime" ||
+             //   file.mimetype == "video/H264" ||
+                file.mimetype == "application/pdf"
+            ) {
                 cb(null, true);
             } else {
                 console.log('salah file')

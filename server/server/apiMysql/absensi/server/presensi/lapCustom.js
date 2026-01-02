@@ -170,9 +170,6 @@ router.post('/view', async (req, res) => {
 
     console.log(req.body);
     const body = req.body;
-    
-    let ccccw = url_micro_1+'/api/v1/presensi_lapCustom/view'
-
     try {
         const response = await fetch(url_micro_1+'/api/v1/presensi_lapCustom/view', {
             method: 'post',
@@ -180,6 +177,7 @@ router.post('/view', async (req, res) => {
             headers: {'Content-Type': 'application/json'}
         });
         const data = await response.json();
+        // console.log(data)
         res.json(data)
     } catch (error) {
         console.log(error);

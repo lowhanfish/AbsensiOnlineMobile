@@ -7,54 +7,35 @@ var fetch = require('node-fetch');
 const configurasi = require('../apiMysql/library/configurasi');
 const url_micro_2 = configurasi.url_micro_2
 
-function checkTokenSeetUser(req, res, next){
-     const authHeader = req.get('authorization');
-
-     // console.log(authHeader);
-
-     // if (authHeader) {
-     //      // jika ada authorization yang dikirim client melalui headers
-     //      // dan karena token yang dikirim dipisahkan spasi maka kita pisahkan bagiannya
-     //      const token = authHeader.split(' ')[1];
-     //      if (token) {
-     //           // jika tokennya ada
-     //           // maka lakukan verifikasi terhadap token tersebut
-     //           jwt.verify(token, process.env.TOKEN_SECRET, function(error, user) {
-     //                if (error) {
-     //                     // console.log(error);
-     //                }
-
-     //                // Jika tidak ada error selanjutnya token di dapatkan
-     //                // akan di terjemakan ke identitas user clien
-     //                req.user = user;
-     //                next()
-     //           });
-     //      }else{
-     //           next();
-     //      }
-
-     // }else{
-
-     //      next();
-     // }
+//const http = require("http")
 
 
 
 
 
-     if (authHeader == null || authHeader == undefined || authHeader == '' ) {
-          next();
+async function checkTokenSeetUser(req, res, next){
+       
+
+
+	const authHeader = await req.get('authorization');
+
+	if (authHeader == null || authHeader == undefined || authHeader == '' ) {
+         
+		console.log('tidak ada header')
+	 	next();
           
-     }else{
-          const token = authHeader.split(' ')[1];
-          if (token) {
-               jwt.verify(token, process.env.TOKEN_SECRET, function(error, user) {
-                    if (error) {
-                         console.log(error);
-                    }
+	 }else{
 
-                    req.user = user;
-                    next()
+		console.log('ada header')
+          	const token = authHeader.split(' ')[1];
+          	if (token) {
+               		jwt.verify(token, process.env.TOKEN_SECRET, function(error, user) {
+                    		if (error) {
+                         	console.log(error);
+                    		}
+
+                    	req.user = user;
+                    	next()
                });
           }else{
                next();
@@ -81,7 +62,13 @@ function isLoggedIn(req, res, next){
 
 async function sideMenuMidleware(req, res, next){
 
+
+     // console.log(url_micro_2+'/micro_2/getAuthorisation')
+    // console.log(req.user);
+
      var profile = req.user.profile
+
+
           // var query = `
           //      SELECT 
           //      menu_klp_list.*,
@@ -104,12 +91,20 @@ async function sideMenuMidleware(req, res, next){
           //      }
           // })
 
+
+          
+
+          
+
      const body = {
           profile_absensi : profile.absensi,
           yahoo : 'ssss'
      };
 
+
     try {
+
+
         const response = await fetch(url_micro_2+'/micro_2/getAuthorisation/view', {
             method: 'post',
             body: JSON.stringify(body),
@@ -117,14 +112,23 @@ async function sideMenuMidleware(req, res, next){
         });
         const data = await response.json();
 
+
+     //    console.log(data);
         req.menu_akses = data
         next();
+
 
     } catch (error) {
         console.log("Respon error dari absensi/server/presensi/lapHarian.js, utk server Kominfo Micro 2");
         res.json([])
     }
 
+
+    
+
+
+
+          // console.log(profile.absensi);
 }
 
 

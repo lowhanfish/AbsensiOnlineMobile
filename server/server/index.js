@@ -112,12 +112,13 @@ app.use('/uploads', express.static(path.join(__dirname, './uploads')))
       app.use('/api/v1/presensi_lapBulanan', middleware.isLoggedIn, presensi_lapBulanan);
       const presensi_lapTahunan = require('./apiMysql/absensi/server/presensi/lapTahunan');
       app.use('/api/v1/presensi_lapTahunan', middleware.isLoggedIn, presensi_lapTahunan);
+
       const presensi_lapCustom = require('./apiMysql/absensi/server/presensi/lapCustom');
       app.use('/api/v1/presensi_lapCustom', middleware.isLoggedIn, presensi_lapCustom);
 
       const presensi_lapCustom_v2 = require('./apiMysql/absensi/server/presensi/lapCustom_v2');
       app.use('/api/v1/presensi_lapCustom_v2', middleware.isLoggedIn, middleware.sideMenuMidleware, presensi_lapCustom_v2);
-      
+
       const presensi_lapPersonal = require('./apiMysql/absensi/server/presensi/lapPersonal');
       app.use('/api/v1/presensi_lapPersonal', middleware.isLoggedIn, presensi_lapPersonal);
 

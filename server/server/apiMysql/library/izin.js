@@ -17,15 +17,15 @@ function convertStringToDatex(d){
 }
 
 const addIzin = (req, res, db, fileRef)=>{
-    // console.log('NABLRRRRRRRRRRRRRRRRRRRRR')
     var filex = req.files;    
     var datax = req.body;
-
-    // console.log(datax)
-    // console.log(req.files);
+    
+    console.log('0000000000000000000000000000000000000000000000000000000')
+    console.log(datax)
+    console.log(req.files);
+    console.log('1111111111111111111111111111111111111111111111111111111')
 
     convertStringToDatex(datax.TglMulai)
-    // console.log('111111111111111111111111')
 
     var queryx = `
         INSERT INTO usulanizin
@@ -62,7 +62,10 @@ const addIzin = (req, res, db, fileRef)=>{
             console.log(err)
         } else {
             // console.log("tidak errorrrrr")
+
             uploadLampiran(req, res, db, fileRef, filex)
+
+
         }
     })
 

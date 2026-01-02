@@ -132,7 +132,7 @@ router.post('/view', (req, res) => {
 
 router.post('/signup', (req, res, next) => {
 
-    // console.log(req.body)
+    console.log(req.body)
 
     const request = {
         username: req.body.username,
@@ -140,7 +140,7 @@ router.post('/signup', (req, res, next) => {
     }
 
     const result = Joi.validate(request, schema);
-    // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
     if (result.error === null) {
 
@@ -283,7 +283,7 @@ router.post('/signup', (req, res, next) => {
 
 router.post('/editData', (req, res) => {
 
-    // console.log(req.body)
+    console.log(req.body)
     console.log("ASSSSSSSSSSSSSSSUU")
     var query = `
         UPDATE users SET

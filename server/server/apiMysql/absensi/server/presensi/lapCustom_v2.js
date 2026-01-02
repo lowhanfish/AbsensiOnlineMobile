@@ -9,6 +9,11 @@ const configurasi = require('../../../library/configurasi');
 const url_micro_8 = configurasi.url_micro_8
 
 
+
+
+
+
+
 router.post('/list', async (req, res)=>{
     // console.log("VIEW LIST DETILE PERUBAHAN ABSEN DIPANGGING (lapCustom_v2)")
 
@@ -44,51 +49,42 @@ router.post('/list', async (req, res)=>{
 
 })
 
+
+
+
+
+
 router.post('/UpdateAll', async (req, res)=>{
 
+//di non-aktifkan sementara
 
-    var data = req.body
-    var biodata  =  await getBioData(data[0])
+//    var data = req.body   
+//    var biodata  =  await getBioData(data[0])
 
-    console.log(biodata)
+//    console.log(biodata)
 
-    for (let i = 0; i < data.length; i++) {
+//    for (let i = 0; i < data.length; i++) {
         
         
 
-        if (data[i].inject == true) {
-            console.log("INJEKSI")
-            console.log(data[i].inject)
-            await updateData (data[i], req, biodata)
-        } 
+//        if (data[i].inject == true) {
+//            console.log("INJEKSI")
+//            console.log(data[i].inject)
+//            await updateData (data[i], req, biodata)
+//        } 
 
         
-    }
+//    }
 
 
 
     res.send("OK")
 
-    // var akses_menu = req.menu_akses
-    // const levelAkses = akses_menu.find(({ route }) => route === '/lapCustom_v2');
-
-    // console.log(levelAkses)
-
-
-    // if (levelAkses.updatex == 1) {
-
-    //     await updateData (req.body, req)
-    //     res.send("Sukses")
-
-    // }else {
-    //     res.json({
-    //         icon : 'check_circle_outline',
-    //         color : 'red',
-    //         ket : 'Anda tidak memiliki hak akses ini... 🙏',
-    //     })
-    // }
-
 })
+
+
+
+
 
 router.post('/Update', async (req, res)=>{
 
@@ -101,18 +97,19 @@ router.post('/Update', async (req, res)=>{
     console.log(levelAkses)
 
 
-    // if (levelAkses.updatex == 1) {
+    if (levelAkses.updatex == 1) {
 
-        await updateData (req.body, req, biodata)
+       // Di bawah dinonaktifkan sementara
+       // await updateData (req.body, req, biodata)
         res.send("Sukses")
 
-    // }else {
-    //     res.json({
-    //         icon : 'check_circle_outline',
-    //         color : 'red',
-    //         ket : 'Anda tidak memiliki hak akses ini... 🙏',
-    //     })
-    // }
+    }else {
+        res.json({
+            icon : 'check_circle_outline',
+            color : 'red',
+            ket : 'Anda tidak memiliki hak akses ini... 🙏',
+        })
+    }
 
 
 
@@ -137,6 +134,8 @@ router.post('/removeData', (req, res)=>{
     `;
     proses_query(query, res);
 })
+
+
 
 async function updateData (data, req, biodata){
 
@@ -221,6 +220,8 @@ async function updateData (data, req, biodata){
 
 }
 
+
+
 async function removeData(data){
 
     return new Promise((resolve, reject) => {
@@ -253,6 +254,7 @@ async function removeData(data){
 
 }
 
+
 async function getBioData(data){
 
     return new Promise((resolve, reject) => {
@@ -283,6 +285,7 @@ async function getBioData(data){
 
 }
 
+
 function proses_query(view, res){
     db.query(view, (err, row)=>{
         if(err) {
@@ -293,5 +296,11 @@ function proses_query(view, res){
         }
     })
 }
+
+
+
+
+
+
 
 module.exports = router;
