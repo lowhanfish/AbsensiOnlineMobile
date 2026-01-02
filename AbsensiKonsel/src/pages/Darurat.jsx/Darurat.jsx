@@ -8,6 +8,8 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ButtonBack from "../../components/ButtonBack";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import LoadingImage from "../../components/LoadingImage";
+
 
 
 
@@ -32,6 +34,7 @@ const Darurat = () => {
   const [listData, setListData] = useState([]);
   const [pageFirst, setPageFirst] = useState(1);
   const [cariValue, setCariValue] = useState('');
+  const [loading, setLoading] = useState(false);
 
 
 
@@ -42,6 +45,8 @@ const Darurat = () => {
     // console.log(URL.URL_AbsenHarian + 'viewListDarurat');
     // console.log("token :", token)
 
+    setLoading(false);
+
     axios.post(URL.URL_AbsenHarian + 'viewListDarurat_v2', JSON.stringify({
       data_ke: pageFirst,
       cari_value: cariValue
@@ -51,11 +56,12 @@ const Darurat = () => {
         "Authorization": `kikensbarara ${token}`
       }
     }).then(result => {
-      console.log("ada hasilnya")
+      setLoading(true);
       console.log(result.data);
       setListData(result.data.data); // Update state with fetched data
     }).catch(error => {
-      console.log("errornya : ", error);
+      setLoading(true);
+      // console.log("errornya : ", error);
     })
     console.log(URL.URL_AbsenHarian + 'viewListDarurat')
 
@@ -144,16 +150,6 @@ const Darurat = () => {
           </View>
 
 
-          <View>
-            <FastImage
-              source={{
-                uri: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWgydG5mNHkzcGEybmtnYjRla3hneXNmN2hxM2RoMnh1YnFhNnI3MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/QRmJC704DProuxlMkG/giphy.gif'
-              }}
-              style={{ width: 200, height: 200 }}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-          </View>
-
           <View style={styles.container} >
             <ImageBackground style={{ flex: 1 }} resizeMode="stretch" source={require('../../assets/images/bg1.png')}>
               <View style={Stylex.daruratHeader}>
@@ -177,18 +173,35 @@ const Darurat = () => {
                   <ImageLib urix={require('../../assets/images/icon/filter.png')} style={Stylex.icon} />
                 </TouchableOpacity>
               </View>
-              {listData.map((item) => (
-                <TouchableOpacity key={item.id} onPress={() => openPopup(item)} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
-                  <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
-                  <View style={Stylex.textContent}>
-                    <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
-                    <Text style={[Stylex.dateContent]}>20 Sep 2025 - 22 Sept 2025</Text>
-                    <Text style={Stylex.nameContent}>Kiken Sukma Batara, S.Si.,MT </Text>
-                  </View>
 
-                  <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
-                </TouchableOpacity>
-              ))}
+
+              {
+                !loading ? (
+                  <LoadingImage />
+                ) : (
+                  <View>
+
+                    {listData.map((item) => (
+                      <TouchableOpacity key={item.id} onPress={() => openPopup(item)} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
+                        <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
+                        <View style={Stylex.textContent}>
+                          <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
+                          <Text style={[Stylex.dateContent]}>20 Sep 2025 - 22 Sept 2025</Text>
+                          <Text style={Stylex.nameContent}>Kiken Sukma Batara, S.Si.,MT </Text>
+                        </View>
+
+                        <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
+                      </TouchableOpacity>
+                    ))}
+
+                  </View>
+                )
+
+
+              }
+
+
+
             </ImageBackground>
           </View>
         </View>

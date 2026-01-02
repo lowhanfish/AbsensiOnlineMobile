@@ -286,6 +286,15 @@ export const Stylex = StyleSheet.create({
         height : 12,
         backgroundColor : '#D0DFFF',
         marginTop : 15,
+    },
+
+    LoadingText : {
+        fontFamily: 'Audiowide-Regular', 
+        fontSize: 30, 
+        fontWeight: 200, 
+        color: '#3B3B3B',
+        marginTop:15
+
     }
 
 });
