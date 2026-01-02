@@ -1,5 +1,6 @@
-import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Image } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
 import React, { useEffect, useState } from 'react';
+import FastImage from 'react-native-fast-image';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
 import CheckBox from '@react-native-community/checkbox';
@@ -140,6 +141,17 @@ const Darurat = () => {
         <View style={{ flex: 1 }}>
           <View style={Stylex.daruratTitle}>
             <Text style={[Stylex.fontTitle, Stylex.shaddowText]}>ABSEN DARURAT</Text>
+          </View>
+
+
+          <View>
+            <FastImage
+              source={{
+                uri: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWgydG5mNHkzcGEybmtnYjRla3hneXNmN2hxM2RoMnh1YnFhNnI3MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/QRmJC704DProuxlMkG/giphy.gif'
+              }}
+              style={{ width: 200, height: 200 }}
+              resizeMode={FastImage.resizeMode.contain}
+            />
           </View>
 
           <View style={styles.container} >
