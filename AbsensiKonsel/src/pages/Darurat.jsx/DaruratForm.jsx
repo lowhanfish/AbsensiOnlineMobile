@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, ImageBackground, Platform,
 } from 'react-native';
@@ -6,6 +6,7 @@ import { Stylex } from '../../assets/styles/main';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ImageLib from '../../components/ImageLib';
+import ButtonBack from "../../components/ButtonBack";
 
 const { height } = Dimensions.get('window');
 
@@ -19,10 +20,55 @@ const formatDateDisplay = (date) => {
 };
 
 const DaruratForm = () => {
-  const [kategori, setKategori] = useState('');
-  const [dariTanggal, setDariTanggal] = useState(null);
-  const [sampaiTanggal, setSampaiTanggal] = useState(null);
+
   const [activePicker, setActivePicker] = useState(null);
+  const [listDarurat, setListDarurat] = useState([]);
+  const [form, setForm] = useState({
+    jenispresensi: 1, //Diambil dari tabel presensi 1. Hadir, 2 TK, 3 Izin, 4 Sakit
+    jenisKategori: 0, // Diambil dari table jeniskategori, selain absen darurat maka nilainya haruslah 0
+    jenisizin: 0, // Diambil dari table jenisIzin, Selain dari usulan izin maka nilainya harus 0
+    lat: '',
+    lng: '',
+    jamDatang: '07:30',
+    jamPulang: '16:00',
+    keterangan: '',
+    // // NIP: store.ABSENSI.NIP,
+    // // JenisStatusId: store.WAKTU.id,
+    TglMulai: null,
+    TglSelesai: null,
+    // // unit_kerja: store.UNIT_KERJA,
+
+    name: ''
+  });
+
+
+  const setValueForm = (value, key) => {
+    const prev = {
+      ...form, [key]: value
+    }
+    setForm(prev);
+  }
+
+  const saveData = () => {
+    console.log("Data Form")
+    console.log(form);
+    var diffDays = 0;
+
+    if (form.TglMulai && form.TglSelesai) {
+      const startDate = new Date(form.TglMulai);
+      const endDate = new Date(form.TglSelesai);
+      const diffTime = Math.abs(endDate - startDate);
+      diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Anda bisa menyimpan diffDays ke state atau menggunakannya sesuai kebutuhan
+    } else {
+      console.log("Tanggal mulai atau selesai belum dipilih");
+    }
+    console.log("Selisih hari:", diffDays);
+
+  }
+
+
+
 
   const onChange = (event, selectedDate) => {
     const isDismissed = event?.type === 'dismissed';
@@ -31,8 +77,13 @@ const DaruratForm = () => {
       return;
     }
     if (selectedDate) {
-      if (activePicker === 'dari') setDariTanggal(selectedDate);
-      if (activePicker === 'sampai') setSampaiTanggal(selectedDate);
+      if (activePicker === 'dari') {
+        setValueForm(selectedDate, 'TglMulai');
+      };
+      if (activePicker === 'sampai') {
+        setValueForm(selectedDate, 'TglSelesai');
+
+      };
     }
     if (Platform.OS === 'android') setActivePicker(null);
   };
@@ -43,17 +94,33 @@ const DaruratForm = () => {
 
   const currentValue =
     activePicker === 'dari'
-      ? dariTanggal
-        ? new Date(dariTanggal)
+      ? form.TglMulai
+        ? new Date(form.TglMulai)
         : new Date()
       : activePicker === 'sampai'
-        ? sampaiTanggal
-          ? new Date(sampaiTanggal)
+        ? form.TglSelesai
+          ? new Date(form.TglSelesai)
           : new Date()
         : new Date();
 
+
+
+  const loadAyncData = async () => {
+
+  }
+
+
+  useEffect(() => {
+    loadAyncData();
+  }, [])
+
+
   return (
     <View style={{ flex: 1 }}>
+
+      <ButtonBack
+        routex="Darurat"
+      />
 
       <View style={{ flex: 1 }}>
         <View style={Stylex.titleContainer}>
@@ -71,74 +138,127 @@ const DaruratForm = () => {
                 Form ini diperuntukan untuk penginputan data pengajuan absen darurat. Pastikan
                 untuk mempersiapkan file Surat Perintah Tugas (SPT) atau Dokumen pendukung lainnya.
               </Text>
-            </View>
 
-            {/* Kategori */}
-            <View style={styles.textform}>
-              <Text style={styles.infoTextform}>Pilih Kategori Darurat</Text>
-            </View>
-            <View style={styles.textWrapper}>
-              <View style={styles.fakeInput}>
-                <Picker
-                  selectedValue={kategori}
-                  onValueChange={(val) => setKategori(val)}
-                  style={styles.picker}
-                  dropdownIconColor="#7E59C9"
-                  mode="dropdown"
-                >
-                  <Picker.Item label="-- Pilih Jenis Kategori --" value="" />
-                  <Picker.Item label="Absen Desak" value="Absen" />
-                  <Picker.Item label="Perjalanan Dinas" value="perjalanan_dinas" />
-                </Picker>
+
+              {/* Test */}
+              {/* <View style={styles.textform}>
+                <Text style={styles.infoTextform}>Test</Text>
               </View>
-            </View>
+              <View style={styles.textWrapper}>
+                <View style={styles.fakeInput}>
 
-            {/* Dari tanggal */}
-            <View style={styles.tglform}>
-              <Text style={styles.infoTglform}>Dari tanggal</Text>
-            </View>
-            <View style={styles.tglWrapper}>
-              <TouchableOpacity
-                style={styles.fakeInput}
-                activeOpacity={0.8}
-                onPress={() => openPicker('dari')}
-              >
-                <View style={styles.inputRow}>
-                <Text style={styles.pickerText}>
-                    {dariTanggal ? formatDateDisplay(dariTanggal) : '-- Pilih Tanggal --'}
-                  </Text>
-                  <ImageLib
-                    urix={require('../../assets/images/icon/calendar.png')}
-                    style={styles.calendarIcon}
+
+                  <TextInput
+                    style={styles.inputx}
+                    placeholder="Username"
+                    placeholderTextColor="#999"
+                    value={form.name}
+                    onChangeText={(value) => { setValueForm(value, 'name') }}
+                    autoCapitalize="none"
                   />
-                </View>
-              </TouchableOpacity>
-            </View>
 
-            {/* Sampai tanggal */}
-            <View style={styles.sampaiForm}>
-              <Text style={styles.infoTglform}>Sampai tanggal</Text>
-            </View>
-            <View style={styles.sampaiWrapper}>
-              <TouchableOpacity
-                style={styles.fakeInput}
-                activeOpacity={0.8}
-                onPress={() => openPicker('sampai')}
-              >
-                {/* <Text style={[styles.pickerText, { marginLeft: 12 }]}>
-                  {sampaiTanggal ? formatDateDisplay(sampaiTanggal) : '-- Pilih Tanggal --'}
+
+                </View>
+              </View> */}
+
+
+              {/* Kategori */}
+              <View style={styles.textform}>
+                <Text style={styles.infoTextform}>Pilih Kategori Darurat</Text>
+              </View>
+              <View style={styles.textWrapper}>
+                <View style={styles.fakeInput}>
+                  <Picker
+                    selectedValue={form.jenisKategori}
+                    onValueChange={(value) => { setValueForm(value, 'jenisKategori') }}
+                    style={styles.picker}
+                    dropdownIconColor="#7E59C9"
+                    mode="dropdown"
+                  >
+                    <Picker.Item label="-- Pilih Jenis Kategori --" value="" />
+                    <Picker.Item label="Absen Desak" value="Absen" />
+                    <Picker.Item label="Perjalanan Dinas" value="perjalanan_dinas" />
+                  </Picker>
+                </View>
+              </View>
+
+
+              {/* Dari tanggal */}
+              <View style={styles.textform}>
+                <Text style={styles.infoTextform}>Dari tanggal</Text>
+              </View>
+
+              <View>
+                <TouchableOpacity
+                  style={styles.fakeInput}
+                  activeOpacity={0.8}
+                  onPress={() => openPicker('dari')}
+                >
+                  <View style={styles.inputRow}>
+                    <Text style={styles.pickerText}>
+                      {form.TglMulai ? formatDateDisplay(form.TglMulai) : '-- Pilih Tanggal --'}
+                    </Text>
+                    <ImageLib
+                      urix={require('../../assets/images/icon/calendar.png')}
+                      style={styles.calendarIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+
+
+              {/* Sampai tanggal */}
+              <View style={styles.textform}>
+                <Text style={styles.infoTextform}>Sampai tanggal</Text>
+              </View>
+              <View>
+                <TouchableOpacity
+                  style={styles.fakeInput}
+                  activeOpacity={0.8}
+                  onPress={() => openPicker('sampai')}
+                >
+                  {/* <Text style={[styles.pickerText, { marginLeft: 12 }]}>
+                  {form.TglSelesai ? formatDateDisplay(form.TglSelesai) : '-- Pilih Tanggal --'}
                 </Text> */}
-                <View style={styles.inputRow}>
-                  <Text style={styles.pickerText}>
-                    {sampaiTanggal ? formatDateDisplay(sampaiTanggal) : '-- Pilih Tanggal --'}
-                  </Text>
-                  <ImageLib
-                    urix={require('../../assets/images/icon/calendar.png')}
-                    style={styles.calendarIcon}
-                  />
-                </View>
-              </TouchableOpacity>
+                  <View style={styles.inputRow}>
+                    <Text style={styles.pickerText}>
+                      {form.TglSelesai ? formatDateDisplay(form.TglSelesai) : '-- Pilih Tanggal --'}
+                    </Text>
+                    <ImageLib
+                      urix={require('../../assets/images/icon/calendar.png')}
+                      style={styles.calendarIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+
+
+              {/* Keterangan */}
+              <View style={styles.textform}>
+                <Text style={styles.infoTextform}>Keterangan</Text>
+              </View>
+
+              <TextInput
+                style={styles.textarea}
+                multiline
+                placeholder="Keterangan"
+                placeholderTextColor="#bdbdbd"
+              />
+
+
+
+
+
+
             </View>
+
+
+
+
+
+
 
             {activePicker && (
               <View style={styles.inlinePicker}>
@@ -154,17 +274,7 @@ const DaruratForm = () => {
             )}
 
 
-            {/* Keterangan */}
-            <View style={styles.ketform}>
-              <Text style={styles.infoketform}>Keterangan</Text>
-            </View>
 
-            <TextInput
-              style={styles.textarea}
-              multiline
-              placeholder="Keterangan"
-              placeholderTextColor="#bdbdbd"
-            />
           </ImageBackground>
         </View>
       </View>
@@ -173,6 +283,7 @@ const DaruratForm = () => {
         style={styles.fab}
         activeOpacity={0.85}
         hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+        onPress={saveData}
       >
         <ImageLib style={{ width: 55 }} urix={require('../../assets/images/icon/send.png')} />
       </TouchableOpacity>
@@ -195,11 +306,15 @@ const styles = StyleSheet.create({
     height: 41
   },
   textform: {
-    position: 'absolute',
-    top: 78,
-    left: 35,
-    width: 295,
-    height: 41
+    // position: 'absolute',
+    // top: 78,
+    // left: 35,
+    // width: 295,
+    // height: 4
+
+    marginTop: 9,
+    marginBottom: 5,
+    fontSize: 10
   },
   tglform: {
     position: 'absolute',
@@ -254,17 +369,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Audiowide-Regular',
   },
   textWrapper: {
-    position: 'absolute',
-    top: 95,
-    left: 28,
-    right: 28,
+    // position: 'absolute',
+    // top: 95,
+    // left: 28,
+    // right: 28,
   },
-  tglWrapper: {
-    position: 'absolute',
-    top: 180,
-    left: 28,
-    right: 28
-  },
+
   sampaiWrapper: {
     position: 'absolute',
     top: 260,
@@ -309,10 +419,14 @@ const styles = StyleSheet.create({
   },
 
   textarea: {
-    position: 'absolute',
-    top: 350,
-    left: 28,
-    right: 28,
+    // position: 'absolute',
+    // top: 350,
+    // left: 28,
+    // right: 28,
+
+    // padingHorizontal: 28,
+
+
     height: 160,
     borderRadius: 8,
     borderWidth: 1,
@@ -354,11 +468,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: '100%',
   },
-  
+
   calendarIcon: {
     width: 20,
     height: 20,
-    opacity: 0.7,   
+    opacity: 0.7,
   },
 });
 

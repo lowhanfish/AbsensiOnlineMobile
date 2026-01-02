@@ -18,7 +18,8 @@ import {
 
 // Gunakan const agar tidak bisa diubah sembarangan
 const URL_SIMPEG = 'https://server-egov.konaweselatankab.go.id';
-const URLKU = 'https://serverabsensi.konaweselatankab.go.id';
+// const URLKU = 'https://serverabsensi.konaweselatankab.go.id';
+const URLKU = 'http://192.168.1.6:5040';
 
 // =============================
 // INITIAL STATE
@@ -38,27 +39,33 @@ const initialState = {
     URL_APP: `${URLKU}/`,
     LOGIN_URL: `${URLKU}/auth/login`,
     URL_UpdateToken: `${URLKU}/api/v1/client_updateToken/`,
-    URL_MasterKategori: `${URLKU}/api/v1/dataMasterkategoriAbsen/`,
-    URL_MasterLevel: `${URLKU}/api/v1/dataMastermasterLevel/`,
-    URL_MasterLokasiAbsen: `${URLKU}/api/v1/client_lokasiAbsen/`,
-    URL_MasterWaktuAbsen: `${URLKU}/api/v1/clientWaktuAbsen/`,
-    URL_MasterJenisIzin: `${URLKU}/api/v1/client_jenisIzin/`,
-    URL_MasterJenisDarurat: `${URLKU}/api/v1/client_jenisDarurat/`,
-    URL_AbsenHarian: `${URLKU}/api/v1/client_absenHarian/`,
-    URL_AbsenApel: `${URLKU}/api/v1/client_absenApel/`,
-    URL_lampiranImg: `${URLKU}/api/v1/client_lampiranImg/`,
 
-    URL_kinerja_ku_ra_strategis: `${URLKU}/api/v1/kinerja_ku_ra_strategis/`,
-    URL_kinerja_ku_ra_strategis_indikator: `${URLKU}/api/v1/kinerja_ku_ra_strategis_indikator/`,
-    URL_kinerja_periode: `${URLKU}/api/v1/kinerja_periode/`,
-    URL_kinerja_token: `${URLKU}/api/v1/kinerja_token/`,
-    URL_kinerja_worksheet: `${URLKU}/api/v1/kinerja_worksheet/`,
+    URL_SIMPEG : URL_SIMPEG + '/',
+    URL_APP: URLKU + '/',
+    LOGIN_URL: URLKU + "/auth/login",
+    URL_UpdateToken: URLKU + '/api/v1/client_updateToken/',
+    URL_MasterKategori: URLKU + '/api/v1/dataMasterkategoriAbsen/',
+    URL_MasterLevel: URLKU + '/api/v1/dataMastermasterLevel/',
+    URL_MasterLokasiAbsen: URLKU + '/api/v1/client_lokasiAbsen/',
+    URL_MasterWaktuAbsen: URLKU + '/api/v1/clientWaktuAbsen/',
+    URL_MasterJenisIzin: URLKU + '/api/v1/client_jenisIzin/',
+    URL_MasterJenisDarurat: URLKU + '/api/v1/client_jenisDarurat/',
+    URL_AbsenHarian: URLKU + '/api/v1/client_absenHarian/',
+    URL_AbsenApel: URLKU + '/api/v1/client_absenApel/',
+    URL_lampiranImg: URLKU + '/api/v1/client_lampiranImg/',
 
-    URL_Pengumuman: `${URLKU}/api/v1/client_pengumuman/`,
-    URL_apelPelaksanaan: `${URLKU}/api/v1/apelPelaksanaan/`,
-    URL_biodata: `${URLKU}/api/v1/dm_biodata/`,
-    URL_test_connections: `${URLKU}/api/v1/test_connections/`,
-    URL_presensi_settingProfile: `${URLKU}/api/v1/presensi_settingProfile/`,
+    URL_kinerja_ku_ra_strategis: URLKU + '/api/v1/kinerja_ku_ra_strategis/',
+    URL_kinerja_ku_ra_strategis_indikator: URLKU + '/api/v1/kinerja_ku_ra_strategis_indikator/',
+    URL_kinerja_periode: URLKU + '/api/v1/kinerja_periode/',
+    URL_kinerja_token: URLKU + '/api/v1/kinerja_token/',
+    URL_kinerja_worksheet: URLKU + '/api/v1/kinerja_worksheet/',
+    URL_Pengumuman: URLKU + '/api/v1/client_pengumuman/',
+    URL_apelPelaksanaan : URLKU+'/api/v1/apelPelaksanaan/',
+    URL_biodata : URLKU+'/api/v1/dm_biodata/',
+    URL_test_connections : URLKU+'/api/v1/test_connections/',
+    URL_presensi_settingProfile : URLKU+'/api/v1/presensi_settingProfile/',
+
+
   },
 
   ABSEN: {

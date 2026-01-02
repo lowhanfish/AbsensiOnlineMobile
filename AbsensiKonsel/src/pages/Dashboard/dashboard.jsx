@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'; // << Tambahkan useRef
+import React, { useState, useRef, useEffect } from 'react'; // << Tambahkan useRef
 import {
     Text,
     ScrollView,
@@ -23,6 +23,9 @@ const { height, width } = Dimensions.get('window');
 
 const Dashboard = () => {
     const navigation = useNavigation();
+
+    const profileState = useSelector(state => state.PROFILE);
+    const [profile, setProfile] = useState(null);
 
     const dispatch = useDispatch();
     const tetapanWaktuAbsen = useSelector(state => state.WAKTU)
@@ -108,6 +111,12 @@ const Dashboard = () => {
     }
 
 
+    useEffect(() => {
+        console.log(typeof (profileState.profile));
+        setProfile(profileState.profile);
+    }, [])
+
+
     // =================================================================
     // useFocusEffect + useRef
     // =================================================================
@@ -120,20 +129,14 @@ const Dashboard = () => {
 
                 // Mengambil waktu BARU
                 const newTime = JamRealtime();
-
                 // 1. Perbarui state lokal (Memicu re-render UI jam)
                 setCurrentDate(newTime);
-
                 // 2. Akses state Redux terbaru melalui REF (Menghindari Stale Closure)
                 const latestWaktu = latestWaktuRef.current;
-
                 // 3. Cek status baru
                 const datatampil = cekWaktu(newTime, latestWaktu);
-
                 // 4. Update state Redux (Memicu re-render komponen secara keseluruhan)
                 dispatch(setWaktuData(datatampil));
-
-
             }, 1000);
 
             // 5. Cleanup: Hentikan timer saat layar hilang fokus
@@ -141,7 +144,6 @@ const Dashboard = () => {
                 clearInterval(secTimer);
                 console.log("Timer Dashboard dihentikan.");
             };
-
             // Dependensi hanya [dispatch] (atau bahkan [ ] jika tidak ada dispatch di luar timer)
             // Kita hanya perlu memastikan timer berjalan. Kita TIDAK MEMASUKKAN tetapanWaktuAbsen di sini!
         }, [dispatch])
@@ -153,7 +155,7 @@ const Dashboard = () => {
             <View style={{ flex: 1 }}>
                 <View style={Stylex.titleContainer}>
                     <Text style={[Stylex.h_title1, Stylex.shaddowText]}>Selamat Datang</Text>
-                    <Text style={Stylex.h_title2}>Kiken Sukma Batara, S.Si.,MTx</Text>
+                    <Text style={Stylex.h_title2}>{profile ? profile.nama : ""}</Text>
 
 
                     <Text style={[Stylex.shaddowText, { paddingTop: 1, fontWeight: 'bold', fontSize: 14, color: 'white' }]}>

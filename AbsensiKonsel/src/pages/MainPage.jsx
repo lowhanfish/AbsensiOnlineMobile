@@ -7,6 +7,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     BackHandler,
+    Text
+
 } from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -89,8 +91,8 @@ const MainPage = () => {
 
     return (
         <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
-            <View style={[Stylex.body]}>
-                <TouchableOpacity style={[Stylex.btnSetting]} onPress={handleLogout}>
+            <View style={[Stylex.body, { paddingTop: 10 }]}>
+                <TouchableOpacity style={[Stylex.btnSetting, { marginTop: 15 }]} onPress={handleLogout}>
                     <ImageLib
                         style={{ width: 35 }}
                         urix={require('../assets/images/icon/Enter.png')}

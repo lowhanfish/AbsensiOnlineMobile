@@ -157,10 +157,16 @@ router.post('/viewListIzin', (req, res) => {
 
         }
     })
+
+
+    // res.send("WOW")
+
+
 });
 
 router.post('/viewListDarurat', (req, res) => {
-    // console.log(req.body)
+    console.log("viewListDarurat dipanggil")
+    console.log(req.body);
     var data_batas = 5;
     var data_star = (req.body.data_ke - 1)* data_batas;
     var cari = req.body.cari_value;
@@ -168,13 +174,8 @@ router.post('/viewListDarurat', (req, res) => {
 
 
     let jml_data = `
-        SELECT usulanizin.*,
-        jenisizin.uraian as jenisizin_uraian,
-        biodata.nama as biodata_nama,
-        biodata.gelar_belakang as biodata_gelar_belakang,
-        biodata.gelar_depan as biodata_gelar_depan,
-        unit_kerja.unit_kerja as unit_kerja_uraian,
-        jeniskategori.uraian as jeniskategori_uraian
+        SELECT 
+        count(usulanizin.id) as jumlah
 
         FROM absensi.usulanizin usulanizin
 
@@ -196,7 +197,6 @@ router.post('/viewListDarurat', (req, res) => {
         (jeniskategori.uraian LIKE '%`+cari+`%' 
         OR biodata.nama LIKE '%`+cari+`%'
         OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
-
     `
 
     let view = `
@@ -222,33 +222,46 @@ router.post('/viewListDarurat', (req, res) => {
         LEFT JOIN absensi.jeniskategori jeniskategori
         ON  usulanizin.jenisKategori = jeniskategori.id
 
-
         WHERE 
         usulanizin.jenisKategori <> 0 AND
         (jeniskategori.uraian LIKE '%`+cari+`%' 
         OR biodata.nama LIKE '%`+cari+`%'
         OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
         AND usulanizin.createdBy = '`+req.user._id+`'
+
+        
         ORDER BY usulanizin.createdAt DESC
-
-
+        LIMIT 8
     `
+
+
     db.query(jml_data, (err, row)=>{
+        console.log("aaaa")
+
+
         if (err) {
-            // console.log(err)
+            console.log("ada error1")
+            console.log(err)
             res.json(err)
         }else{
-            halaman = Math.ceil(row.length/data_batas);
+            halaman = Math.ceil(row[0].jumlah/data_batas);
             if(halaman<1){halaman = 1}
             // ========================
             db.query(view, (err2, result)=>{
+
+
+
+
                 if (err2) {
-                    // console.log(err2)
+                    console.log(err2)
                     res.json(err2)
                 }
                 else{
                     halaman = Math.ceil(row.length/data_batas);
                     if(halaman<1){halaman = 1}
+
+                    console.log(result)
+
                     res.json({
                         data : result,
                         jml_data : halaman
@@ -256,7 +269,6 @@ router.post('/viewListDarurat', (req, res) => {
                 }
             })
             // ========================
-
         }
     })
 });
@@ -278,6 +290,15 @@ router.post('/AddMockLocation', (req, res) => {
             })
         }
    })
+
+    // res.send([
+    //     {id:1, uraian:'qoq1'},
+    //     {id:2, uraian:'qoq2'},
+    //     {id:3, uraian:'qoq3'},
+
+    // ])
+
+
 });
 
 router.post('/statistik', async (req, res) => {

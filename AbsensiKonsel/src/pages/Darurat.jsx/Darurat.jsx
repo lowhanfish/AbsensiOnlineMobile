@@ -1,9 +1,12 @@
 import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from '../../components/ImageLib';
 import CheckBox from '@react-native-community/checkbox';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import ButtonBack from "../../components/ButtonBack";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 
 
@@ -12,11 +15,53 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 const { height, width } = Dimensions.get('window');
 
 const Darurat = () => {
+
+
   const navigation = useNavigation();
+
+  const URL = useSelector(state => state.URL);
+  const token = useSelector(state => state.TOKEN);
+
   const [isChecked, setIsChecked] = useState(false);
   const [text, setText] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+
+  const [listData, setListData] = useState([]);
+  const [pageFirst, setPageFirst] = useState(1);
+  const [cariValue, setCariValue] = useState('');
+
+
+
+
+  const viewData = () => {
+
+    // console.log("View Data Start========");
+    // console.log(URL.URL_AbsenHarian + 'viewListDarurat');
+    // console.log("token :", token)
+
+    axios.post(URL.URL_AbsenHarian + 'viewListDarurat', JSON.stringify({
+      data_ke: pageFirst,
+      cari_value: cariValue
+    }), {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `kikensbarara ${token}`
+      }
+    }).then(result => {
+      console.log("ada hasilnya")
+      console.log(result.data);
+      setListData(result.data.data); // Update state with fetched data
+    }).catch(error => {
+      console.log("errornya : ", error);
+    })
+    console.log(URL.URL_AbsenHarian + 'viewListDarurat')
+
+  }
+
+
+
 
   const handleButtonPress = () => {
     console.log('Filter Data By Text', text);
@@ -73,12 +118,22 @@ const Darurat = () => {
     closePopup();
   };
 
+
+  useEffect(() => {
+    viewData();
+  }, [])
+
   return (
     <View style={{ flex: 1 }}>
-      <TouchableOpacity style={Stylex.backBtn}>
+
+      <ButtonBack
+        routex="Dashboard"
+      />
+
+      {/* <TouchableOpacity style={Stylex.backBtn}>
         <ImageLib urix={require('../../assets/images/icon/back.png')} style={Stylex.iconBack} />
         <Text style={Stylex.backTitle}>KEMBALI</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <ScrollView>
         <View style={{ flex: 1 }}>
           <View style={Stylex.daruratTitle}>
