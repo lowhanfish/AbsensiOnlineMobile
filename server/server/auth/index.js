@@ -143,7 +143,9 @@ router.post('/login', async(req, res, next) =>{
         // WHERE users.username = '`+req.body.username+`';
         // `;
 
-
+         console.log("====================")
+         console.log(url_micro_5+'/micro_5/getBiodataUser/view')
+         console.log("====================")
 
         try {
             const response = await fetch(url_micro_5+'/micro_5/getBiodataUser/view', {
@@ -157,6 +159,8 @@ router.post('/login', async(req, res, next) =>{
             if(row.length <= 0) {
                 respondError422(res, next, "Username Salah");
             }else{
+
+                
 
                 var user = {}
                 for (var i in row) {user = row[i]}
