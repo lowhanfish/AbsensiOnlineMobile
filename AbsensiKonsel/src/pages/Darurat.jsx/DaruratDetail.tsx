@@ -123,6 +123,7 @@ const DaruratDetail = () => {
                 <ModalFile
                     modalVisible={modalVisible}
                     closePopup={closePopup}
+                    pdfUrl="https://serversumaku.konaweselatankab.go.id/uploads/1765767493631.pdf"
                 />
 
 
