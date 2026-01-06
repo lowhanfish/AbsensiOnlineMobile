@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View, Text, StyleSheet, Dimensions, ImageBackground,
+    View, Text, StyleSheet, Dimensions, ImageBackground, Image,
+    TouchableOpacity, Modal,
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
@@ -8,8 +9,39 @@ const { height } = Dimensions.get('window');
 
 
 
+const ModalFile = ({ modalVisible, closePopup }: any) => {
+    return (
+        <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
+            <View style={Stylex.overlay1}>
+                <View >
+                    <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
+                        <Text style={Stylex.closeText}>✕</Text>
+                    </TouchableOpacity>
+
+                </View>
+            </View>
+        </Modal>
+    )
+}
+
+
+
+
 const DaruratDetail = () => {
     const [form, setForm] = useState(null);
+
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const openPopup = () => {
+        setModalVisible(true);
+    };
+
+    const closePopup = () => {
+        setModalVisible(false);
+    };
+
+
+
     const loadAyncData = async () => {
 
     }
@@ -23,7 +55,7 @@ const DaruratDetail = () => {
         <View style={{ flex: 1 }}>
 
             <ButtonBack
-                routex="Dashboard"
+                routex="Darurat"
             />
 
             <View style={{ flex: 1 }}>
@@ -38,9 +70,7 @@ const DaruratDetail = () => {
                         source={require('../../assets/images/bg1.png')}
                     >
                         <View style={styles.textbg2}>
-
-
-                            <View >
+                            <View style={styles.textform1}>
                                 <Text style={styles.infoTextform2}>URAIAN ABSENSI</Text>
                             </View>
                             <View style={styles.textform}>
@@ -75,24 +105,41 @@ const DaruratDetail = () => {
 
 
 
+                            <View style={[styles.textform1, { paddingTop: 1 }]}>
+                                <Text style={styles.infoTextform2}>LAMPIRAN</Text>
+                            </View>
 
-
-
+                            <View style={{ flex: 1, flexDirection: 'row', gap: 15, flexWrap: 'wrap', paddingTop: 11 }}>
+                                <TouchableOpacity onPress={() => { openPopup() }}>
+                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/pdf.png')} />
+                                </TouchableOpacity>
+                                <TouchableOpacity>
+                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/jpg.png')} />
+                                </TouchableOpacity>
+                                <TouchableOpacity>
+                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/pdf.png')} />
+                                </TouchableOpacity>
+                                <TouchableOpacity>
+                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/jpg.png')} />
+                                </TouchableOpacity>
+                                <TouchableOpacity>
+                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/pdf.png')} />
+                                </TouchableOpacity>
+                                <TouchableOpacity>
+                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/jpg.png')} />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-
-
-
-
-
-
-
-
-
                     </ImageBackground>
                 </View>
+
+                <ModalFile
+                    modalVisible={modalVisible}
+                    closePopup={closePopup}
+                />
+
+
             </View>
-
-
         </View>
 
     );
@@ -105,13 +152,22 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16
     },
     textbg2: {
-        position: 'absolute',
-        top: 24,
-        left: 28,
-        right: 28,
-        height: 41
+        // position: 'absolute',
+        // top: 24,
+        // left: 28,
+        // right: 28,
+        // height: 41,
+        // backgroundColor: 'red',
+
+        paddingTop: 24,
+        paddingLeft: 28,
+        paddingRight: 28,
+        paddingBottom: 24,
+        flex: 1
     },
     textform: {
+        // flex: 1,
+        // flexDirection: 'column',
         marginTop: 9,
         marginBottom: 5,
         fontSize: 10,
@@ -125,9 +181,9 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         fontSize: 10,
         borderStyle: 'solid',
-        borderColor: '#ADADAD',
-        borderBottomWidth: 0.5,
-        // paddingVertical: 15,
+        borderColor: '#EBDBF9',
+        borderBottomWidth: 5,
+        paddingVertical: 5,
         // marginBottom: 12,
     },
     fontTitle: {

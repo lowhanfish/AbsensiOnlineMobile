@@ -176,11 +176,6 @@ const Darurat = () => {
         <ButtonBack
           routex="Dashboard"
         />
-
-        {/* <TouchableOpacity style={Stylex.backBtn}>
-        <ImageLib urix={require('../../assets/images/icon/back.png')} style={Stylex.iconBack} />
-        <Text style={Stylex.backTitle}>KEMBALI</Text>
-      </TouchableOpacity> */}
         <ScrollView>
           <View style={{ flex: 1 }}>
             <View style={Stylex.daruratTitle}>

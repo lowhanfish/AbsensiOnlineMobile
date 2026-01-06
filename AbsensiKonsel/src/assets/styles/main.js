@@ -93,7 +93,11 @@ export const Stylex = StyleSheet.create({
         textAlignVertical: 'center',
         top : 30,
         left : 30,
-        zIndex: 9
+        zIndex: 9,
+        // backgroundColor:'red',
+        width:100,
+        height:30,
+        alignItems:'center'
     },
     iconBack: {
         width: 14,
@@ -246,6 +250,15 @@ export const Stylex = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
     },
+    overlay1: {
+      flex: 1,
+      backgroundColor: 'white',
+    //   justifyContent: 'center',
+    //   alignItems: 'center',
+        marginLeft:10,
+        marginRight:10,
+
+    },
     popup: {
       width: 255,
       backgroundColor: '#fff',
@@ -283,6 +296,9 @@ export const Stylex = StyleSheet.create({
     closeText: {
       fontSize: 15,
       color: '#000',
+      fontWeight : 600,
+      marginRight : 12,
+      marginTop : 5,
     },
     // Modal Styles
     barLine : {
