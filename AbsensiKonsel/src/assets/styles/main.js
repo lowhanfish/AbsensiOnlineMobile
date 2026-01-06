@@ -169,6 +169,9 @@ export const Stylex = StyleSheet.create({
         height: 35,
         lineHeight: 35, 
         textAlignVertical: 'center',
+        // backgroundColor : 'white',
+        color : '#303030',
+        
     },
     button: {
         padding: 10,

@@ -1,4 +1,3 @@
-
 import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
 import React, { useEffect, useState } from 'react';
 import { Stylex } from "../../assets/styles/main";
@@ -12,8 +11,6 @@ import LoadingImage from "../../components/LoadingImage";
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
 import { tglConvert, namaLengkap } from "../../lib/kiken";
 const { height, width } = Dimensions.get('window');
-
-
 
 
 
@@ -40,7 +37,7 @@ const Darurat = () => {
   const [gestureName, setGestureName] = useState('none');
 
 
-
+  const [modalVisibleDetail, setModalVisibleDetail] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
   // Fungsi yang dipanggil saat swipe terdeteksi
@@ -129,6 +126,7 @@ const Darurat = () => {
     setModalVisible(false);
     setSelectedItem(null);
   };
+
 
 
   const handleAction = (action) => {
@@ -251,7 +249,7 @@ const Darurat = () => {
                 <Text style={Stylex.closeText}>✕</Text>
               </TouchableOpacity>
               <Text style={Stylex.popupTitle}>Settings</Text>
-              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setModalVisible(false); navigation.navigate("MainPage", { screen: "DaruratDetail" }) }} >
+              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { navigation.navigate("MainPage", { screen: "DaruratDetail" }); setModalVisible(false); }} >
                 <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
               </TouchableOpacity>
 
@@ -271,6 +269,19 @@ const Darurat = () => {
         </Modal>
         {/* ================= MODAL SETTING =================*/}
 
+        {/* ================= MODAL DETAIL =================*/}
+
+
+        {/* <Modal visible={modalVisibleDetail} transparent animationType="fade" onRequestClose={closePopupDetail} >
+          <View style={Stylex.overlay}>
+            <View style={Stylex.popup}>
+              <Text>asdadsd</Text>
+            </View>
+          </View>
+        </Modal> */}
+
+
+        {/* ================= MODAL DETAIL =================*/}
 
 
 
@@ -296,5 +307,3 @@ const styles = StyleSheet.create({
 
 
 export default Darurat
-
-

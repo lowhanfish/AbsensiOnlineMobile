@@ -270,10 +270,15 @@ router.post('/viewListDarurat', (req, res) => {
 router.post('/viewListDarurat_v2', (req, res) => {
     console.log("LIST DARURAT DI PANGGIL")
     console.log(req.body)
-    var data_batas = 5;
+    var data_batas = req.body.pageLimit;
+    var data_star = (req.body.pageFirst - 1)* data_batas;
+    var cari = req.body.cari_value;
+    var halaman = 10; 
+
+
     var data_star = (req.body.data_ke - 1)* data_batas;
     var cari = req.body.cari_value;
-    var halaman = 1; 
+    var halaman = 10; 
 
 
     let jml_data = `
@@ -297,8 +302,10 @@ router.post('/viewListDarurat_v2', (req, res) => {
         usulanizin.jenisKategori <> 0 AND
         (jeniskategori.uraian LIKE '%`+cari+`%' 
         OR biodata.nama LIKE '%`+cari+`%'
-        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%'
+        OR usulanizin.keterangan LIKE '%`+cari+`%'
         ) 
+        AND usulanizin.createdBy = '`+req.user._id+`'
+        
 
     `
 
@@ -330,13 +337,12 @@ router.post('/viewListDarurat_v2', (req, res) => {
         usulanizin.jenisKategori <> 0 AND
         (jeniskategori.uraian LIKE '%`+cari+`%' 
         OR biodata.nama LIKE '%`+cari+`%'
-        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%''
+        OR usulanizin.keterangan LIKE '%`+cari+`%'
         ) 
         AND usulanizin.createdBy = '`+req.user._id+`'
-
-        
         ORDER BY usulanizin.createdAt DESC
-        LIMIT 10
+        
+        LIMIT `+data_star+`,`+data_batas+`
     `
     db.query(jml_data, (err, row)=>{
         if (err) {
