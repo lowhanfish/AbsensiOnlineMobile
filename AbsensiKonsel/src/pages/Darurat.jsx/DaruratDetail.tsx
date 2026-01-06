@@ -5,24 +5,11 @@ import {
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
+import ModalFile from '../../components/ModalFile';
 const { height } = Dimensions.get('window');
 
 
 
-const ModalFile = ({ modalVisible, closePopup }: any) => {
-    return (
-        <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
-            <View style={Stylex.overlay1}>
-                <View >
-                    <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
-                        <Text style={Stylex.closeText}>✕</Text>
-                    </TouchableOpacity>
-
-                </View>
-            </View>
-        </Modal>
-    )
-}
 
 
 
