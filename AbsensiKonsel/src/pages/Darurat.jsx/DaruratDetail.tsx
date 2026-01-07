@@ -6,6 +6,7 @@ import {
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
 import ModalFile from '../../components/ModalFile';
+import { namaLengkap, tglConvert } from '../../lib/kiken';
 const { height } = Dimensions.get('window');
 
 
@@ -14,9 +15,12 @@ const { height } = Dimensions.get('window');
 
 
 
-const DaruratDetail = () => {
-    const [form, setForm] = useState(null);
+const DaruratDetail = ({ route }: any) => {
+    const [form, setForm] = useState<Record<string, any> | null>(null);
 
+    if (route) {
+        console.log(route.params)
+    }
 
     const [modalVisible, setModalVisible] = useState(false);
     const openPopup = () => {
@@ -27,14 +31,17 @@ const DaruratDetail = () => {
         setModalVisible(false);
     };
 
-
-
     const loadAyncData = async () => {
 
     }
 
     useEffect(() => {
         loadAyncData();
+
+        if (route.params) {
+            setForm(route.params)
+        }
+
     }, [])
 
 
@@ -62,31 +69,31 @@ const DaruratDetail = () => {
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Nama</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{namaLengkap(form?.biodata_gelar_depan || "", form?.biodata_nama || "", form?.biodata_gelar_belakang || "")}</Text>
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Unit Kerja</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{form?.unit_kerja_uraian || ""}</Text>
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Jenis Absen</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{form?.jeniskategori_uraian || ""}</Text>
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Dari Tanggal</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{tglConvert(form?.TglMulai || "")}</Text>
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Hingga Tanggal</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{tglConvert(form?.TglSelesai || "")}</Text>
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Keterangan</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{form?.keterangan || ""}</Text>
                             </View>
                             <View style={styles.textform}>
                                 <Text style={styles.infoTextform}>Keterangan Verifikasi</Text>
-                                <Text style={styles.infoTextform1}>Cocodark</Text>
+                                <Text style={styles.infoTextform1}>{form?.notif_keterangan || ""}</Text>
                             </View>
 
 
@@ -156,7 +163,7 @@ const styles = StyleSheet.create({
     textform: {
         // flex: 1,
         // flexDirection: 'column',
-        marginTop: 9,
+        marginTop: 2,
         marginBottom: 5,
         fontSize: 10,
         borderStyle: 'dashed',
@@ -171,6 +178,8 @@ const styles = StyleSheet.create({
         borderStyle: 'solid',
         borderColor: '#EBDBF9',
         borderBottomWidth: 5,
+
+        borderTopWidth: 5,
         paddingVertical: 5,
         // marginBottom: 12,
     },
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
         color: '#8F8F8F',
         lineHeight: 14,
         marginBottom: 2,
-        marginTop: 2
+        marginTop: 5
     },
     infoTextform2: {
         fontSize: 17,

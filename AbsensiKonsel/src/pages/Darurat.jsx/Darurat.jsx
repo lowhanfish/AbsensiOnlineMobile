@@ -246,7 +246,7 @@ const Darurat = () => {
                 <Text style={Stylex.closeText}>✕</Text>
               </TouchableOpacity>
               <Text style={Stylex.popupTitle}>Settings</Text>
-              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setModalVisible(false); navigation.navigate("MainPage", { screen: "DaruratDetail" }) }} >
+              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setModalVisible(false); navigation.navigate("MainPage", { screen: "DaruratDetail", params: selectedItem }) }} >
                 <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
               </TouchableOpacity>
 
