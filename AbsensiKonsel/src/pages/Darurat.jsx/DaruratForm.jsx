@@ -12,6 +12,7 @@ import ButtonBack from "../../components/ButtonBack";
 import { postData } from '../../lib/fetching';
 const { height } = Dimensions.get('window');
 import { useSelector } from "react-redux";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -29,6 +30,9 @@ const DaruratForm = () => {
   const URL = useSelector(state => state.URL);
   const token = useSelector(state => state.TOKEN);
 
+
+
+
   // console.log(token);
   // console.log(URL.URL_MasterJenisDarurat + "viewOne")
 
@@ -44,11 +48,11 @@ const DaruratForm = () => {
     jamDatang: '07:30',
     jamPulang: '16:00',
     keterangan: '',
-    // // NIP: store.ABSENSI.NIP,
-    // // JenisStatusId: store.WAKTU.id,
+    NIP: "",
+    JenisStatusId: 1, //DIAMBIL DARI tabel waktu
     TglMulai: null,
     TglSelesai: null,
-    // // unit_kerja: store.UNIT_KERJA,
+    unit_kerja: "",
     keterangan: '',
     files: [], // Tambahkan array untuk menampung file terpilih
     name: ''
@@ -64,17 +68,11 @@ const DaruratForm = () => {
 
   const saveData = () => {
 
-
-
     console.log("Data Form Siap Kirim:", form);
     console.log("Jumlah File:", form.files.length);
 
-    console.log("tanggal Mulai", (new Date(form.TglMulai)).toISOString());
-    console.log("MAX HARI : ", maxHari)
-
-
-
-
+    // console.log("tanggal Mulai", (new Date(form.TglMulai)).toISOString());
+    // console.log("MAX HARI : ", maxHari)
     var diffDays = 0;
 
     if (form.TglMulai && form.TglSelesai) {
@@ -88,12 +86,42 @@ const DaruratForm = () => {
         Alert.alert(`Kategori yang anda pilih tidak boleh melebihi ${maxHari} Hari`);
         // console.log(`Kategori yang anda pilih tidak boleh melebihi ${maxHari} Hari`)
       } else {
-        Alert.alert("Bolehmi Absen");
+
+
+        var formData = new FormData();
+        formData.append('jenispresensi', 1);
+        formData.append('jenisKategori', form.jenisKategori);
+        formData.append('jenisizin', 0);
+        formData.append('lat', form.lat);
+        formData.append('lng', form.lng);
+        formData.append('jamDatang', form.jamDatang);
+        formData.append('jamPulang', form.jamPulang);
+        formData.append('keterangan', form.keterangan);
+        formData.append('NIP', form.NIP);
+        formData.append('JenisStatusId', form.JenisStatusId);
+        formData.append('TglMulai', (new Date(form.TglMulai)).toISOString());
+        formData.append('TglSelesai', (new Date(form.TglSelesai)).toISOString());
+        formData.append('unit_kerja', form.unit_kerja);
+
+
+        // form.files.map((filex, index) => {
+        //   console.log("FILEX :", filex);
+        //   formData.append('file', filex);
+        // });
+
+        form.files.map((filex, index) => {
+          formData.append('file', {
+            uri: filex.uri,
+            name: filex.name,
+            type: filex.type
+          });
+        });
+
+
+
+        // axios.post(URL)
+
       }
-
-
-
-
     } else {
       console.log("Tanggal mulai atau selesai belum dipilih");
     }
@@ -179,6 +207,14 @@ const DaruratForm = () => {
   const currentValue = getCurrentDate();
 
   const loadAyncData = async () => {
+    const profile = await AsyncStorage.getItem('userProfile');
+    const profile1 = JSON.parse(profile)
+    // console.log("PROFILE = ", profile1.profile.unit_kerja);
+    setValueForm(profile1.profile.NIP, "NIP");
+    setValueForm(profile1.profile.unit_kerja, "unit_kerja");
+
+
+
 
   }
 

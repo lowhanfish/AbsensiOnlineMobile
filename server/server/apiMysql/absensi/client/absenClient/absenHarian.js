@@ -158,7 +158,6 @@ router.post('/viewListIzin', (req, res) => {
                 }
             })
             // ========================
-
         }
     })
 });
