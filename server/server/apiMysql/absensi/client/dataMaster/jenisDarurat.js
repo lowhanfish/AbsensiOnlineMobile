@@ -34,6 +34,21 @@ router.get('/viewOne', (req, res) => {
     })
 
 });
+router.post('/viewOne', (req, res) => {
+    // console.log(req.body)
+    var query = `
+        SELECT * FROM jeniskategori
+    `
+    db.query(query, (err, row)=>{
+        if (err) {
+            console.log(err)
+            res.send(err);
+        } else {
+            res.send(row);
+        }
+    })
+
+});
 
 
 

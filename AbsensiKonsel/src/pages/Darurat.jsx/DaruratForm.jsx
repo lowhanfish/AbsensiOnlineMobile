@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, ImageBackground, Platform,
+  Alert,
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import { Picker } from '@react-native-picker/picker';
+import { pick, types } from '@react-native-documents/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ImageLib from '../../components/ImageLib';
 import ButtonBack from "../../components/ButtonBack";
-
+import { postData } from '../../lib/fetching';
 const { height } = Dimensions.get('window');
+import { useSelector } from "react-redux";
+
+
 
 const formatDateDisplay = (date) => {
   if (!date) return '';
@@ -21,11 +26,18 @@ const formatDateDisplay = (date) => {
 
 const DaruratForm = () => {
 
+  const URL = useSelector(state => state.URL);
+  const token = useSelector(state => state.TOKEN);
+
+  // console.log(token);
+  // console.log(URL.URL_MasterJenisDarurat + "viewOne")
+
   const [activePicker, setActivePicker] = useState(null);
   const [listDarurat, setListDarurat] = useState([]);
+  const [maxHari, SetMaxHari] = useState(5);
   const [form, setForm] = useState({
     jenispresensi: 1, //Diambil dari tabel presensi 1. Hadir, 2 TK, 3 Izin, 4 Sakit
-    jenisKategori: 0, // Diambil dari table jeniskategori, selain absen darurat maka nilainya haruslah 0
+    jenisKategori: 4, // Diambil dari table jeniskategori, selain absen darurat maka nilainya haruslah 0
     jenisizin: 0, // Diambil dari table jenisIzin, Selain dari usulan izin maka nilainya harus 0
     lat: '',
     lng: '',
@@ -37,7 +49,8 @@ const DaruratForm = () => {
     TglMulai: null,
     TglSelesai: null,
     // // unit_kerja: store.UNIT_KERJA,
-
+    keterangan: '',
+    files: [], // Tambahkan array untuk menampung file terpilih
     name: ''
   });
 
@@ -50,8 +63,18 @@ const DaruratForm = () => {
   }
 
   const saveData = () => {
-    console.log("Data Form")
-    console.log(form);
+
+
+
+    console.log("Data Form Siap Kirim:", form);
+    console.log("Jumlah File:", form.files.length);
+
+    console.log("tanggal Mulai", (new Date(form.TglMulai)).toISOString());
+    console.log("MAX HARI : ", maxHari)
+
+
+
+
     var diffDays = 0;
 
     if (form.TglMulai && form.TglSelesai) {
@@ -59,16 +82,23 @@ const DaruratForm = () => {
       const endDate = new Date(form.TglSelesai);
       const diffTime = Math.abs(endDate - startDate);
       diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      // Anda bisa menyimpan diffDays ke state atau menggunakannya sesuai kebutuhan
+      console.log("Selisih hari:", diffDays);
+
+      if (diffDays > (maxHari - 1)) {
+        Alert.alert(`Kategori yang anda pilih tidak boleh melebihi ${maxHari} Hari`);
+        // console.log(`Kategori yang anda pilih tidak boleh melebihi ${maxHari} Hari`)
+      } else {
+        Alert.alert("Bolehmi Absen");
+      }
+
+
+
+
     } else {
       console.log("Tanggal mulai atau selesai belum dipilih");
     }
-    console.log("Selisih hari:", diffDays);
 
   }
-
-
-
 
   const onChange = (event, selectedDate) => {
     const isDismissed = event?.type === 'dismissed';
@@ -92,26 +122,69 @@ const DaruratForm = () => {
     setActivePicker((prev) => (prev === field ? null : field));
   };
 
-  const currentValue =
-    activePicker === 'dari'
-      ? form.TglMulai
-        ? new Date(form.TglMulai)
-        : new Date()
-      : activePicker === 'sampai'
-        ? form.TglSelesai
-          ? new Date(form.TglSelesai)
-          : new Date()
-        : new Date();
+  const getKategori = async () => {
+    var listx = await postData(
+      URL.URL_MasterJenisDarurat + "viewOne",
+      token,
+      { id: "" }
+    )
+
+    console.log(listx)
+    setListDarurat(listx)
+
+    // console.log("LIST DARURAT : ", list)
 
 
+  }
+
+  // ========== PICKER DOKUMEN ==========
+  // Fungsi untuk mengambil file
+  const handlePickDocuments = async () => {
+    try {
+      const results = await pick({
+        type: [types.pdf, types.images],
+        allowMultiSelection: true, // Mengizinkan banyak file sekaligus
+      });
+
+      // Gabungkan file yang baru dipilih dengan yang sudah ada
+      setForm(prev => ({
+        ...prev,
+        files: [...prev.files, ...results]
+      }));
+    } catch (err) {
+      if (err.message !== 'User cancelled directory picker') {
+        console.error(err);
+      }
+    }
+  };
+
+  // Fungsi hapus file dari list
+  const removeFile = (index) => {
+    setForm(prev => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index)
+    }));
+  };
+
+  const getCurrentDate = () => {
+    if (activePicker === 'dari') {
+      return form.TglMulai ? new Date(form.TglMulai) : new Date();
+    }
+    if (activePicker === 'sampai') {
+      return form.TglSelesai ? new Date(form.TglSelesai) : new Date();
+    }
+    return new Date();
+  };
+
+  const currentValue = getCurrentDate();
 
   const loadAyncData = async () => {
 
   }
 
-
   useEffect(() => {
     loadAyncData();
+    getKategori();
   }, [])
 
 
@@ -170,14 +243,19 @@ const DaruratForm = () => {
                 <View style={styles.fakeInput}>
                   <Picker
                     selectedValue={form.jenisKategori}
-                    onValueChange={(value) => { setValueForm(value, 'jenisKategori') }}
+                    onValueChange={(value) => { setValueForm(value.id, 'jenisKategori'); SetMaxHari(value.hari) }}
                     style={styles.picker}
                     dropdownIconColor="#7E59C9"
                     mode="dropdown"
                   >
-                    <Picker.Item label="-- Pilih Jenis Kategori --" value="" />
-                    <Picker.Item label="Absen Desak" value="Absen" />
-                    <Picker.Item label="Perjalanan Dinas" value="perjalanan_dinas" />
+
+                    {
+                      listDarurat.map((data) => (
+                        <Picker.Item key={data.id} label={data.uraian} value={data} />
+                      ))
+                    }
+
+
                   </Picker>
                 </View>
               </View>
@@ -249,16 +327,44 @@ const DaruratForm = () => {
 
 
 
+              {/* Lampiran  */}
+              <View style={styles.textform}>
+                <Text style={styles.infoTextform}>Lampiran Usulan (PDF/Gambar)</Text>
+              </View>
+
+              <View style={styles.documentPickerContainer}>
+                <TouchableOpacity
+                  style={styles.btnPick}
+                  onPress={handlePickDocuments}
+                >
+                  <Text style={styles.btnPickText}>+ Pilih File</Text>
+                </TouchableOpacity>
+
+                {/* List File yang terpilih */}
+                <View style={styles.fileList}>
+                  {form.files.map((file, index) => (
+                    <View key={index} style={styles.fileItem}>
+                      <Text style={styles.fileName} numberOfLines={1}>
+                        {file.name || `File ${index + 1}`}
+                      </Text>
+                      <TouchableOpacity onPress={() => removeFile(index)}>
+                        <Text style={styles.removeText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+
+
+
+
+
+
 
 
 
             </View>
-
-
-
-
-
-
 
             {activePicker && (
               <View style={styles.inlinePicker}>
@@ -383,7 +489,7 @@ const styles = StyleSheet.create({
   },
 
   fakeInput: {
-    height: 55,
+    height: 45,
     width: '100%',
     borderRadius: 8,
     borderWidth: 1,
@@ -474,6 +580,61 @@ const styles = StyleSheet.create({
     height: 20,
     opacity: 0.7,
   },
+
+
+
+
+
+
+  documentPickerContainer: {
+    marginBottom: 10,
+  },
+  btnPick: {
+    backgroundColor: '#F5F5F9',
+    borderWidth: 1,
+    borderColor: '#E6E4EF',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    height: 45,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnPickText: {
+    color: '#7E59C9',
+    fontWeight: 'bold',
+  },
+  fileList: {
+    marginTop: 8,
+  },
+  fileItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 8,
+    borderRadius: 6,
+    marginBottom: 5,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  fileName: {
+    fontSize: 12,
+    color: '#555',
+    flex: 1,
+    marginRight: 10,
+  },
+  removeText: {
+    color: 'red',
+    fontWeight: 'bold',
+    paddingHorizontal: 5,
+  },
+
+
+
+
+
+
+
 });
 
 export default DaruratForm;
