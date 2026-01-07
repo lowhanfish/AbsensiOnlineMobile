@@ -20,10 +20,10 @@ const addIzin = (req, res, db, fileRef)=>{
     var filex = req.files;    
     var datax = req.body;
     
-    console.log('0000000000000000000000000000000000000000000000000000000')
-    console.log(datax)
-    console.log(req.files);
-    console.log('1111111111111111111111111111111111111111111111111111111')
+    // console.log('0000000000000000000000000000000000000000000000000000000')
+    // console.log(datax)
+    // console.log(req.files);
+    // console.log('1111111111111111111111111111111111111111111111111111111')
 
     convertStringToDatex(datax.TglMulai)
 
@@ -53,7 +53,7 @@ const addIzin = (req, res, db, fileRef)=>{
 
     // console.log(`+datax.jamDatang+`)
 
-    console.log(queryx)
+    // console.log(queryx)
 
     // console.log('22222222222222222222222222222222')
 
@@ -62,7 +62,7 @@ const addIzin = (req, res, db, fileRef)=>{
             console.log(err)
         } else {
             // console.log("tidak errorrrrr")
-
+            console.log("SUKSESSSS")
             uploadLampiran(req, res, db, fileRef, filex)
 
 

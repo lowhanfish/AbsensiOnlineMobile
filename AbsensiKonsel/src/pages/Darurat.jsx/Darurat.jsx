@@ -77,7 +77,7 @@ const Darurat = () => {
     }), {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `kikensbarara ${token}`
+        "Authorization": `Bearer ${token}`
       }
     }).then(result => {
       setLoading(true);

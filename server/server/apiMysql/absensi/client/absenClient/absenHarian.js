@@ -268,6 +268,7 @@ router.post('/viewListDarurat', (req, res) => {
 // DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
 router.post('/viewListDarurat_v2', (req, res) => {
     console.log("LIST DARURAT DI PANGGIL")
+    console.log(req.user._id);
     console.log(req.body)
     var data_batas = req.body.pageLimit;
     var data_star = (req.body.pageFirst - 1)* data_batas;
@@ -303,7 +304,9 @@ router.post('/viewListDarurat_v2', (req, res) => {
         OR biodata.nama LIKE '%`+cari+`%'
         OR usulanizin.keterangan LIKE '%`+cari+`%'
         ) 
-        AND usulanizin.createdBy = '`+req.user._id+`'
+        AND (usulanizin.createdBy = '${req.user._id}' 
+        AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
+        ORDER BY usulanizin.createdAt DESC
         
 
     `
@@ -338,11 +341,16 @@ router.post('/viewListDarurat_v2', (req, res) => {
         OR biodata.nama LIKE '%`+cari+`%'
         OR usulanizin.keterangan LIKE '%`+cari+`%'
         ) 
-        AND usulanizin.createdBy = '`+req.user._id+`'
+        AND (usulanizin.createdBy = '${req.user._id}' 
+        AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
         ORDER BY usulanizin.createdAt DESC
         
         LIMIT `+data_star+`,`+data_batas+`
     `
+
+    // console.log(view)
+
+
     db.query(jml_data, (err, row)=>{
         if (err) {
             console.log(err)

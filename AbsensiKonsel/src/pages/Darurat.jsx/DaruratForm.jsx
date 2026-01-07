@@ -13,6 +13,7 @@ import { postData } from '../../lib/fetching';
 const { height } = Dimensions.get('window');
 import { useSelector } from "react-redux";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 
 
@@ -29,6 +30,7 @@ const DaruratForm = () => {
 
   const URL = useSelector(state => state.URL);
   const token = useSelector(state => state.TOKEN);
+
 
 
 
@@ -60,13 +62,13 @@ const DaruratForm = () => {
 
 
   const setValueForm = (value, key) => {
-    const prev = {
-      ...form, [key]: value
-    }
-    setForm(prev);
+    setForm(prev => ({
+      ...prev,
+      [key]: value
+    }));
   }
 
-  const saveData = () => {
+  const saveData = async () => {
 
     console.log("Data Form Siap Kirim:", form);
     console.log("Jumlah File:", form.files.length);
@@ -87,6 +89,8 @@ const DaruratForm = () => {
         // console.log(`Kategori yang anda pilih tidak boleh melebihi ${maxHari} Hari`)
       } else {
 
+
+        console.log(form.NIP)
 
         var formData = new FormData();
         formData.append('jenispresensi', 1);
@@ -117,10 +121,40 @@ const DaruratForm = () => {
           });
         });
 
+        console.log("URL:", URL.URL_AbsenHarian + "AddIzin");
+        console.log("Jumlah file:", form.files.length);
+        console.log("Files:", form.files.map(f => ({ name: f.name, uri: f.uri })));
+        console.log("Token (first 30 chars):", token ? token.substring(0, 30) + "..." : "EMPTY");
 
+        // Coba dengan fetch sebagai alternatif
+        try {
+          console.log("Mencoba dengan fetch...");
+          const response = await fetch(URL.URL_AbsenHarian + "AddIzin", {
+            method: 'POST',
+            headers: {
+              'Authorization': `kikensbarara ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+            body: formData
+          });
+          console.log("Fetch SUCCESS:", response.status, response.ok);
+          const data = await response.json();
+          console.log("Fetch data:", data);
+          Alert.alert("Berhasil", "Data berhasil dikirim");
+        } catch (fetchErr) {
+          console.log("Fetch ERROR:", fetchErr.message);
 
-        // axios.post(URL)
-
+          // Fallback ke axios
+          console.log("Mencoba dengan axios...");
+          const result = await axios.post(URL.URL_AbsenHarian + "AddIzin", formData, {
+            headers: {
+              "Authorization": `kikensbarara ${token}`,
+            },
+            timeout: 60000
+          });
+          console.log("Axios SUCCESS:", result.data);
+          Alert.alert("Berhasil", "Data berhasil dikirim");
+        }
       }
     } else {
       console.log("Tanggal mulai atau selesai belum dipilih");
@@ -209,9 +243,10 @@ const DaruratForm = () => {
   const loadAyncData = async () => {
     const profile = await AsyncStorage.getItem('userProfile');
     const profile1 = JSON.parse(profile)
-    // console.log("PROFILE = ", profile1.profile.unit_kerja);
-    setValueForm(profile1.profile.NIP, "NIP");
+    console.log("PROFILE = ", profile1.profile.NIP);
+    console.log("UNIT KERJA = ", profile1.profile.unit_kerja);
     setValueForm(profile1.profile.unit_kerja, "unit_kerja");
+    setValueForm(profile1.profile.NIP, "NIP");
 
 
 
@@ -321,7 +356,6 @@ const DaruratForm = () => {
               </View>
 
 
-
               {/* Sampai tanggal */}
               <View style={styles.textform}>
                 <Text style={styles.infoTextform}>Sampai tanggal</Text>
@@ -348,19 +382,19 @@ const DaruratForm = () => {
               </View>
 
 
-
               {/* Keterangan */}
               <View style={styles.textform}>
                 <Text style={styles.infoTextform}>Keterangan</Text>
               </View>
 
               <TextInput
+                value={form.keterangan}
+                onChangeText={(value) => { setValueForm(value, 'keterangan') }}
                 style={styles.textarea}
                 multiline
                 placeholder="Keterangan"
                 placeholderTextColor="#bdbdbd"
               />
-
 
 
               {/* Lampiran  */}
@@ -674,3 +708,4 @@ const styles = StyleSheet.create({
 });
 
 export default DaruratForm;
+
