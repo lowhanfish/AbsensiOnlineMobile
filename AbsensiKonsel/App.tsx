@@ -10,7 +10,7 @@ import BootSplash from 'react-native-bootsplash';
 // Pages
 import Login from './src/pages/Auth/Login';
 import MainPage from './src/pages/MainPage';
-import AbsenOffline from './src/pages/Auth/AbsenOffline';
+import AbsenOffline from './src/pages/Auth/Offline/AbsenOffline';
 
 const Stack = createNativeStackNavigator();
 
