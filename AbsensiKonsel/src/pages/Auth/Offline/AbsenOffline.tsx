@@ -214,16 +214,16 @@ const AbsensiOffline = () => {
                 />
             </TouchableOpacity>
 
-            <ModalNip modalVisible={modalVisible} closePopup={closePopup} />
+            <ModalNip modalVisible={modalVisible} closePopup={closePopup} lokasi={lokasi} />
 
         </View>
     );
 };
 
 
-const ModalNip = ({ modalVisible, closePopup }: any) => {
+const ModalNip = ({ modalVisible, closePopup, lokasi }: any) => {
 
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
 
 
     return (
@@ -243,7 +243,7 @@ const ModalNip = ({ modalVisible, closePopup }: any) => {
                         />
                     </View>
                     <View style={{ marginTop: 20 }}>
-                        <TouchableOpacity onPress={() => navigation.navigate("AbsenOffline")} style={styles.buttonOffline}>
+                        <TouchableOpacity onPress={() => { closePopup(); navigation.navigate("VerifikasiWajah" as any, { lokasi: lokasi }) }} style={styles.buttonOffline}>
                             <Text style={{ color: 'white', fontWeight: 'bold' }}>Mulai Rekam Offline</Text>
                         </TouchableOpacity>
                     </View>
