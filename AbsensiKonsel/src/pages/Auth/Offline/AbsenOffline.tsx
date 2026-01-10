@@ -35,9 +35,9 @@ const AbsensiOffline = () => {
         longitudeDelta: 0.003,
     });
 
-    const [errorMsg, setErrorMsg] = useState(null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [statusx, setStatusx] = useState(false);
-    const [jarakMinimal, setJarakMinimal] = useState(null);
+    const [jarakMinimal, setJarakMinimal] = useState<number | null>(null);
     const [isOnline, setIsOnline] = useState(true); // ✅ Tambahan
 
     /** 🔌 Cek status koneksi internet */
@@ -52,7 +52,7 @@ const AbsensiOffline = () => {
     }, []);
 
     /** 🔒 Verifikasi keamanan device & lokasi */
-    const verifyDeviceSecurity = async (position) => {
+    const verifyDeviceSecurity = async (position: any) => {
         try {
             const isEmulator = await DeviceInfo.isEmulator();
             if (isEmulator) return { trusted: false, reason: 'Perangkat emulator terdeteksi' };
@@ -64,9 +64,6 @@ const AbsensiOffline = () => {
                 if (JailMonkey.isOnExternalStorage?.()) return { trusted: false, reason: 'Aplikasi di eksternal storage' };
                 if (JailMonkey.hookDetected?.()) return { trusted: false, reason: 'Hooking terdeteksi' };
             }
-
-            if (JailMonkey.isDebugged?.()) return { trusted: false, reason: 'Aplikasi sedang di-debug' };
-            if (JailMonkey.trustFall?.()) return { trusted: false, reason: 'Pemeriksaan trustFall gagal' };
 
             return { trusted: true };
         } catch (err) {
@@ -129,14 +126,14 @@ const AbsensiOffline = () => {
                     });
                     setErrorMsg(null);
                 },
-                (error) => {
+                (error: any) => {
                     console.error('Gagal ambil lokasi:', error);
                     setErrorMsg(error.message);
                     setStatusx(false);
                 },
                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
             );
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error izin lokasi:', err);
             setErrorMsg(err.message);
         }
@@ -174,6 +171,7 @@ const AbsensiOffline = () => {
             <TouchableOpacity style={Stylex.backBtn} onPress={() => navigation.goBack()}>
                 <ImageLib
                     urix={require('../../../assets/images/icon/tombolkembali.png')}
+                    customWidth={64}
                     style={{ width: 64, height: 23 }}
                 />
             </TouchableOpacity>
@@ -188,7 +186,7 @@ const AbsensiOffline = () => {
             </View>
 
             <TouchableOpacity style={styles.locationBtn} onPress={tombolCekLokasi} activeOpacity={0.8}>
-                <ImageLib urix={require('../../../assets/images/icon/Iconlokasi.png')} style={styles.iconLocation} />
+                <ImageLib urix={require('../../../assets/images/icon/Iconlokasi.png')} customWidth={45} style={styles.iconLocation} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -198,6 +196,7 @@ const AbsensiOffline = () => {
             >
                 <ImageLib
                     urix={require('../../../assets/images/icon/fingerprint3.png')}
+                    customWidth={110}
                     style={styles.fingerprint}
                 />
             </TouchableOpacity>
