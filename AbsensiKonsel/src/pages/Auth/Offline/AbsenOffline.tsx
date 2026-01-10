@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
     Platform,
     PermissionsAndroid,
+    Modal,
+    TextInput,
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Circle } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
@@ -39,6 +41,18 @@ const AbsensiOffline = () => {
     const [statusx, setStatusx] = useState(false);
     const [jarakMinimal, setJarakMinimal] = useState<number | null>(null);
     const [isOnline, setIsOnline] = useState(true); // ✅ Tambahan
+    // ============ MODAL ============
+    const [modalVisible, setModalVisible] = useState(false);
+    const openPopup = () => {
+        setModalVisible(true);
+    };
+
+    const closePopup = () => {
+        setModalVisible(false);
+
+    };
+
+    // ============ MODAL ============
 
     /** 🔌 Cek status koneksi internet */
     useEffect(() => {
@@ -74,7 +88,8 @@ const AbsensiOffline = () => {
 
     /** Tombol fingerprint */
     const tombolAbsensi = () => {
-        console.log("OKEEEE")
+        console.log("OKEEEE");
+        openPopup();
     };
 
     /** Tombol cek lokasi */
@@ -116,8 +131,6 @@ const AbsensiOffline = () => {
                         });
                         return;
                     }
-
-
 
                     setLokasi({
                         ...lokasi,
@@ -200,9 +213,46 @@ const AbsensiOffline = () => {
                     style={styles.fingerprint}
                 />
             </TouchableOpacity>
+
+            <ModalNip modalVisible={modalVisible} closePopup={closePopup} />
+
         </View>
     );
 };
+
+
+const ModalNip = ({ modalVisible, closePopup }: any) => {
+
+    const navigation = useNavigation();
+
+
+    return (
+        <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
+            <View style={Stylex.overlay}>
+                <View style={Stylex.popup}>
+
+                    <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
+                        <Text style={Stylex.closeText}>✕</Text>
+                    </TouchableOpacity>
+
+                    <View style={{ marginTop: 20 }}>
+                        <TextInput
+                            style={Stylex.daruratInput}
+                            placeholder="Masukkan NIP Anda"
+                            placeholderTextColor="#999"
+                        />
+                    </View>
+                    <View style={{ marginTop: 20 }}>
+                        <TouchableOpacity onPress={() => navigation.navigate("AbsenOffline")} style={styles.buttonOffline}>
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Mulai Rekam Offline</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+            </View>
+        </Modal>
+    )
+}
 
 const styles = StyleSheet.create({
     wrappermap: { ...StyleSheet.absoluteFillObject, backgroundColor: '#eaeaea' },
@@ -246,6 +296,30 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     netText: { color: '#fff', fontSize: 10, fontWeight: '600' },
+    inputx: {
+        height: 42,
+        color: '#747474ff',
+        fontSize: 12,
+    },
+    containerInputx: {
+        marginTop: 18,
+        marginLeft: 1,
+        marginRight: 1,
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 5,
+        borderColor: '#DCDCDC',
+        backgroundColor: '#FFFFFF',
+    },
+    buttonOffline: {
+        height: 45,
+        borderRadius: 8,
+        borderColor: '#C2ABD5',
+        backgroundColor: '#D1B7E7',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 0
+    },
 });
 
 export default AbsensiOffline;
