@@ -239,3 +239,6 @@ export const kelamin = (data)=>{
     return 'Perempuan'
   }
 }
+
+
+

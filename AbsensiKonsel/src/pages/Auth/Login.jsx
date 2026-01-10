@@ -223,6 +223,11 @@ const Login = () => {
                                 <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: 'bold' }}>LOGIN</Text>
                             )}
                         </TouchableOpacity>
+
+
+                        <TouchableOpacity onPress={() => navigation.navigate("AbsenOffline")} style={styles.buttonOffline}>
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Absen Offline</Text>
+                        </TouchableOpacity>
                     </View>
 
                     <View style={{ marginHorizontal: 20, marginTop: 18, marginBottom: 150 }}>
@@ -274,6 +279,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#1CBBED',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    buttonOffline: {
+        height: 45,
+        borderRadius: 8,
+        borderColor: '#C2ABD5',
+        backgroundColor: '#D1B7E7',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10
     },
     errorBox: {
         backgroundColor: '#C66963',
