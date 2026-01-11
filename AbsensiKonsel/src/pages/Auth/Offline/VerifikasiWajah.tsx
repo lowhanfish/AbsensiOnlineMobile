@@ -487,6 +487,13 @@ const VerifikasiWajah = () => {
                     console.error('❌ Error simpan foto:', err?.message);
                     setError('Gagal menyimpan foto');
                 }
+
+                // ✅ OTOMATIS EXTRACT VEKTOR setelah foto berhasil
+                if (livenessResult.finalPhotoPath) {
+                    console.log('🧠 Mengekstrak vektor wajah...');
+                    setDetectionStatus('🧠 Mengekstrak vektor wajah...');
+                    await extractVectorFromImage(livenessResult.finalPhotoPath);
+                }
             } else {
                 setError('Foto final tidak tersedia');
             }
@@ -499,35 +506,127 @@ const VerifikasiWajah = () => {
     };
 
     // ============ EKSTRAK VEKTOR ============
-    const extractVector = async () => {
+    const extractVectorFromImage = async (imagePath: string) => {
         try {
             setLoading(true);
             setError(null);
 
-            // TODO: Ekstrak vektor menggunakan mediapipe/face-detection
-            // const vector = await extractFaceVector(imageData);
-            // setVectorData(vector);
+            // TODO: Implementasi ekstrak vektor menggunakan TensorFlow Lite / MediaPipe
+            // Contoh: const vector = await FaceNet.extractEmbedding(imagePath);
 
-            // Vektor mock untuk development
+            // Untuk sekarang gunakan ML Kit untuk mendapatkan face landmarks sebagai vektor
+            let extractedVector: number[] = [];
+
+            if (FaceDetection && FaceDetection.detect) {
+                let detectionPath = imagePath;
+                if (!detectionPath.startsWith('file://')) {
+                    detectionPath = 'file://' + detectionPath;
+                }
+
+                const faces = await FaceDetection.detect(detectionPath, {
+                    performanceMode: 'accurate',
+                    landmarkMode: 'all',
+                    contourMode: 'all',
+                    classificationMode: 'all',
+                });
+
+                if (faces && faces.length > 0) {
+                    const face = faces[0];
+
+                    // Ekstrak fitur dari face landmarks sebagai vektor sederhana
+                    // TODO: Ganti dengan face embedding yang sebenarnya (FaceNet/ArcFace)
+                    extractedVector = [
+                        // Bounding box (normalized)
+                        face.bounds?.x || 0,
+                        face.bounds?.y || 0,
+                        face.bounds?.width || 0,
+                        face.bounds?.height || 0,
+                        // Probabilitas
+                        face.leftEyeOpenProbability || 0,
+                        face.rightEyeOpenProbability || 0,
+                        face.smilingProbability || 0,
+                        // Head rotation
+                        face.headEulerAngleX || 0,
+                        face.headEulerAngleY || 0,
+                        face.headEulerAngleZ || 0,
+                    ];
+
+                    // Tambahkan landmarks jika tersedia (sebagai object, bukan array)
+                    if (face.landmarks && typeof face.landmarks === 'object') {
+                        // ML Kit landmarks adalah object dengan key seperti 'leftEye', 'rightEye', etc.
+                        const landmarkKeys = ['leftEye', 'rightEye', 'leftEar', 'rightEar', 'noseBase', 'leftCheek', 'rightCheek', 'leftMouth', 'rightMouth', 'bottomMouth'];
+                        for (const key of landmarkKeys) {
+                            const landmark = face.landmarks[key];
+                            if (landmark) {
+                                extractedVector.push(landmark.x || 0);
+                                extractedVector.push(landmark.y || 0);
+                            } else {
+                                extractedVector.push(0);
+                                extractedVector.push(0);
+                            }
+                        }
+                    }
+
+                    // Tambahkan contours jika tersedia
+                    if (face.contours && typeof face.contours === 'object') {
+                        const contourKeys = ['face', 'leftEyebrowTop', 'rightEyebrowTop', 'noseBridge', 'upperLipTop', 'lowerLipBottom'];
+                        for (const key of contourKeys) {
+                            const contour = face.contours[key];
+                            if (contour && Array.isArray(contour) && contour.length > 0) {
+                                // Ambil beberapa titik dari setiap contour
+                                const point = contour[0];
+                                extractedVector.push(point?.x || 0);
+                                extractedVector.push(point?.y || 0);
+                            } else {
+                                extractedVector.push(0);
+                                extractedVector.push(0);
+                            }
+                        }
+                    }
+
+                    // Pad ke 128 dimensi jika kurang
+                    while (extractedVector.length < 128) {
+                        extractedVector.push(0);
+                    }
+                    // Trim jika lebih
+                    extractedVector = extractedVector.slice(0, 128);
+
+                    console.log(`✅ Vektor berhasil diekstrak: ${extractedVector.length} dimensi`);
+                } else {
+                    throw new Error('Tidak ada wajah terdeteksi pada foto');
+                }
+            } else {
+                throw new Error('ML Kit tidak tersedia untuk ekstraksi vektor');
+            }
+
             const newVectorData = {
-                embedding: Array(128).fill(0).map(() => Math.random()),
+                embedding: extractedVector,
                 confidence: 0.95,
                 faceCount: 1,
                 timestamp: new Date().toISOString(),
-                imagePath: imageData,
+                imagePath: imagePath,
             };
 
             console.log('🧠 Vektor diekstrak');
-            console.log('📊 Data Vector (untuk disimpan ke lokal):');
-            console.log(JSON.stringify(newVectorData, null, 2));
+            console.log('📊 Dimensi vektor:', extractedVector.length);
 
             setVectorData(newVectorData);
+            setDetectionStatus('✅ Vektor wajah berhasil diekstrak');
 
         } catch (err: any) {
-            console.error('Error extract vector:', err);
-            setError('Gagal extract vector');
+            console.error('❌ Error extract vector:', err);
+            setError('Gagal ekstrak vektor: ' + err.message);
+            setVectorData(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const extractVector = async () => {
+        if (imageData) {
+            await extractVectorFromImage(imageData);
+        } else {
+            setError('Tidak ada foto untuk diekstrak');
         }
     };
 
@@ -538,6 +637,12 @@ const VerifikasiWajah = () => {
             return;
         }
 
+        // ✅ VALIDASI: Vektor WAJIB ada
+        if (!vectorData || !vectorData.embedding || vectorData.embedding.length === 0) {
+            setError('Data vektor wajah tidak tersedia. Silakan ambil ulang foto.');
+            return;
+        }
+
         try {
             setSendingToServer(true);
             setError(null);
@@ -545,13 +650,18 @@ const VerifikasiWajah = () => {
             // Inisialisasi database jika belum
             await initDatabase();
 
+            // Konversi vektor ke JSON string
+            const vektorString = JSON.stringify(vectorData.embedding);
+            console.log('📊 Vektor disimpan:', vectorData.embedding.length, 'dimensi');
+
             // Data yang akan disimpan
             const absensiData = {
-                nip: lokasi?.nip || 'UNKNOWN', // TODO: Ambil dari data user yang login
+                nip: lokasi?.nip || 'UNKNOWN',
                 latitude: lokasi?.latitude || 0,
                 longitude: lokasi?.longitude || 0,
                 timestamp: new Date().toISOString(),
                 image_path: imageData,
+                vektor: vektorString,
             };
 
             // Simpan ke SQLite
@@ -678,30 +788,32 @@ const VerifikasiWajah = () => {
                     {/* Action buttons */}
                     {!vectorData ? (
                         <View style={styles.actionContainer}>
-                            <Text style={styles.actionHint}>Foto siap untuk disimpan</Text>
-                            <TouchableOpacity
-                                style={[styles.button, styles.primaryBtn]}
-                                onPress={extractVector}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <>
-                                        <Text style={styles.buttonIcon}>💾</Text>
-                                        <Text style={styles.buttonText}>Simpan & Lanjutkan</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
+                            <Text style={styles.actionHint}>⏳ Mengekstrak vektor wajah...</Text>
+                            {loading ? (
+                                <ActivityIndicator size="large" color="#4CAF50" />
+                            ) : (
+                                <TouchableOpacity
+                                    style={[styles.button, styles.primaryBtn]}
+                                    onPress={extractVector}
+                                    disabled={loading}
+                                >
+                                    <Text style={styles.buttonIcon}>🔄</Text>
+                                    <Text style={styles.buttonText}>Coba Ekstrak Ulang</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
                     ) : (
                         <View style={styles.completedContainer}>
                             <View style={styles.completedCard}>
                                 <View style={styles.completedHeader}>
                                     <Text style={styles.completedIcon}>🎉</Text>
-                                    <Text style={styles.completedTitle}>Data Tersimpan!</Text>
+                                    <Text style={styles.completedTitle}>Data Siap Disimpan!</Text>
                                 </View>
                                 <View style={styles.completedInfo}>
+                                    <View style={styles.infoRow}>
+                                        <Text style={styles.infoLabel}>🧠 Vektor</Text>
+                                        <Text style={styles.statusOnline}>✅ {vectorData.embedding.length} dimensi</Text>
+                                    </View>
                                     <View style={styles.infoRow}>
                                         <Text style={styles.infoLabel}>📍 Lokasi</Text>
                                         <Text style={styles.infoValue}>{lokasi?.latitude?.toFixed(4)}, {lokasi?.longitude?.toFixed(4)}</Text>
@@ -726,8 +838,8 @@ const VerifikasiWajah = () => {
                                     <ActivityIndicator color="#fff" />
                                 ) : (
                                     <>
-                                        <Text style={styles.buttonIcon}>☁️</Text>
-                                        <Text style={styles.buttonText}>Otomatis Sinkronkan ke Server</Text>
+                                        <Text style={styles.buttonIcon}>💾</Text>
+                                        <Text style={styles.buttonText}>Simpan ke Database Lokal</Text>
                                     </>
                                 )}
                             </TouchableOpacity>

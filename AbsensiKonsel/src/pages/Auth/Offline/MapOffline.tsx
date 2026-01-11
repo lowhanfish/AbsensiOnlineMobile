@@ -233,7 +233,7 @@ const ModalNip = ({ modalVisible, closePopup, lokasi }: any) => {
         }
         closePopup();
         // Kirim lokasi beserta NIP ke VerifikasiWajah
-        navigation.navigate("VerifikasiWajah", { 
+        navigation.navigate("VerifikasiWajah", {
             lokasi: {
                 ...lokasi,
                 nip: nipValue.trim()

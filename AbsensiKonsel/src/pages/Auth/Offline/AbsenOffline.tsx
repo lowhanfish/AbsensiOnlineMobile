@@ -1,5 +1,5 @@
 
-import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Alert } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Alert, Image } from "react-native"
 import React, { useEffect, useState, useCallback } from 'react';
 import { Stylex } from "../../../assets/styles/main";
 import ImageLib from '../../../components/ImageLib';
@@ -150,7 +150,7 @@ const Darurat = () => {
 
     const handleRemove = () => {
         if (!selectedItem?.id) return;
-        
+
         Alert.alert(
             '🗑️ Hapus Data',
             `Yakin ingin menghapus data absensi NIP: ${selectedItem.nip}?`,
@@ -328,23 +328,23 @@ const Darurat = () => {
                             <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
                                 <Text style={Stylex.closeText}>✕</Text>
                             </TouchableOpacity>
-                            
+
                             <Text style={[Stylex.popupTitle, { marginBottom: 5 }]}>Pilih Aksi</Text>
-                            
+
                             {selectedItem && (
                                 <Text style={styles.actionSubtitle}>NIP: {selectedItem.nip}</Text>
                             )}
 
                             <View style={styles.actionButtonsContainer}>
-                                <TouchableOpacity 
-                                    style={[styles.actionButton, styles.detailButton]} 
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.detailButton]}
                                     onPress={openDetailModal}
                                 >
                                     <Text style={styles.actionButtonText}>📋 Detail</Text>
                                 </TouchableOpacity>
-                                
-                                <TouchableOpacity 
-                                    style={[styles.actionButton, styles.removeButton]} 
+
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.removeButton]}
                                     onPress={handleRemove}
                                 >
                                     <Text style={[styles.actionButtonText, { color: '#fff' }]}>🗑️ Remove</Text>
@@ -366,6 +366,17 @@ const Darurat = () => {
 
                             {selectedItem && (
                                 <View style={styles.detailContainer}>
+                                    {/* Foto yang tercapture */}
+                                    {selectedItem.image_path && (
+                                        <View style={styles.photoContainer}>
+                                            <Image
+                                                source={{ uri: `file://${selectedItem.image_path}` }}
+                                                style={styles.capturedPhoto}
+                                                resizeMode="cover"
+                                            />
+                                        </View>
+                                    )}
+                                    
                                     <View style={styles.detailRow}>
                                         <Text style={styles.detailLabel}>NIP:</Text>
                                         <Text style={styles.detailValue}>{selectedItem.nip}</Text>
@@ -519,6 +530,17 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#2196F3',
+    },
+    photoContainer: {
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    capturedPhoto: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        borderWidth: 3,
+        borderColor: '#4CAF50',
     },
 });
 

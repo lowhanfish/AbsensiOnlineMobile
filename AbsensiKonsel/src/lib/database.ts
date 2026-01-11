@@ -36,6 +36,7 @@ export interface AbsensiOffline {
   longitude: number;
   timestamp: string;
   image_path: string;
+  vektor: string;               // Face embedding vector (JSON string)
   status: AbsensiStatus;        // 0=pending, 1=accepted, 2=rejected
   description: string;          // Deskripsi hasil validasi dari server
   is_synced: number;            // 0 = belum sync, 1 = sudah sync
@@ -49,6 +50,7 @@ export interface AbsensiOfflineInput {
   longitude: number;
   timestamp: string;
   image_path: string;
+  vektor: string;               // Face embedding vector (JSON string)
 }
 
 export interface ServerValidationResult {
@@ -102,6 +104,7 @@ export const initDatabase = async (): Promise<void> => {
         longitude REAL NOT NULL,
         timestamp TEXT NOT NULL,
         image_path TEXT NOT NULL,
+        vektor TEXT,
         status INTEGER DEFAULT 0,
         description TEXT DEFAULT 'Menunggu sinkronisasi',
         is_synced INTEGER DEFAULT 0,
@@ -109,6 +112,14 @@ export const initDatabase = async (): Promise<void> => {
         synced_at TEXT
       );
     `);
+
+    // Tambah kolom vektor jika belum ada (untuk migrasi database lama)
+    try {
+      await db.executeSql(`ALTER TABLE absensi_offline ADD COLUMN vektor TEXT;`);
+      console.log('✅ Kolom vektor berhasil ditambahkan');
+    } catch (e) {
+      // Kolom sudah ada, abaikan error
+    }
 
     // Buat index untuk query yang sering digunakan
     await db.executeSql(`
@@ -142,14 +153,15 @@ export const saveAbsensiOffline = async (
     const createdAt = new Date().toISOString();
 
     const [result] = await db.executeSql(
-      `INSERT INTO absensi_offline (nip, latitude, longitude, timestamp, image_path, status, description, is_synced, created_at)
-       VALUES (?, ?, ?, ?, ?, 0, 'Menunggu sinkronisasi', 0, ?);`,
+      `INSERT INTO absensi_offline (nip, latitude, longitude, timestamp, image_path, vektor, status, description, is_synced, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 0, 'Menunggu sinkronisasi', 0, ?);`,
       [
         data.nip,
         data.latitude,
         data.longitude,
         data.timestamp,
         data.image_path,
+        data.vektor || null,
         createdAt,
       ],
     );
