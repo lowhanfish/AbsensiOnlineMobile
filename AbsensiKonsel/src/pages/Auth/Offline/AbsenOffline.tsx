@@ -25,9 +25,6 @@ import {
 const { height, width } = Dimensions.get('window');
 
 
-
-
-
 const Darurat = () => {
 
 
