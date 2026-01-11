@@ -11,6 +11,7 @@ import BootSplash from 'react-native-bootsplash';
 import Login from './src/pages/Auth/Login';
 import MainPage from './src/pages/MainPage';
 import AbsenOffline from './src/pages/Auth/Offline/AbsenOffline';
+import MapOffline from './src/pages/Auth/Offline/MapOffline';
 import VerifikasiWajah from './src/pages/Auth/Offline/VerifikasiWajah';
 
 const Stack = createNativeStackNavigator();
@@ -67,6 +68,7 @@ function RootStack() {
         <>
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="AbsenOffline" component={AbsenOffline} />
+          <Stack.Screen name="MapOffline" component={MapOffline} />
           <Stack.Screen name="VerifikasiWajah" component={VerifikasiWajah} />
         </>
       )}

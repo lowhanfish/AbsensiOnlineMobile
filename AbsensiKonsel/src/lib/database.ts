@@ -16,6 +16,19 @@ SQLite.enablePromise(true);
 SQLite.DEBUG(__DEV__);
 
 // ============ TIPE DATA ============
+
+// Status absensi setelah validasi server
+// 0 = pending (menunggu validasi)
+// 1 = accepted (diterima)
+// 2 = rejected (ditolak)
+export type AbsensiStatus = 0 | 1 | 2;
+
+export const ABSENSI_STATUS = {
+  PENDING: 0 as AbsensiStatus,
+  ACCEPTED: 1 as AbsensiStatus,
+  REJECTED: 2 as AbsensiStatus,
+};
+
 export interface AbsensiOffline {
   id?: number;
   nip: string;
@@ -23,7 +36,9 @@ export interface AbsensiOffline {
   longitude: number;
   timestamp: string;
   image_path: string;
-  is_synced: number; // 0 = belum sync, 1 = sudah sync
+  status: AbsensiStatus;        // 0=pending, 1=accepted, 2=rejected
+  description: string;          // Deskripsi hasil validasi dari server
+  is_synced: number;            // 0 = belum sync, 1 = sudah sync
   created_at: string;
   synced_at?: string | null;
 }
@@ -34,6 +49,11 @@ export interface AbsensiOfflineInput {
   longitude: number;
   timestamp: string;
   image_path: string;
+}
+
+export interface ServerValidationResult {
+  status: AbsensiStatus;
+  description: string;
 }
 
 // ============ KONSTANTA ============
@@ -82,6 +102,8 @@ export const initDatabase = async (): Promise<void> => {
         longitude REAL NOT NULL,
         timestamp TEXT NOT NULL,
         image_path TEXT NOT NULL,
+        status INTEGER DEFAULT 0,
+        description TEXT DEFAULT 'Menunggu sinkronisasi',
         is_synced INTEGER DEFAULT 0,
         created_at TEXT NOT NULL,
         synced_at TEXT
@@ -97,6 +119,9 @@ export const initDatabase = async (): Promise<void> => {
     `);
     await db.executeSql(`
       CREATE INDEX IF NOT EXISTS idx_timestamp ON absensi_offline(timestamp);
+    `);
+    await db.executeSql(`
+      CREATE INDEX IF NOT EXISTS idx_status ON absensi_offline(status);
     `);
 
     console.log('✅ Database berhasil diinisialisasi');
@@ -117,8 +142,8 @@ export const saveAbsensiOffline = async (
     const createdAt = new Date().toISOString();
 
     const [result] = await db.executeSql(
-      `INSERT INTO absensi_offline (nip, latitude, longitude, timestamp, image_path, is_synced, created_at)
-       VALUES (?, ?, ?, ?, ?, 0, ?);`,
+      `INSERT INTO absensi_offline (nip, latitude, longitude, timestamp, image_path, status, description, is_synced, created_at)
+       VALUES (?, ?, ?, ?, ?, 0, 'Menunggu sinkronisasi', 0, ?);`,
       [
         data.nip,
         data.latitude,
@@ -208,6 +233,86 @@ export const getAbsensiByNip = async (nip: string): Promise<AbsensiOffline[]> =>
 };
 
 /**
+ * Ambil data absensi berdasarkan status (pending/accepted/rejected)
+ */
+export const getAbsensiByStatus = async (status: AbsensiStatus): Promise<AbsensiOffline[]> => {
+  try {
+    const db = await getDatabase();
+    const [result] = await db.executeSql(
+      `SELECT * FROM absensi_offline WHERE status = ? ORDER BY created_at DESC;`,
+      [status],
+    );
+
+    const absensiList: AbsensiOffline[] = [];
+    for (let i = 0; i < result.rows.length; i++) {
+      absensiList.push(result.rows.item(i));
+    }
+
+    const statusLabel = status === 0 ? 'pending' : status === 1 ? 'accepted' : 'rejected';
+    console.log(`📋 Ditemukan ${absensiList.length} absensi dengan status: ${statusLabel}`);
+    return absensiList;
+  } catch (error) {
+    console.error('❌ Gagal mengambil data by status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Hitung jumlah data berdasarkan status
+ */
+export const countAbsensiByStatus = async (status: AbsensiStatus): Promise<number> => {
+  try {
+    const db = await getDatabase();
+    const [result] = await db.executeSql(
+      `SELECT COUNT(*) as count FROM absensi_offline WHERE status = ?;`,
+      [status],
+    );
+
+    const count = result.rows.item(0).count;
+    return count;
+  } catch (error) {
+    console.error('❌ Gagal hitung by status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Ambil ringkasan statistik absensi
+ */
+export const getAbsensiStats = async (): Promise<{
+  total: number;
+  pending: number;
+  accepted: number;
+  rejected: number;
+  unsynced: number;
+}> => {
+  try {
+    const db = await getDatabase();
+    const [result] = await db.executeSql(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as accepted,
+        SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as rejected,
+        SUM(CASE WHEN is_synced = 0 THEN 1 ELSE 0 END) as unsynced
+      FROM absensi_offline;
+    `);
+
+    const row = result.rows.item(0);
+    return {
+      total: row.total || 0,
+      pending: row.pending || 0,
+      accepted: row.accepted || 0,
+      rejected: row.rejected || 0,
+      unsynced: row.unsynced || 0,
+    };
+  } catch (error) {
+    console.error('❌ Gagal mengambil statistik:', error);
+    throw error;
+  }
+};
+
+/**
  * Ambil data absensi berdasarkan tanggal
  */
 export const getAbsensiByDate = async (date: string): Promise<AbsensiOffline[]> => {
@@ -233,17 +338,23 @@ export const getAbsensiByDate = async (date: string): Promise<AbsensiOffline[]> 
 /**
  * Update status sync setelah berhasil kirim ke server
  */
-export const markAsSynced = async (id: number): Promise<void> => {
+export const markAsSynced = async (
+  id: number,
+  validationResult: ServerValidationResult,
+): Promise<void> => {
   try {
     const db = await getDatabase();
     const syncedAt = new Date().toISOString();
 
     await db.executeSql(
-      `UPDATE absensi_offline SET is_synced = 1, synced_at = ? WHERE id = ?;`,
-      [syncedAt, id],
+      `UPDATE absensi_offline 
+       SET is_synced = 1, synced_at = ?, status = ?, description = ? 
+       WHERE id = ?;`,
+      [syncedAt, validationResult.status, validationResult.description, id],
     );
 
-    console.log('✅ Absensi ID', id, 'ditandai sudah sync');
+    const statusLabel = validationResult.status === 0 ? 'pending' : validationResult.status === 1 ? 'accepted' : 'rejected';
+    console.log('✅ Absensi ID', id, 'ditandai sudah sync dengan status:', statusLabel);
   } catch (error) {
     console.error('❌ Gagal update status sync:', error);
     throw error;
@@ -251,20 +362,26 @@ export const markAsSynced = async (id: number): Promise<void> => {
 };
 
 /**
- * Update status sync untuk multiple ID sekaligus
+ * Update status sync untuk multiple ID sekaligus (dengan status yang sama)
  */
-export const markMultipleAsSynced = async (ids: number[]): Promise<void> => {
+export const markMultipleAsSynced = async (
+  ids: number[],
+  validationResult: ServerValidationResult,
+): Promise<void> => {
   try {
     const db = await getDatabase();
     const syncedAt = new Date().toISOString();
     const placeholders = ids.map(() => '?').join(',');
 
     await db.executeSql(
-      `UPDATE absensi_offline SET is_synced = 1, synced_at = ? WHERE id IN (${placeholders});`,
-      [syncedAt, ...ids],
+      `UPDATE absensi_offline 
+       SET is_synced = 1, synced_at = ?, status = ?, description = ? 
+       WHERE id IN (${placeholders});`,
+      [syncedAt, validationResult.status, validationResult.description, ...ids],
     );
 
-    console.log('✅', ids.length, 'absensi ditandai sudah sync');
+    const statusLabel = validationResult.status === 0 ? 'pending' : validationResult.status === 1 ? 'accepted' : 'rejected';
+    console.log('✅', ids.length, 'absensi ditandai sudah sync dengan status:', statusLabel);
   } catch (error) {
     console.error('❌ Gagal update multiple sync:', error);
     throw error;
