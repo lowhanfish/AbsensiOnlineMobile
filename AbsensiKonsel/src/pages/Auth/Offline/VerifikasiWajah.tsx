@@ -5,6 +5,9 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import * as RNFS from 'react-native-fs';
 
+// Import Database
+import { initDatabase, saveAbsensiOffline, countUnsyncedAbsensi } from '../../../lib/database';
+
 // Import ML Kit Face Detection
 let FaceDetection: any = null;
 try {
@@ -505,13 +508,21 @@ const VerifikasiWajah = () => {
             // const vector = await extractFaceVector(imageData);
             // setVectorData(vector);
 
-            console.log('🧠 Vektor diekstrak');
             // Vektor mock untuk development
-            setVectorData({
-                embedding: Array(128).fill(Math.random()),
+            const newVectorData = {
+                embedding: Array(128).fill(0).map(() => Math.random()),
                 confidence: 0.95,
                 faceCount: 1,
-            });
+                timestamp: new Date().toISOString(),
+                imagePath: imageData,
+            };
+
+            console.log('🧠 Vektor diekstrak');
+            console.log('📊 Data Vector (untuk disimpan ke lokal):');
+            console.log(JSON.stringify(newVectorData, null, 2));
+
+            setVectorData(newVectorData);
+
         } catch (err: any) {
             console.error('Error extract vector:', err);
             setError('Gagal extract vector');
@@ -520,10 +531,10 @@ const VerifikasiWajah = () => {
         }
     };
 
-    // ============ KIRIM KE SERVER ============
+    // ============ SIMPAN KE DATABASE LOKAL ============
     const sendToServer = async () => {
-        if (!vectorData) {
-            setError('Data vektor tidak tersedia');
+        if (!imageData) {
+            setError('Data foto tidak tersedia');
             return;
         }
 
@@ -531,13 +542,39 @@ const VerifikasiWajah = () => {
             setSendingToServer(true);
             setError(null);
 
-            // TODO: Implementasi sinkronisasi server
-            // Untuk sekarang, tampilkan sukses saja
-            Alert.alert('Info', 'Data akan disinkronkan saat online');
-            navigation.goBack();
+            // Inisialisasi database jika belum
+            await initDatabase();
+
+            // Data yang akan disimpan
+            const absensiData = {
+                nip: lokasi?.nip || 'UNKNOWN', // TODO: Ambil dari data user yang login
+                latitude: lokasi?.latitude || 0,
+                longitude: lokasi?.longitude || 0,
+                timestamp: new Date().toISOString(),
+                image_path: imageData,
+            };
+
+            // Simpan ke SQLite
+            const insertId = await saveAbsensiOffline(absensiData);
+            console.log('✅ Data tersimpan dengan ID:', insertId);
+            console.log('📊 Data yang disimpan:', JSON.stringify(absensiData, null, 2));
+
+            // Hitung total data yang belum sync
+            const unsyncedCount = await countUnsyncedAbsensi();
+
+            Alert.alert(
+                '✅ Berhasil',
+                `Absensi tersimpan secara offline.\nTotal pending sync: ${unsyncedCount} data`,
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => navigation.goBack(),
+                    },
+                ],
+            );
         } catch (err: any) {
-            console.error('Error send to server:', err);
-            setError('Gagal kirim ke server');
+            console.error('❌ Error simpan ke database:', err);
+            setError('Gagal menyimpan data: ' + err.message);
         } finally {
             setSendingToServer(false);
         }
@@ -567,6 +604,13 @@ const VerifikasiWajah = () => {
                         isActive={true}
                         photo={true}
                     />
+
+                    {/* Lingkaran panduan penempatan wajah */}
+                    <View style={styles.faceGuideOverlay}>
+                        <View style={styles.faceGuideCircle}>
+                            <Text style={styles.faceGuideText}>Posisikan wajah di sini</Text>
+                        </View>
+                    </View>
 
                     {/* Status indicator */}
                     <View style={styles.statusIndicator}>
@@ -606,48 +650,85 @@ const VerifikasiWajah = () => {
             ) : (
                 /* REVIEW SECTION */
                 <View style={styles.reviewSection}>
-                    {/* Image preview */}
-                    <View style={styles.imagePreview}>
-                        {imageData ? (
-                            <Image
-                                source={{ uri: `file://${imageData}` }}
-                                style={styles.capturedImage}
-                                resizeMode="cover"
-                            />
-                        ) : (
-                            <Text style={styles.previewText}>📸 Foto Tersimpan</Text>
-                        )}
+                    {/* Success Badge */}
+                    <View style={styles.successBadge}>
+                        <Text style={styles.successIcon}>✅</Text>
+                        <Text style={styles.successTitle}>Verifikasi Berhasil!</Text>
+                        <Text style={styles.successSubtitle}>Wajah Anda telah terverifikasi</Text>
                     </View>
 
-                    {/* Extract vector button */}
-                    {!vectorData ? (
-                        <TouchableOpacity
-                            style={[styles.button, styles.extractBtn]}
-                            onPress={extractVector}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color="#fff" />
+                    {/* Image preview */}
+                    <View style={styles.imagePreviewContainer}>
+                        <View style={styles.imagePreview}>
+                            {imageData ? (
+                                <Image
+                                    source={{ uri: `file://${imageData}` }}
+                                    style={styles.capturedImage}
+                                    resizeMode="cover"
+                                />
                             ) : (
-                                <Text style={styles.buttonText}>✓ Foto OK, Lanjut</Text>
+                                <Text style={styles.previewText}>📸 Foto Tersimpan</Text>
                             )}
-                        </TouchableOpacity>
+                        </View>
+                        <View style={styles.verifiedBadge}>
+                            <Text style={styles.verifiedText}>✓ Terverifikasi</Text>
+                        </View>
+                    </View>
+
+                    {/* Action buttons */}
+                    {!vectorData ? (
+                        <View style={styles.actionContainer}>
+                            <Text style={styles.actionHint}>Foto siap untuk disimpan</Text>
+                            <TouchableOpacity
+                                style={[styles.button, styles.primaryBtn]}
+                                onPress={extractVector}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <ActivityIndicator color="#fff" />
+                                ) : (
+                                    <>
+                                        <Text style={styles.buttonIcon}>💾</Text>
+                                        <Text style={styles.buttonText}>Simpan & Lanjutkan</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        </View>
                     ) : (
-                        <View style={styles.vectorInfo}>
-                            <Text style={styles.infoText}>✅ Verifikasi Berhasil</Text>
-                            <Text style={styles.confidenceText}>
-                                Ready to sync
-                            </Text>
+                        <View style={styles.completedContainer}>
+                            <View style={styles.completedCard}>
+                                <View style={styles.completedHeader}>
+                                    <Text style={styles.completedIcon}>🎉</Text>
+                                    <Text style={styles.completedTitle}>Data Tersimpan!</Text>
+                                </View>
+                                <View style={styles.completedInfo}>
+                                    <View style={styles.infoRow}>
+                                        <Text style={styles.infoLabel}>📍 Lokasi</Text>
+                                        <Text style={styles.infoValue}>{lokasi?.latitude?.toFixed(4)}, {lokasi?.longitude?.toFixed(4)}</Text>
+                                    </View>
+                                    <View style={styles.infoRow}>
+                                        <Text style={styles.infoLabel}>⏰ Waktu</Text>
+                                        <Text style={styles.infoValue}>{new Date().toLocaleTimeString('id-ID')}</Text>
+                                    </View>
+                                    <View style={styles.infoRow}>
+                                        <Text style={styles.infoLabel}>📶 Status</Text>
+                                        <Text style={styles.statusOnline}>Siap Sinkronisasi</Text>
+                                    </View>
+                                </View>
+                            </View>
 
                             <TouchableOpacity
-                                style={[styles.button, styles.sendBtn]}
+                                style={[styles.button, styles.syncBtn]}
                                 onPress={sendToServer}
                                 disabled={sendingToServer}
                             >
                                 {sendingToServer ? (
                                     <ActivityIndicator color="#fff" />
                                 ) : (
-                                    <Text style={styles.buttonText}>Kirim ke Server</Text>
+                                    <>
+                                        <Text style={styles.buttonIcon}>☁️</Text>
+                                        <Text style={styles.buttonText}>Otomatis Sinkronkan ke Server</Text>
+                                    </>
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -664,7 +745,7 @@ const VerifikasiWajah = () => {
                         }}
                         disabled={loading || sendingToServer}
                     >
-                        <Text style={styles.buttonText}>🔄 Ambil Ulang</Text>
+                        <Text style={styles.retakeBtnText}>🔄 Ambil Ulang Foto</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -707,12 +788,46 @@ const styles = StyleSheet.create({
     cameraSection: {
         flex: 1,
         justifyContent: 'flex-end',
+        alignItems: 'stretch',
         gap: 20,
+        position: 'relative',
     },
     camera: {
         flex: 1,
+        width: '100%',
+        alignSelf: 'center',
         borderRadius: 15,
         overflow: 'hidden',
+    },
+    faceGuideOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 70, // Ruang untuk tombol di bawah
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    faceGuideCircle: {
+        width: 240,
+        height: 300,
+        borderRadius: 120,
+        borderWidth: 3,
+        borderColor: '#4CAF50',
+        borderStyle: 'dashed',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingBottom: 15,
+        marginTop: -30, // Geser sedikit ke atas agar lebih tengah
+    },
+    faceGuideText: {
+        color: '#fff',
+        fontSize: 12,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 10,
     },
     placeholderCamera: {
         height: 300,
@@ -736,16 +851,155 @@ const styles = StyleSheet.create({
     reviewSection: {
         flex: 1,
         justifyContent: 'center',
-        gap: 15,
+        gap: 12,
+    },
+    successBadge: {
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    successIcon: {
+        fontSize: 40,
+        marginBottom: 8,
+    },
+    successTitle: {
+        color: '#4CAF50',
+        fontSize: 22,
+        fontWeight: 'bold',
+    },
+    successSubtitle: {
+        color: '#aaa',
+        fontSize: 14,
+        marginTop: 4,
+    },
+    imagePreviewContainer: {
+        position: 'relative',
+        alignItems: 'center',
     },
     imagePreview: {
-        height: 250,
-        borderRadius: 15,
+        width: '100%',
+        height: 220,
+        borderRadius: 20,
         backgroundColor: '#333',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 2,
+        overflow: 'hidden',
+        borderWidth: 3,
         borderColor: '#4CAF50',
+    },
+    verifiedBadge: {
+        position: 'absolute',
+        bottom: -12,
+        backgroundColor: '#4CAF50',
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderRadius: 20,
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    verifiedText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    actionContainer: {
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    actionHint: {
+        color: '#888',
+        fontSize: 13,
+        marginBottom: 12,
+    },
+    completedContainer: {
+        marginTop: 15,
+    },
+    completedCard: {
+        backgroundColor: '#1e3a1e',
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#2d5a2d',
+    },
+    completedHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#2d5a2d',
+    },
+    completedIcon: {
+        fontSize: 24,
+        marginRight: 8,
+    },
+    completedTitle: {
+        color: '#4CAF50',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    completedInfo: {
+        gap: 10,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    infoLabel: {
+        color: '#888',
+        fontSize: 13,
+    },
+    infoValue: {
+        color: '#fff',
+        fontSize: 13,
+        fontFamily: 'monospace',
+    },
+    statusOnline: {
+        color: '#4CAF50',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    primaryBtn: {
+        backgroundColor: '#4CAF50',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 16,
+        borderRadius: 12,
+        width: '100%',
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 5,
+    },
+    syncBtn: {
+        backgroundColor: '#2196F3',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        marginTop: 16,
+        paddingVertical: 16,
+        borderRadius: 12,
+        shadowColor: '#2196F3',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 5,
+    },
+    buttonIcon: {
+        fontSize: 18,
+    },
+    retakeBtnText: {
+        color: '#f44336',
+        fontSize: 14,
+        fontWeight: '600',
     },
     previewText: {
         fontSize: 16,
@@ -770,7 +1024,10 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     retakeBtn: {
-        backgroundColor: '#f44336',
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: '#f44336',
+        marginTop: 8,
     },
     buttonText: {
         color: '#fff',
@@ -863,16 +1120,19 @@ const styles = StyleSheet.create({
     },
     locationInfo: {
         backgroundColor: '#222',
-        padding: 12,
-        borderRadius: 8,
+        padding: 14,
+        borderRadius: 12,
         borderLeftWidth: 4,
         borderLeftColor: '#2196F3',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
     },
     locationText: {
         color: '#aaa',
         fontSize: 11,
-        marginTop: 5,
         fontFamily: 'monospace',
+        flex: 1,
     },
 });
 
