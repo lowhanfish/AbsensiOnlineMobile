@@ -1,5 +1,5 @@
 
-import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Alert, Image } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Alert, Image, Linking, Platform } from "react-native"
 import React, { useEffect, useState, useCallback } from 'react';
 import { Stylex } from "../../../assets/styles/main";
 import ImageLib from '../../../components/ImageLib';
@@ -207,6 +207,35 @@ const Darurat = () => {
         }
     };
 
+    // Buka Maps dengan koordinat
+    const openMaps = (latitude: number, longitude: number) => {
+        const label = 'Lokasi Absensi';
+        const url = Platform.select({
+            ios: `maps:0,0?q=${latitude},${longitude}(${label})`,
+            android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${label})`,
+        });
+
+        // Fallback ke Google Maps URL jika scheme tidak didukung
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+        if (url) {
+            Linking.canOpenURL(url)
+                .then((supported) => {
+                    if (supported) {
+                        return Linking.openURL(url);
+                    } else {
+                        // Fallback ke Google Maps web
+                        return Linking.openURL(googleMapsUrl);
+                    }
+                })
+                .catch(() => {
+                    Linking.openURL(googleMapsUrl);
+                });
+        } else {
+            Linking.openURL(googleMapsUrl);
+        }
+    };
+
     // Refresh data saat screen focus
     useFocusEffect(
         useCallback(() => {
@@ -376,7 +405,7 @@ const Darurat = () => {
                                             />
                                         </View>
                                     )}
-                                    
+
                                     <View style={styles.detailRow}>
                                         <Text style={styles.detailLabel}>NIP:</Text>
                                         <Text style={styles.detailValue}>{selectedItem.nip}</Text>
@@ -385,10 +414,16 @@ const Darurat = () => {
                                         <Text style={styles.detailLabel}>Waktu:</Text>
                                         <Text style={styles.detailValue}>{formatDate(selectedItem.timestamp)}</Text>
                                     </View>
-                                    <View style={styles.detailRow}>
+                                    <TouchableOpacity
+                                        style={styles.detailRow}
+                                        onPress={() => openMaps(selectedItem.latitude, selectedItem.longitude)}
+                                        activeOpacity={0.7}
+                                    >
                                         <Text style={styles.detailLabel}>Lokasi:</Text>
-                                        <Text style={styles.detailValue}>{selectedItem.latitude.toFixed(6)}, {selectedItem.longitude.toFixed(6)}</Text>
-                                    </View>
+                                        <Text style={[styles.detailValue, styles.linkText]}>
+                                            {selectedItem.latitude.toFixed(6)}, {selectedItem.longitude.toFixed(6)} 📍
+                                        </Text>
+                                    </TouchableOpacity>
                                     <View style={styles.detailRow}>
                                         <Text style={styles.detailLabel}>Status:</Text>
                                         <Text style={[styles.detailValue, {
@@ -541,6 +576,19 @@ const styles = StyleSheet.create({
         borderRadius: 75,
         borderWidth: 3,
         borderColor: '#4CAF50',
+    },
+    locationLink: {
+        flex: 2,
+        alignItems: 'flex-end',
+    },
+    linkText: {
+        color: '#2196F3',
+        textDecorationLine: 'underline',
+    },
+    tapHint: {
+        fontSize: 9,
+        color: '#999',
+        marginTop: 2,
     },
 });
 
