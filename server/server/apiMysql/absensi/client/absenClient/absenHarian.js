@@ -25,6 +25,27 @@ router.get('/cappo', (req, res)=>{
     res.json('wataaaooo')
 })
 
+
+// INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
+router.post('/Add_v2', async (req, res) => {
+    var jam = lib.Timex().jam;
+    
+    console.log("===========================================");
+    console.log("ABSEN HARIAN V2 (FACE RECOGNATION) DI PANGGIL");
+    console.log("Body:", req.body);
+    console.log("User:", req.user?._id);
+    console.log("Jam:", jam);
+    console.log("===========================================");
+
+    res.status(200).json({
+        status: 'ABSEN SUKSES',
+        ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
+        jam: jam
+    });
+});
+
+
+// INI UNTUK ABSENSI VERSI LAMA (TANPA FACE RECOGNATION)
 router.post('/Add', async (req, res) => {
 
     // console.log(url_micro_4+'/micro_4/Add_Absen/Add');

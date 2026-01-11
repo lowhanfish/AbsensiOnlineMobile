@@ -27,6 +27,11 @@ import ApelDetail from './Apel/ApelDetail';
 import Izin from './Izin/Izin';
 import IzinForm from './Izin/IzinForm';
 
+// Offline Absensi Screens
+import AbsenOffline from './Auth/Offline/AbsenOffline';
+import MapOffline from './Auth/Offline/MapOffline';
+import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
+
 import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
 import BottomBar from '../components/BottomBar';
@@ -51,6 +56,12 @@ const ContentAll = () => {
             <ContentStack.Screen name="ApelDetail" component={ApelDetail} />
             <ContentStack.Screen name="Izin" component={Izin} />
             <ContentStack.Screen name="IzinForm" component={IzinForm} />
+
+            {/* Offline Absensi */}
+            <ContentStack.Screen name="AbsenOffline" component={AbsenOffline} />
+            <ContentStack.Screen name="MapOffline" component={MapOffline} />
+            <ContentStack.Screen name="VerifikasiWajah" component={VerifikasiWajah} />
+
         </ContentStack.Navigator>
     );
 };
