@@ -1,271 +1,234 @@
-# 📱 AbsensiKonsel
+# 📱 AbsensiKonsel - Complete System
 
-**AbsensiKonsel** is a **mobile-based online attendance application** designed for **civil servants (ASN)** within the **Konawe Selatan Regency Government**.  
-This mobile version serves as an **integral part of the AbsensiKonsel backend system**, which manages authentication and attendance records.
+**AbsensiKonsel** is a **comprehensive online attendance system** designed for **civil servants (ASN)** within the **Konawe Selatan Regency Government**.
 
-The app leverages **Face Recognition** and **Geolocation** technologies to ensure attendance verification is both **accurate and location-based**.
-
----
-
-## 🚀 Key Features
-
-- 🔐 **Secure authentication** for ASN through backend integration.
-- 📍 **Location-based attendance (Geolocation)** verification.
-- 🧠 **Face Recognition** for biometric identity validation.
-- 📅 **Attendance history tracking** and status updates.
-- 📱 **Cross-platform support**: Android & iOS.
-
----
-
-## ⚙️ Technical Specifications
-
-| Component               | Version / Specification |
-| ----------------------- | ----------------------- |
-| **Gradle Plugin**       | 8.14.1                  |
-| **Java**                | 17.0.10                 |
-| **Node.js**             | ≥ 20.19.0               |
-| **React**               | 19.1.0                  |
-| **React Native**        | 0.80.1                  |
-| **Build Tools Version** | 35.0.0                  |
-| **Min SDK Version**     | 24                      |
-| **Compile SDK Version** | 35                      |
-| **Target SDK Version**  | 35                      |
-| **NDK Version**         | 27.1.12297006           |
-| **Kotlin Version**      | 2.1.20                  |
-
----
-
-## 🧩 Installation & Setup
-
-### 1️⃣ Clone the repository
-
-```bash
-git clone https://github.com/lowhanfish/AbsensiOnlineMobile.git
-cd AbsensiKonsel
-```
-
-### 2️⃣ Install dependencies
-
-```bash
-npm install
-```
-
-### 3️⃣ iOS setup
-
-›
-Navigate to the iOS directory and install pods:
-
-```bash
-cd ios
-pod install
-```
-
----
-
-## ▶️ Running the Application
-
-### 🔹 Android››
-
-Ensure your Android emulator is running, then execute:
-
-```bash
-npx react-native run-android
-```
-
-### 🔹 iOS
-
-Make sure **Xcode** and an iOS emulator are installed, then run:
-
-```bash
-npx run-ios
-```
-
----
-
-## 🧠 Technologies Used
-
-- **React Native** → Mobile app framework
-- **Face Recognition** → Biometric attendance validation
-- **Geolocation API** → Location verification
-- **Backend Server (AbsensiKonsel-Server)** → Data management and authentication
-- **SQLite** → Local database for offline attendance
-- **ML Kit Face Detection** → Liveness detection with gesture verification
+This repository contains the complete ecosystem including **Mobile App**, **Backend Server (Microservices)**, and **Web Client**.
 
 ---
 
 ## 🏗️ System Architecture
 
 ```
-[Mobile App (AbsensiKonsel)]
-        │
-        ▼
-[Face Recognition & GPS Validation]
-        │
-        ▼
-[Backend Server]
-        │
-        ▼
-[Database & Admin Panel]
+┌─────────────────────────────────────────────────────────────────┐
+│                    AbsensiKonsel System                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
+│  │   Mobile     │    │    Web       │    │   Admin      │      │
+│  │    App       │    │   Client     │    │   Panel      │      │
+│  │  (React      │    │   (Vue.js)   │    │   (Vue.js)   │      │
+│  │   Native)    │    │              │    │              │      │
+│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘      │
+│         │                   │                   │               │
+│         └───────────────────┼───────────────────┘               │
+│                             │                                   │
+│                             ▼                                   │
+│              ┌──────────────────────────────┐                   │
+│              │     API Gateway / Server      │                   │
+│              │       (Node.js/Express)       │                   │
+│              └──────────────┬───────────────┘                   │
+│                             │                                   │
+│         ┌───────────────────┼───────────────────┐               │
+│         ▼                   ▼                   ▼               │
+│  ┌────────────┐     ┌────────────┐     ┌────────────┐          │
+│  │ Microservice│     │ Microservice│     │ Microservice│         │
+│  │     1-4     │     │     5-6     │     │     7-8     │         │
+│  └──────┬─────┘     └──────┬─────┘     └──────┬─────┘          │
+│         │                  │                  │                 │
+│         └──────────────────┼──────────────────┘                 │
+│                            ▼                                    │
+│                   ┌──────────────┐                              │
+│                   │    MySQL     │                              │
+│                   │   Database   │                              │
+│                   └──────────────┘                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📁 Project Structure
+## 📁 Repository Structure
 
 ```
-AbsensiKonsel/
-├── src/
-│   ├── assets/              # Images, fonts, and other assets
-│   ├── components/          # Reusable UI components
-│   ├── lib/
-│   │   ├── database.ts      # SQLite database helper
-│   │   ├── fetching.js      # API fetching utilities
-│   │   └── kiken.js         # Helper functions
-│   ├── pages/
-│   │   └── Auth/
-│   │       └── Offline/
-│   │           └── VerifikasiWajah.tsx  # Face verification & liveness detection
-│   └── redux/               # State management
-├── android/                 # Android native code
-├── ios/                     # iOS native code
-└── assets/                  # App assets (splash, icons)
-```
-
----
-
-## 💾 Local Database (SQLite)
-
-The application uses **SQLite** to store attendance data offline. Data will be synchronized to the server when an internet connection is available.
-
-### 📊 Table: `absensi_offline`
-
-| Column        | Type    | Description                                                |
-| ------------- | ------- | ---------------------------------------------------------- |
-| `id`          | INTEGER | Primary key, auto increment                                |
-| `nip`         | TEXT    | Civil servant identification number                        |
-| `latitude`    | REAL    | Attendance location latitude                               |
-| `longitude`   | REAL    | Attendance location longitude                              |
-| `timestamp`   | TEXT    | Attendance time (ISO 8601 format)                          |
-| `image_path`  | TEXT    | Selfie photo path on device                                |
-| `status`      | INTEGER | Validation status: `0`=pending, `1`=accepted, `2`=rejected |
-| `description` | TEXT    | Validation result description from server                  |
-| `is_synced`   | INTEGER | Sync status (0=not synced, 1=synced)                       |
-| `created_at`  | TEXT    | Record creation time                                       |
-| `synced_at`   | TEXT    | Time when successfully synced to server                    |
-
-### 📋 Status Codes
-
-| Code | Label    | Description                    |
-| ---- | -------- | ------------------------------ |
-| `0`  | Pending  | Waiting for synchronization    |
-| `1`  | Accepted | Attendance validated by server |
-| `2`  | Rejected | Attendance rejected by server  |
-
----
-
-## 🧬 Liveness Detection
-
-The application uses **gesture-based liveness detection** to ensure the user is a real human, not a photo or video.
-
-### 🎯 Supported Gestures
-
-| Gesture         | Icon | Detection                                    |
-| --------------- | ---- | -------------------------------------------- |
-| Blink           | 👁️   | `eyeOpenProbability` < 0.3 then > 0.7        |
-| Smile           | 😊   | `smilingProbability` > 0.6 then < 0.4        |
-| Close Right Eye | ➡️   | `rightEyeOpenProbability` < 0.3 & left > 0.5 |
-
-### 🔄 Verification Flow
-
-```
-1. User taps "Take Photo"
-         │
-         ▼
-2. System randomly selects 2 gestures
-         │
-         ▼
-3. User follows gesture instructions
-   (max 3 attempts per gesture)
-         │
-         ├── ❌ Failed → Verification rejected
-         │
-         ▼
-4. ✅ All gestures successful
-         │
-         ▼
-5. Capture still photo (final photo)
-         │
-         ▼
-6. User taps "Save"
-         │
-         ▼
-7. Data saved to SQLite (status: 0)
+AbsensiOnlineMobile/
+├── AbsensiKonsel/           # 📱 Mobile App (React Native)
+│   ├── src/
+│   ├── android/
+│   ├── ios/
+│   └── README.md            # Mobile-specific documentation
+│
+├── client/                  # 🌐 Web Client (Vue.js + Quasar)
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── server/                  # ⚙️ Backend Services
+│   ├── server/              # Main API Server
+│   ├── server_microservices_1/
+│   ├── server_microservices_2/
+│   ├── server_microservices_3/
+│   ├── server_microservices_4/
+│   ├── server_microservices_5/
+│   ├── server_microservices_6/
+│   ├── server_microservices_7/
+│   └── server_microservices_8/
+│
+├── assets/                  # 🎨 Shared Assets
+└── README.md                # This file
 ```
 
 ---
 
-## 🌿 Branch Information
+## 🚀 Components Overview
 
-### 🔸 New Branch: `hi_dayat`
+### 📱 Mobile App (`/AbsensiKonsel`)
 
-This branch is created for **development and testing** of the new Face Recognition feature in the attendance module.
+React Native mobile application for ASN attendance with:
 
-#### 🧠 Purpose
+- **Face Recognition** - Biometric identity validation
+- **Liveness Detection** - Anti-spoofing with gesture verification
+- **Geolocation** - Location-based attendance verification
+- **Offline Mode** - SQLite local storage with sync capability
 
-- Implement face recognition-based attendance.
-- Enhance security and reliability in attendance validation.
-- Optimize camera performance for real-time processing.
-
-#### 🧩 Included Libraries
-
-- `@react-native-ml-kit/face-detection` — Face Detection module.
-- `react-native-vision-camera` — Camera component for React Native.
+📖 [View Mobile App Documentation](./AbsensiKonsel/README.md)
 
 ---
 
-## 🛠️ Recent Changes
+### 🌐 Web Client (`/client`)
 
-- 🧠 Added Face Detection & Recognition using **ML Kit**.
-- 📸 Implemented camera permission handling with **react-native-vision-camera**.
+Vue.js web application with Quasar framework:
+
+- User dashboard
+- Attendance history
+- Profile management
+
+| Technology | Version |
+| ---------- | ------- |
+| Vue.js     | 2.x     |
+| Quasar     | 1.x     |
 
 ---
 
-## ⚙️ Library Installation
+### ⚙️ Backend Server (`/server`)
 
-To support Face Recognition, Camera, and Offline Database functionality, make sure to install the following dependencies:
+Node.js/Express microservices architecture:
+
+| Service                  | Port | Description            |
+| ------------------------ | ---- | ---------------------- |
+| `server`                 | 3000 | Main API Gateway       |
+| `server_microservices_1` | 3001 | Auth & User Management |
+| `server_microservices_2` | 3002 | Attendance Processing  |
+| `server_microservices_3` | 3003 | Face Vector Storage    |
+| `server_microservices_4` | 3004 | Report Generation      |
+| `server_microservices_5` | 3005 | Notification Service   |
+| `server_microservices_6` | 3006 | Location Validation    |
+| `server_microservices_7` | 3007 | Sync Service           |
+| `server_microservices_8` | 3008 | Analytics              |
+
+---
+
+## ⚙️ Server Specifications
+
+| Component        | Specification         |
+| ---------------- | --------------------- |
+| **CPU**          | 16 Core               |
+| **RAM**          | 32 GB                 |
+| **Bandwidth**    | 50 Mbps               |
+| **Database**     | MySQL                 |
+| **Target Users** | 10,000 concurrent ASN |
+
+---
+
+## 🔐 Face Recognition Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Face Recognition Flow                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Mobile Device                          Server              │
+│  ─────────────                          ──────              │
+│                                                             │
+│  1. Capture Photo                                           │
+│         │                                                   │
+│         ▼                                                   │
+│  2. Liveness Detection                                      │
+│     (Blink/Smile/Wink)                                      │
+│         │                                                   │
+│         ▼                                                   │
+│  3. ML Kit Face Detection                                   │
+│         │                                                   │
+│         ▼                                                   │
+│  4. Generate 192-dim Vector  ────────►  5. Receive Vector   │
+│     (on device)                            (~3KB)           │
+│                                              │              │
+│                                              ▼              │
+│                                         6. Cosine Similarity│
+│                                            Comparison       │
+│                                              │              │
+│                              ┌───────────────┴──────────────┐
+│                              ▼                              ▼
+│                         MATCH ≥ 0.85                   NO MATCH
+│                              │                              │
+│                              ▼                              ▼
+│  7. Attendance Recorded  ◄───┘           Attendance Rejected
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Benefits:**
+
+- ✅ Processing on device → Reduces server load
+- ✅ Only 3KB vector sent → Minimal bandwidth
+- ✅ Fast comparison (~0.01ms) → High throughput
+
+---
+
+## 🧩 Quick Start
+
+### 1️⃣ Clone Repository
 
 ```bash
-# Install ML Kit Face Detection
-npm install @react-native-ml-kit/face-detection
-
-# Install Vision Camera
-npm install react-native-vision-camera
-
-# Install SQLite Storage
-npm install react-native-sqlite-storage
-
-# Install File System
-npm install react-native-fs
+git clone https://github.com/lowhanfish/AbsensiOnlineMobile.git
+cd AbsensiOnlineMobile
 ```
 
-Adding line for camera permission in android/app/src/main/AndroidManifest.xml
+### 2️⃣ Setup Mobile App
 
 ```bash
-<uses-permission android:name="android.permission.CAMERA" />
+cd AbsensiKonsel
+npm install
+npx react-native run-android  # or run-ios
+```
+
+### 3️⃣ Setup Web Client
+
+```bash
+cd client
+npm install
+npm run serve
+```
+
+### 4️⃣ Setup Server
+
+```bash
+cd server/server
+npm install
+node index.js
 ```
 
 ---
 
-## 📦 Main Dependencies
+## 📦 Technology Stack
 
-| Package                               | Version | Purpose                       |
-| ------------------------------------- | ------- | ----------------------------- |
-| `react-native-vision-camera`          | ^4.7.2  | Camera access & photo capture |
-| `@react-native-ml-kit/face-detection` | ^2.1.2  | Face detection & liveness     |
-| `react-native-sqlite-storage`         | ^6.0.1  | Local SQLite database         |
-| `react-native-fs`                     | ^2.20.0 | File system operations        |
-| `@react-navigation/native`            | ^7.1.8  | Navigation                    |
-| `react-native-geolocation-service`    | ^5.3.1  | GPS location                  |
+| Layer              | Technology                                 |
+| ------------------ | ------------------------------------------ |
+| **Mobile**         | React Native 0.80.1, Vision Camera, ML Kit |
+| **Web**            | Vue.js 2.x, Quasar Framework               |
+| **Backend**        | Node.js, Express.js                        |
+| **Database**       | MySQL                                      |
+| **Face Detection** | Google ML Kit                              |
+| **Authentication** | JWT                                        |
 
 ---
 
@@ -282,4 +245,4 @@ This project is developed for the internal use of the **Konawe Selatan Regency G
 
 ---
 
-> “Accurate, transparent, and verified attendance — for a more professional ASN workforce.”
+> "Accurate, transparent, and verified attendance — for a more professional ASN workforce."
