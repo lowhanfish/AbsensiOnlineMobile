@@ -300,15 +300,17 @@ const AbsensiFaceRecognation = () => {
                 </View>
             )}
 
-            {/* INFO */}
-            <View style={styles.infoBar}>
-                <Text style={styles.infoText}>
-                    👤 {PROFILE?.profile?.nama || 'Unknown'}
-                </Text>
-                <Text style={styles.infoSubText}>
-                    NIP: {PROFILE?.profile?.NIP || '-'}
-                </Text>
-            </View>
+            {/* INFO - Only show on Camera mode, not on Review */}
+            {!isCaptured && (
+                <View style={styles.infoBar}>
+                    <Text style={styles.infoText}>
+                        👤 {PROFILE?.profile?.nama || 'Unknown'}
+                    </Text>
+                    <Text style={styles.infoSubText}>
+                        NIP: {PROFILE?.profile?.NIP || '-'}
+                    </Text>
+                </View>
+            )}
         </View>
     );
 };
@@ -390,11 +392,19 @@ const ReviewSection = ({
         contentContainerStyle={styles.reviewSectionContent}
         showsVerticalScrollIndicator={false}
     >
-        {/* Success Badge */}
-        <View style={styles.successBadge}>
-            <Text style={styles.successIcon}>✅</Text>
-            <Text style={styles.successTitle}>Verifikasi Berhasil!</Text>
-            <Text style={styles.successSubtitle}>Wajah Anda telah terverifikasi</Text>
+        {/* Compact User Info */}
+        <View style={styles.compactUserInfo}>
+            <Text style={styles.compactUserName}>👤 {profile?.profile?.nama || 'Unknown'}</Text>
+            <Text style={styles.compactUserNip}>NIP: {profile?.profile?.NIP || '-'}</Text>
+        </View>
+
+        {/* Success Badge - More Compact */}
+        <View style={styles.successBadgeCompact}>
+            <Text style={styles.successIconSmall}>✅</Text>
+            <View>
+                <Text style={styles.successTitleSmall}>Verifikasi Berhasil!</Text>
+                <Text style={styles.successSubtitleSmall}>Wajah Anda telah terverifikasi</Text>
+            </View>
         </View>
 
         {/* Image Preview */}
