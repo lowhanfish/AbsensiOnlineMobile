@@ -1,5 +1,5 @@
 
-import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
+import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal, Alert } from "react-native"
 import React, { useEffect, useState, useCallback } from 'react';
 import { Stylex } from "../../../assets/styles/main";
 import ImageLib from '../../../components/ImageLib';
@@ -18,7 +18,8 @@ import {
     getAllAbsensi,
     getAbsensiStats,
     AbsensiOffline,
-    ABSENSI_STATUS
+    ABSENSI_STATUS,
+    deleteAbsensiById
 } from "../../../lib/database";
 
 const { height, width } = Dimensions.get('window');
@@ -54,6 +55,7 @@ const Darurat = () => {
 
 
     const [modalVisible, setModalVisible] = useState(false);
+    const [actionModalVisible, setActionModalVisible] = useState(false);
 
 
     const config = {
@@ -132,12 +134,45 @@ const Darurat = () => {
 
     const openPopup = (item: AbsensiOffline) => {
         setSelectedItem(item);
-        setModalVisible(true);
+        setActionModalVisible(true);
     };
 
     const closePopup = () => {
         setModalVisible(false);
+        setActionModalVisible(false);
         setSelectedItem(null);
+    };
+
+    const openDetailModal = () => {
+        setActionModalVisible(false);
+        setModalVisible(true);
+    };
+
+    const handleRemove = () => {
+        if (!selectedItem?.id) return;
+        
+        Alert.alert(
+            '🗑️ Hapus Data',
+            `Yakin ingin menghapus data absensi NIP: ${selectedItem.nip}?`,
+            [
+                { text: 'Batal', style: 'cancel' },
+                {
+                    text: 'Hapus',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteAbsensiById(selectedItem.id!);
+                            console.log('✅ Data berhasil dihapus');
+                            closePopup();
+                            viewData(); // Refresh data
+                        } catch (error) {
+                            console.error('❌ Gagal hapus data:', error);
+                            Alert.alert('Error', 'Gagal menghapus data');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
 
@@ -187,9 +222,11 @@ const Darurat = () => {
         <ImageBackground style={{ flex: 1 }} source={require('../../../assets/images/bg.png')}>
             <View style={{ flex: 1 }}>
 
-                <ButtonBack
-                    routex="Dashboard"
-                />
+                <TouchableOpacity style={Stylex.backBtn} onPress={() => navigation.goBack()}>
+                    <ImageLib urix={require('../../../assets/images/icon/back.png')} style={Stylex.iconBack} />
+                    <Text style={Stylex.backTitle}>KEMBALI</Text>
+                </TouchableOpacity>
+
                 <ScrollView>
                     <View style={{ flex: 1 }}>
                         <View style={Stylex.daruratTitle}>
@@ -278,9 +315,45 @@ const Darurat = () => {
                     </View>
                 </ScrollView>
 
-                <TouchableOpacity onPress={() => navigation.navigate('VerifikasiWajah', { lokasi: { latitude: 0, longitude: 0, nip: 'TEST123' } })} style={{ position: 'absolute', bottom: 16, right: 26, elevation: 5, }}>
+                {/* ================= ADD NEW DATA ================= */}
+                <TouchableOpacity onPress={() => navigation.navigate('MapOffline')} style={{ position: 'absolute', bottom: 16, right: 26, elevation: 5, }}>
                     <ImageLib style={{ width: 61, height: 61 }} customWidth={61} urix={require('../../../assets/images/icon/addBtn.png')} />
                 </TouchableOpacity>
+                {/* ================= ADD NEW DATA ================= */}
+
+                {/* ================= MODAL AKSI (Detail/Remove) =================*/}
+                <Modal visible={actionModalVisible} transparent animationType="fade" onRequestClose={closePopup}>
+                    <View style={Stylex.overlay}>
+                        <View style={[Stylex.popup, { paddingVertical: 25 }]}>
+                            <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
+                                <Text style={Stylex.closeText}>✕</Text>
+                            </TouchableOpacity>
+                            
+                            <Text style={[Stylex.popupTitle, { marginBottom: 5 }]}>Pilih Aksi</Text>
+                            
+                            {selectedItem && (
+                                <Text style={styles.actionSubtitle}>NIP: {selectedItem.nip}</Text>
+                            )}
+
+                            <View style={styles.actionButtonsContainer}>
+                                <TouchableOpacity 
+                                    style={[styles.actionButton, styles.detailButton]} 
+                                    onPress={openDetailModal}
+                                >
+                                    <Text style={styles.actionButtonText}>📋 Detail</Text>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={[styles.actionButton, styles.removeButton]} 
+                                    onPress={handleRemove}
+                                >
+                                    <Text style={[styles.actionButtonText, { color: '#fff' }]}>🗑️ Remove</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+                {/* ================= MODAL AKSI =================*/}
 
                 {/* ================= MODAL DETAIL =================*/}
                 <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
@@ -413,6 +486,39 @@ const styles = StyleSheet.create({
         color: '#333',
         flex: 2,
         textAlign: 'right',
+    },
+    actionSubtitle: {
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    actionButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+        width: '100%',
+        marginTop: 10,
+    },
+    actionButton: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    detailButton: {
+        backgroundColor: '#E3F2FD',
+        borderWidth: 1,
+        borderColor: '#2196F3',
+    },
+    removeButton: {
+        backgroundColor: '#F44336',
+    },
+    actionButtonText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#2196F3',
     },
 });
 

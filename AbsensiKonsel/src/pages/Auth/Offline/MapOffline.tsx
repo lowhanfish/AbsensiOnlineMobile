@@ -224,7 +224,22 @@ const AbsensiOffline = () => {
 const ModalNip = ({ modalVisible, closePopup, lokasi }: any) => {
 
     const navigation = useNavigation<any>();
+    const [nipValue, setNipValue] = useState('');
 
+    const handleMulaiRekam = () => {
+        if (!nipValue.trim()) {
+            Alert.alert('Peringatan', 'Silakan masukkan NIP Anda terlebih dahulu');
+            return;
+        }
+        closePopup();
+        // Kirim lokasi beserta NIP ke VerifikasiWajah
+        navigation.navigate("VerifikasiWajah", { 
+            lokasi: {
+                ...lokasi,
+                nip: nipValue.trim()
+            }
+        });
+    };
 
     return (
         <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
@@ -240,10 +255,13 @@ const ModalNip = ({ modalVisible, closePopup, lokasi }: any) => {
                             style={Stylex.daruratInput}
                             placeholder="Masukkan NIP Anda"
                             placeholderTextColor="#999"
+                            value={nipValue}
+                            onChangeText={setNipValue}
+                            keyboardType="numeric"
                         />
                     </View>
                     <View style={{ marginTop: 20 }}>
-                        <TouchableOpacity onPress={() => { closePopup(); navigation.navigate("VerifikasiWajah" as any, { lokasi: lokasi }) }} style={styles.buttonOffline}>
+                        <TouchableOpacity onPress={handleMulaiRekam} style={styles.buttonOffline}>
                             <Text style={{ color: 'white', fontWeight: 'bold' }}>Mulai Rekam Offline</Text>
                         </TouchableOpacity>
                     </View>
