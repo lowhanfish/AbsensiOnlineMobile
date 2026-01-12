@@ -32,6 +32,9 @@ import AbsenOffline from './Auth/Offline/AbsenOffline';
 import MapOffline from './Auth/Offline/MapOffline';
 import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
 
+// Settings
+import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
+
 import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
 import BottomBar from '../components/BottomBar';

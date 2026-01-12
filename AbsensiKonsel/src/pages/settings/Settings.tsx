@@ -1,43 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    View, Text, StyleSheet, Dimensions, TouchableOpacity,
-    TextInput, ImageBackground, Platform, Alert,
+    View, Text, StyleSheet, ImageBackground, Image,
+    TouchableOpacity, Switch, ScrollView, TextInput
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
-import { Picker } from '@react-native-picker/picker';
-import { pick, types } from '@react-native-documents/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import ImageLib from '../../components/ImageLib';
 import ButtonBack from "../../components/ButtonBack";
-import { postData } from '../../lib/fetching';
-import { useSelector } from "react-redux";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const { height } = Dimensions.get('window');
-
+import Photo from "../../assets/images/image5.png";
+import Badgex from "../../assets/images/icon/true.png";
 
 const Settings = () => {
-    // State dari Redux
-    const URL = useSelector(state => state.URL);
-    const token = useSelector(state => state.TOKEN);
+    const [isNotifEnabled, setIsNotifEnabled] = useState(true);
+    const [username, setUsername] = useState('administrator');
+    const [password, setPassword] = useState('password123');
+    const [email, setEmail] = useState('kikensbatara@gmail.com');
 
+    const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
 
-
-    // Initial load
-    useEffect(() => {
-
-    }, [])
-
-
-
+    const handleLogout = () => {
+        // Logout logic here
+        console.log('Logout pressed');
+    };
 
     return (
         <View style={{ flex: 1 }}>
-            <ButtonBack routex="Darurat" />
+            <ButtonBack routex="Home" />
 
             <View style={{ flex: 1 }}>
                 <View style={Stylex.titleContainer}>
-                    <Text style={[styles.fontTitle, Stylex.shaddowText]}>FORM DARURAT</Text>
+                    <Text style={[styles.fontTitle, Stylex.shaddowText]}>SETTINGS</Text>
                 </View>
 
                 <View style={styles.container}>
@@ -46,50 +36,126 @@ const Settings = () => {
                         resizeMode="stretch"
                         source={require('../../assets/images/bg1.png')}
                     >
-                        <View style={styles.textbg2}>
-                            <Text style={styles.infoText}>
-                                Page ini diperuntukkan bagi ASN untuk melakukan konfigurasi ataupun perubahan data utama, baik pengaturan sampel wajah, username dan password, notifikasi dan lain sebagainya
-                            </Text>
-                        </View>
+                        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                            {/* Info Text */}
+                            <View style={styles.infoContainer}>
+                                <Text style={styles.infoText}>
+                                    Page ini diperuntukkan bagi ASN untuk melakukan konfigurasi ataupun perubahan
+                                    data utama, baik pengaturan sampel wajah, username dan password, notifikasi dan
+                                    lain sebagainya
+                                </Text>
+                            </View>
 
+                            {/* Divider */}
+                            <View style={styles.divider} />
 
+                            {/* Foto Sampel Wajah */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>FOTO SAMPEL WAJAH</Text>
+                                <View style={styles.photoContainer}>
+                                    <View style={styles.photoWrapper}>
+                                        <Image source={Photo} style={styles.photo} />
+                                        <Image source={Badgex} style={styles.badge} />
+                                    </View>
+                                    <View style={styles.photoWrapper}>
+                                        <Image source={Photo} style={styles.photo} />
+                                        <Image source={Badgex} style={styles.badge} />
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Divider */}
+                            <View style={styles.divider} />
+
+                            {/* Akun Pengguna */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>AKUN PENGGUNA</Text>
+                                <View style={styles.fieldRow}>
+                                    <Text style={styles.fieldLabel}>Username :</Text>
+                                    <TextInput
+                                        style={styles.fieldValue}
+                                        value={username}
+                                        onChangeText={setUsername}
+                                    />
+                                    <Text style={styles.editIcon}>✏️</Text>
+                                </View>
+                                <View style={styles.fieldRow}>
+                                    <Text style={styles.fieldLabel}>Password :</Text>
+                                    <TextInput
+                                        style={styles.fieldValue}
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry
+                                    />
+                                    <Text style={styles.editIcon}>✏️</Text>
+                                </View>
+                            </View>
+
+                            {/* Divider */}
+                            <View style={styles.divider} />
+
+                            {/* Email Notifikasi */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>EMAIL NOTIFIKASI</Text>
+                                <View style={styles.toggleRow}>
+                                    <Switch
+                                        trackColor={{ false: '#ccc', true: '#4CD964' }}
+                                        thumbColor={'#fff'}
+                                        onValueChange={toggleSwitch}
+                                        value={isNotifEnabled}
+                                    />
+                                    <View style={[styles.statusBadge, isNotifEnabled ? styles.activeBadge : styles.inactiveBadge]}>
+                                        <Text style={[styles.statusText, isNotifEnabled ? styles.activeText : styles.inactiveText]}>
+                                            {isNotifEnabled ? 'AKTIF' : 'NON-AKTIF'}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.fieldRow}>
+                                    <Text style={styles.fieldLabel}>Email :</Text>
+                                    <TextInput
+                                        style={styles.fieldValue}
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        keyboardType="email-address"
+                                    />
+                                    <Text style={styles.editIcon}>✏️</Text>
+                                </View>
+                            </View>
+
+                            {/* Divider */}
+                            <View style={styles.divider} />
+
+                            {/* Logout Button */}
+                            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                                <Text style={styles.logoutText}>LOGOUT 🔓</Text>
+                            </TouchableOpacity>
+
+                            <View style={{ height: 40 }} />
+                        </ScrollView>
                     </ImageBackground>
                 </View>
             </View>
-
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-
     container: {
         flex: 1,
-        minHeight: height,
         paddingHorizontal: 16
     },
-    textbg2: {
-        position: 'absolute',
-        top: 24,
-        left: 28,
-        right: 28,
-        height: 41
+    scrollContent: {
+        flex: 1,
+        paddingTop: 20,
     },
-    textform: {
-        marginTop: 9,
-        marginBottom: 5,
-        fontSize: 10
+    infoContainer: {
+        paddingHorizontal: 12,
+        marginBottom: 10,
     },
     infoText: {
-        fontSize: 8,
-        color: '#6b6b6b',
-        lineHeight: 14
-    },
-    infoTextform: {
         fontSize: 12,
-        fontWeight: '400',
-        color: '#ADADAD',
-        lineHeight: 14
+        color: '#6b6b6b',
+        lineHeight: 18
     },
     fontTitle: {
         fontSize: 24,
@@ -97,123 +163,104 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontFamily: 'Audiowide-Regular',
     },
-    textWrapper: {},
-    fakeInput: {
-        height: 45,
-        width: '100%',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E6E4EF',
-        backgroundColor: '#fff',
-        justifyContent: 'center',
+    divider: {
+        height: 1,
+        backgroundColor: '#E6E4EF',
+        marginVertical: 15,
+        marginHorizontal: 12,
     },
-    picker: {
-        height: 55,
-        width: '100%',
-        marginLeft: 12,
-        fontSize: 16,
-        ...Platform.select({
-            ios: { color: '#ADADAD' },
-            android: { color: '#ADADAD' },
-        }),
-    },
-    pickerText: {
-        fontSize: 16,
-        color: '#ADADAD'
-    },
-    inlinePicker: {
-        position: 'absolute',
-        top: 320,
-        left: 28,
-        width: 298,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: '#E6E4EF',
-    },
-    textarea: {
-        height: 160,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E6E4EF',
-        backgroundColor: '#ffffff',
-        padding: 12,
-        textAlignVertical: 'top',
-        fontSize: 14,
-    },
-    fab: {
-        position: 'absolute',
-        bottom: 24,
-        right: 45,
-        backgroundColor: '#ffffff',
-        width: 61,
-        height: 61,
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 6,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        zIndex: 20,
-    },
-    inputRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+    section: {
         paddingHorizontal: 12,
-        height: '100%',
     },
-    calendarIcon: {
-        width: 20,
-        height: 20,
-        opacity: 0.7,
-    },
-    documentPickerContainer: {
-        marginBottom: 10,
-    },
-    btnPick: {
-        backgroundColor: '#F5F5F9',
-        borderWidth: 1,
-        borderColor: '#E6E4EF',
-        borderStyle: 'dashed',
-        borderRadius: 8,
-        height: 45,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    btnPickText: {
-        color: '#7E59C9',
-        fontWeight: 'bold',
-    },
-    fileList: {
-        marginTop: 8,
-    },
-    fileItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 8,
-        borderRadius: 6,
-        marginBottom: 5,
-        borderWidth: 1,
-        borderColor: '#eee',
-    },
-    fileName: {
-        fontSize: 12,
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
         color: '#555',
+        marginBottom: 12,
+    },
+    photoContainer: {
+        flexDirection: 'row',
+        gap: 15,
+    },
+    photoWrapper: {
+        position: 'relative',
+    },
+    photo: {
+        width: 120,
+        height: 140,
+        borderRadius: 8,
+        resizeMode: 'cover',
+    },
+    badge: {
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        width: 28,
+        height: 28,
+    },
+    fieldRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    fieldLabel: {
+        fontSize: 13,
+        color: '#888',
+        width: 80,
+    },
+    fieldValue: {
         flex: 1,
-        marginRight: 10,
+        fontSize: 14,
+        color: '#333',
+        paddingVertical: 4,
     },
-    removeText: {
-        color: 'red',
-        fontWeight: 'bold',
-        paddingHorizontal: 5,
+    editIcon: {
+        fontSize: 14,
+        marginLeft: 8,
     },
-
+    toggleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+        gap: 12,
+    },
+    statusBadge: {
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        borderRadius: 4,
+        borderWidth: 1,
+    },
+    activeBadge: {
+        borderColor: '#4CD964',
+        backgroundColor: '#fff',
+    },
+    inactiveBadge: {
+        borderColor: '#ccc',
+        backgroundColor: '#f5f5f5',
+    },
+    statusText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    activeText: {
+        color: '#4CD964',
+    },
+    inactiveText: {
+        color: '#888',
+    },
+    logoutButton: {
+        backgroundColor: '#E8B4B4',
+        marginHorizontal: 12,
+        paddingVertical: 14,
+        borderRadius: 25,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    logoutText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#fff',
+    },
 });
 
 export default Settings;
