@@ -242,117 +242,118 @@ const DaruratForm = () => {
             resizeMode="stretch"
             source={require('../../assets/images/bg1.png')}
           >
-            <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
-            <View style={Stylex.textbg2}>
-              <Text style={Stylex.infoText}>
-                Form ini diperuntukan untuk penginputan data pengajuan absen darurat.
-                Pastikan untuk mempersiapkan file Surat Perintah Tugas (SPT) atau Dokumen
-                pendukung lainnya.
-              </Text>
-            </View>
+            <ScrollView contentContainerStyle={{ paddingBottom: 250 }} showsVerticalScrollIndicator={false}>
+              <View style={Stylex.textbg2}>
+                <Text style={Stylex.infoText}>
+                  Form ini diperuntukan untuk penginputan data pengajuan absen darurat.
+                  Pastikan untuk mempersiapkan file Surat Perintah Tugas (SPT) atau Dokumen
+                  pendukung lainnya.
+                </Text>
+              </View>
 
-            {/* Kategori */}
-            <View style={styles.textform}>
-              <Text style={Stylex.infoTextform}>Pilih Kategori Darurat</Text>
-            </View>
-            <View style={styles.textWrapper}>
-              <View style={styles.fakeInput}>
-                <Picker
-                  selectedValue={form.jenisKategori}
-                  onValueChange={(value) => {
-                    setValueForm(value.id, 'jenisKategori');
-                    SetMaxHari(value.hari);
-                  }}
-                  style={styles.picker}
-                  dropdownIconColor="#7E59C9"
-                  mode="dropdown"
+              {/* Kategori */}
+              <View style={styles.textform}>
+                <Text style={Stylex.infoTextform}>Pilih Kategori Darurat</Text>
+              </View>
+              <View style={styles.textWrapper}>
+                <View style={styles.fakeInput}>
+                  <Picker
+                    selectedValue={form.jenisKategori}
+                    onValueChange={(value) => {
+                      setValueForm(value.id, 'jenisKategori');
+                      SetMaxHari(value.hari);
+                    }}
+                    style={styles.picker}
+                    dropdownIconColor="#7E59C9"
+                    mode="dropdown"
+                  >
+                    {listDarurat.map((data) => (
+                      <Picker.Item key={data.id} label={data.uraian} value={data} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              {/* Dari tanggal */}
+              <View style={styles.textform}>
+                <Text style={Stylex.infoTextform}>Dari tanggal</Text>
+              </View>
+              <View>
+                <TouchableOpacity
+                  style={styles.fakeInput}
+                  activeOpacity={0.8}
+                  onPress={() => openPicker('dari')}
                 >
-                  {listDarurat.map((data) => (
-                    <Picker.Item key={data.id} label={data.uraian} value={data} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-
-            {/* Dari tanggal */}
-            <View style={styles.textform}>
-              <Text style={Stylex.infoTextform}>Dari tanggal</Text>
-            </View>
-            <View>
-              <TouchableOpacity
-                style={styles.fakeInput}
-                activeOpacity={0.8}
-                onPress={() => openPicker('dari')}
-              >
-                <View style={styles.inputRow}>
-                  <Text style={styles.pickerText}>
-                    {form.TglMulai ? formatDateDisplay(form.TglMulai) : '-- Pilih Tanggal --'}
-                  </Text>
-                  <ImageLib
-                    urix={require('../../assets/images/icon/calendar.png')}
-                    style={styles.calendarIcon}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Sampai tanggal */}
-            <View style={styles.textform}>
-              <Text style={Stylex.infoTextform}>Sampai tanggal</Text>
-            </View>
-            <View>
-              <TouchableOpacity
-                style={styles.fakeInput}
-                activeOpacity={0.8}
-                onPress={() => openPicker('sampai')}
-              >
-                <View style={styles.inputRow}>
-                  <Text style={styles.pickerText}>
-                    {form.TglSelesai ? formatDateDisplay(form.TglSelesai) : '-- Pilih Tanggal --'}
-                  </Text>
-                  <ImageLib
-                    urix={require('../../assets/images/icon/calendar.png')}
-                    style={styles.calendarIcon}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Keterangan */}
-            <View style={styles.textform}>
-              <Text style={Stylex.infoTextform}>Keterangan</Text>
-            </View>
-            <TextInput
-              value={form.keterangan}
-              onChangeText={(value) => { setValueForm(value, 'keterangan') }}
-              style={styles.textarea}
-              multiline
-              placeholder="Keterangan"
-              placeholderTextColor="#bdbdbd"
-            />
-
-            {/* Lampiran */}
-            <View style={styles.textform}>
-              <Text style={Stylex.infoTextform}>Lampiran Usulan (PDF/Gambar)</Text>
-            </View>
-            <View style={styles.documentPickerContainer}>
-              <TouchableOpacity style={styles.btnPick} onPress={handlePickDocuments}>
-                <Text style={styles.btnPickText}>+ Pilih File</Text>
-              </TouchableOpacity>
-
-              <View style={styles.fileList}>
-                {form.files.map((file, index) => (
-                  <View key={index} style={styles.fileItem}>
-                    <Text style={styles.fileName} numberOfLines={1}>
-                      {file.name || `File ${index + 1}`}
+                  <View style={styles.inputRow}>
+                    <Text style={styles.pickerText}>
+                      {form.TglMulai ? formatDateDisplay(form.TglMulai) : '-- Pilih Tanggal --'}
                     </Text>
-                    <TouchableOpacity onPress={() => removeFile(index)}>
-                      <Text style={styles.removeText}>✕</Text>
-                    </TouchableOpacity>
+                    <ImageLib
+                      urix={require('../../assets/images/icon/calendar.png')}
+                      style={styles.calendarIcon}
+                    />
                   </View>
-                ))}
+                </TouchableOpacity>
               </View>
-            </View>
+
+              {/* Sampai tanggal */}
+              <View style={styles.textform}>
+                <Text style={Stylex.infoTextform}>Sampai tanggal</Text>
+              </View>
+              <View>
+                <TouchableOpacity
+                  style={styles.fakeInput}
+                  activeOpacity={0.8}
+                  onPress={() => openPicker('sampai')}
+                >
+                  <View style={styles.inputRow}>
+                    <Text style={styles.pickerText}>
+                      {form.TglSelesai ? formatDateDisplay(form.TglSelesai) : '-- Pilih Tanggal --'}
+                    </Text>
+                    <ImageLib
+                      urix={require('../../assets/images/icon/calendar.png')}
+                      style={styles.calendarIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+              {/* Keterangan */}
+              <View style={styles.textform}>
+                <Text style={Stylex.infoTextform}>Keterangan</Text>
+              </View>
+              <TextInput
+                value={form.keterangan}
+                onChangeText={(value) => { setValueForm(value, 'keterangan') }}
+                style={styles.textarea}
+                multiline
+                placeholder="Keterangan"
+                placeholderTextColor="#bdbdbd"
+              />
+
+              {/* Lampiran */}
+              <View style={styles.textform}>
+                <Text style={Stylex.infoTextform}>Lampiran Usulan (PDF/Gambar)</Text>
+              </View>
+              <View style={styles.documentPickerContainer}>
+                <TouchableOpacity style={styles.btnPick} onPress={handlePickDocuments}>
+                  <Text style={styles.btnPickText}>+ Pilih File</Text>
+                </TouchableOpacity>
+
+                <View style={styles.fileList}>
+                  {form.files.map((file, index) => (
+                    <View key={index} style={styles.fileItem}>
+                      <Text style={styles.fileName} numberOfLines={1}>
+                        {file.name || `File ${index + 1}`}
+                      </Text>
+                      <TouchableOpacity onPress={() => removeFile(index)}>
+                        <Text style={styles.removeText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
           </ImageBackground>
         </View>
       </View>
