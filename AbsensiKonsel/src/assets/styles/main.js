@@ -47,7 +47,8 @@ export const Stylex = StyleSheet.create({
     infoText: {
         fontSize: 8,
         color: '#6b6b6b',
-        lineHeight: 14
+        lineHeight: 14,
+        marginBottom : 15
     },
     body : {
         display : 'flex',

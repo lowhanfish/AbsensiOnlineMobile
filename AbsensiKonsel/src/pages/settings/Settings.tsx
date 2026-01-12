@@ -32,14 +32,14 @@ const Settings = () => {
 
                 <View style={styles.container}>
                     <ImageBackground
-                        style={Stylex.bg1}
+                        style={Stylex.bg3}
                         resizeMode="stretch"
                         source={require('../../assets/images/bg1.png')}
                     >
                         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
                             {/* Info Text */}
-                            <View style={styles.infoContainer}>
-                                <Text style={styles.infoText}>
+                            <View style={Stylex.textbg2}>
+                                <Text style={Stylex.infoText}>
                                     Page ini diperuntukkan bagi ASN untuk melakukan konfigurasi ataupun perubahan
                                     data utama, baik pengaturan sampel wajah, username dan password, notifikasi dan
                                     lain sebagainya

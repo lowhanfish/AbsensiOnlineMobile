@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Dimensions, TouchableOpacity,
-  TextInput, ImageBackground, Platform, Alert,
+  TextInput, ImageBackground, Platform, Alert, ScrollView,
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import { Picker } from '@react-native-picker/picker';
@@ -242,6 +242,7 @@ const DaruratForm = () => {
             resizeMode="stretch"
             source={require('../../assets/images/bg1.png')}
           >
+            <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
             <View style={Stylex.textbg2}>
               <Text style={Stylex.infoText}>
                 Form ini diperuntukan untuk penginputan data pengajuan absen darurat.
