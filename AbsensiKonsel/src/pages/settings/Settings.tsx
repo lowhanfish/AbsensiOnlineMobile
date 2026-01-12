@@ -32,7 +32,7 @@ const Settings = () => {
 
                 <View style={styles.container}>
                     <ImageBackground
-                        style={{ flex: 1 }}
+                        style={Stylex.bg1}
                         resizeMode="stretch"
                         source={require('../../assets/images/bg1.png')}
                     >

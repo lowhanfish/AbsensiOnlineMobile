@@ -33,7 +33,8 @@ import MapOffline from './Auth/Offline/MapOffline';
 import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
 
 // Settings
-import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
+import Settings from './settings/Settings';
+
 
 import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
@@ -59,6 +60,8 @@ const ContentAll = () => {
             <ContentStack.Screen name="ApelDetail" component={ApelDetail} />
             <ContentStack.Screen name="Izin" component={Izin} />
             <ContentStack.Screen name="IzinForm" component={IzinForm} />
+
+            <ContentStack.Screen name="Settings" component={Settings} />
 
             {/* Offline Absensi */}
             <ContentStack.Screen name="AbsenOffline" component={AbsenOffline} />

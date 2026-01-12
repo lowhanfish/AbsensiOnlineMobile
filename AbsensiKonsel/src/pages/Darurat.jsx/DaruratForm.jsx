@@ -48,7 +48,8 @@ const DaruratForm = () => {
     TglMulai: null,
     TglSelesai: null,
     unit_kerja: "",
-    files: []
+    files: [],
+    name: ''
   });
 
   // Update form state dengan functional update
@@ -237,12 +238,12 @@ const DaruratForm = () => {
 
         <View style={styles.container}>
           <ImageBackground
-            style={{ flex: 1 }}
+            style={Stylex.bg3}
             resizeMode="stretch"
             source={require('../../assets/images/bg1.png')}
           >
-            <View style={styles.textbg2}>
-              <Text style={styles.infoText}>
+            <View style={Stylex.textbg2}>
+              <Text style={Stylex.infoText}>
                 Form ini diperuntukan untuk penginputan data pengajuan absen darurat.
                 Pastikan untuk mempersiapkan file Surat Perintah Tugas (SPT) atau Dokumen
                 pendukung lainnya.
@@ -251,28 +252,30 @@ const DaruratForm = () => {
 
             {/* Kategori */}
             <View style={styles.textform}>
-              <Text style={styles.infoTextform}>Pilih Kategori Darurat</Text>
+              <Text style={Stylex.infoTextform}>Pilih Kategori Darurat</Text>
             </View>
-            <View style={styles.fakeInput}>
-              <Picker
-                selectedValue={form.jenisKategori}
-                onValueChange={(value) => {
-                  setValueForm(value.id, 'jenisKategori');
-                  SetMaxHari(value.hari);
-                }}
-                style={styles.picker}
-                dropdownIconColor="#7E59C9"
-                mode="dropdown"
-              >
-                {listDarurat.map((data) => (
-                  <Picker.Item key={data.id} label={data.uraian} value={data} />
-                ))}
-              </Picker>
+            <View style={styles.textWrapper}>
+              <View style={styles.fakeInput}>
+                <Picker
+                  selectedValue={form.jenisKategori}
+                  onValueChange={(value) => {
+                    setValueForm(value.id, 'jenisKategori');
+                    SetMaxHari(value.hari);
+                  }}
+                  style={styles.picker}
+                  dropdownIconColor="#7E59C9"
+                  mode="dropdown"
+                >
+                  {listDarurat.map((data) => (
+                    <Picker.Item key={data.id} label={data.uraian} value={data} />
+                  ))}
+                </Picker>
+              </View>
             </View>
 
             {/* Dari tanggal */}
             <View style={styles.textform}>
-              <Text style={styles.infoTextform}>Dari tanggal</Text>
+              <Text style={Stylex.infoTextform}>Dari tanggal</Text>
             </View>
             <View>
               <TouchableOpacity
@@ -294,7 +297,7 @@ const DaruratForm = () => {
 
             {/* Sampai tanggal */}
             <View style={styles.textform}>
-              <Text style={styles.infoTextform}>Sampai tanggal</Text>
+              <Text style={Stylex.infoTextform}>Sampai tanggal</Text>
             </View>
             <View>
               <TouchableOpacity
@@ -316,7 +319,7 @@ const DaruratForm = () => {
 
             {/* Keterangan */}
             <View style={styles.textform}>
-              <Text style={styles.infoTextform}>Keterangan</Text>
+              <Text style={Stylex.infoTextform}>Keterangan</Text>
             </View>
             <TextInput
               value={form.keterangan}
@@ -329,7 +332,7 @@ const DaruratForm = () => {
 
             {/* Lampiran */}
             <View style={styles.textform}>
-              <Text style={styles.infoTextform}>Lampiran Usulan (PDF/Gambar)</Text>
+              <Text style={Stylex.infoTextform}>Lampiran Usulan (PDF/Gambar)</Text>
             </View>
             <View style={styles.documentPickerContainer}>
               <TouchableOpacity style={styles.btnPick} onPress={handlePickDocuments}>
@@ -386,35 +389,20 @@ const styles = StyleSheet.create({
     minHeight: height,
     paddingHorizontal: 16
   },
-  textbg2: {
-    position: 'absolute',
-    top: 24,
-    left: 28,
-    right: 28,
-    height: 41
-  },
+
   textform: {
     marginTop: 9,
     marginBottom: 5,
     fontSize: 10
   },
-  infoText: {
-    fontSize: 8,
-    color: '#6b6b6b',
-    lineHeight: 14
-  },
-  infoTextform: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#ADADAD',
-    lineHeight: 14
-  },
+
   fontTitle: {
     fontSize: 24,
     color: '#FFFFFF',
     fontWeight: '400',
     fontFamily: 'Audiowide-Regular',
   },
+  textWrapper: {},
   fakeInput: {
     height: 45,
     width: '100%',

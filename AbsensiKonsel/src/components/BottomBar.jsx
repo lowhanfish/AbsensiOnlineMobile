@@ -27,7 +27,7 @@ const BottomBar = ({ navigation }) => {
                     <ImageLib style={{ width: 42 }} urix={require('../assets/images/icon/pengumuman.png')} />
                     <Text style={styles.bottomBarText}>PENGUMUMAN</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.bottomBarItem}>
+                <TouchableOpacity onPress={() => navigation.navigate("MainPage", { screen: "Settings" })} style={styles.bottomBarItem}>
                     <ImageLib style={{ width: 42 }} urix={require('../assets/images/icon/setting1.png')} />
                     <Text style={styles.bottomBarText}>SETTING</Text>
                 </TouchableOpacity>

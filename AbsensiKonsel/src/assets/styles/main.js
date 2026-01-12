@@ -15,10 +15,39 @@ const bottomHeight = 71;
 
 export const Stylex = StyleSheet.create({
     bg1 : {
-
+        flex :1,
+        paddingHorizontal : 16,
     },
     bg2 : {
 
+    },
+    bg3 : {
+        paddingTop: 24,
+        paddingHorizontal: 28,
+        flex : 1
+    },
+
+    textbg2: {
+        // position: 'absolute',
+        // top: 24,
+        // left: 28,
+        // right: 28,
+        // height: 41
+        // height: 24
+
+    },
+
+    infoTextform: {
+        fontSize: 12,
+        fontWeight: '400',
+        color: '#ADADAD',
+        lineHeight: 14
+    },
+
+    infoText: {
+        fontSize: 8,
+        color: '#6b6b6b',
+        lineHeight: 14
     },
     body : {
         display : 'flex',
