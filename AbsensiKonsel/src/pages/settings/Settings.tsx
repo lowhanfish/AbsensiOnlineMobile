@@ -48,9 +48,7 @@ const Settings = () => {
                     >
                         <View style={styles.textbg2}>
                             <Text style={styles.infoText}>
-                                Form ini diperuntukan untuk penginputan data pengajuan absen darurat.
-                                Pastikan untuk mempersiapkan file Surat Perintah Tugas (SPT) atau Dokumen
-                                pendukung lainnya.
+                                Page ini diperuntukkan bagi ASN untuk melakukan konfigurasi ataupun perubahan data utama, baik pengaturan sampel wajah, username dan password, notifikasi dan lain sebagainya
                             </Text>
                         </View>
 

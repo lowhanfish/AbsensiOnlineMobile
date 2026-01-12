@@ -48,8 +48,7 @@ const DaruratForm = () => {
     TglMulai: null,
     TglSelesai: null,
     unit_kerja: "",
-    files: [],
-    name: ''
+    files: []
   });
 
   // Update form state dengan functional update
@@ -254,23 +253,21 @@ const DaruratForm = () => {
             <View style={styles.textform}>
               <Text style={styles.infoTextform}>Pilih Kategori Darurat</Text>
             </View>
-            <View style={styles.textWrapper}>
-              <View style={styles.fakeInput}>
-                <Picker
-                  selectedValue={form.jenisKategori}
-                  onValueChange={(value) => {
-                    setValueForm(value.id, 'jenisKategori');
-                    SetMaxHari(value.hari);
-                  }}
-                  style={styles.picker}
-                  dropdownIconColor="#7E59C9"
-                  mode="dropdown"
-                >
-                  {listDarurat.map((data) => (
-                    <Picker.Item key={data.id} label={data.uraian} value={data} />
-                  ))}
-                </Picker>
-              </View>
+            <View style={styles.fakeInput}>
+              <Picker
+                selectedValue={form.jenisKategori}
+                onValueChange={(value) => {
+                  setValueForm(value.id, 'jenisKategori');
+                  SetMaxHari(value.hari);
+                }}
+                style={styles.picker}
+                dropdownIconColor="#7E59C9"
+                mode="dropdown"
+              >
+                {listDarurat.map((data) => (
+                  <Picker.Item key={data.id} label={data.uraian} value={data} />
+                ))}
+              </Picker>
             </View>
 
             {/* Dari tanggal */}
@@ -418,7 +415,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontFamily: 'Audiowide-Regular',
   },
-  textWrapper: {},
   fakeInput: {
     height: 45,
     width: '100%',
