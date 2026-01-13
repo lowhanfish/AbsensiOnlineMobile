@@ -110,7 +110,7 @@ const MainPage = () => {
 
     return (
         <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
-            <View style={[Stylex.body, { paddingTop: 10 }]}>
+            <View style={[Stylex.body, { paddingTop: 0 }]}>
                 <TouchableOpacity style={[Stylex.btnSetting, { marginTop: 15 }]} onPress={handleLogout}>
                     <ImageLib
                         style={{ width: 35 }}
