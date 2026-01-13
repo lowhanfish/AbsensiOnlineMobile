@@ -42,6 +42,10 @@ router.post('/view', (req, res) => {
 
 
 router.post('/addData',upload.single("file"), (req,res)=>{
+
+
+    console.log("UPLOAD SAMPEL FOTO DI PANGGIL")
+    console.log(req.body);
     
     var insert = `INSERT INTO fotosample (file, nip, vectors) 
     VALUES (?, ?, ?)

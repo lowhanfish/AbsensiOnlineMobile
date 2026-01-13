@@ -16,6 +16,7 @@ import {
 // Navigation
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from "react-redux";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Camera & File System
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
@@ -27,8 +28,11 @@ import { useFaceVector } from '../../hooks';
 // Komponen utama untuk capture foto dan ekstraksi embedding wajah
 const SettingSampleImage = () => {
     const navigation = useNavigation();
-    const URL = useSelector(state => state.URL);
-    const token = useSelector(state => state.TOKEN);
+    const URL = useSelector((state: any) => state.URL);
+    const token = useSelector((state: any) => state.TOKEN);
+
+
+    console.log(URL.URL_presensi_settingProfile + "addData")
 
     // Refs & hooks
     const cameraRef = useRef<Camera | null>(null);
@@ -44,6 +48,8 @@ const SettingSampleImage = () => {
     const [error, setError] = useState<string | null>(null);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+
+    const [nip, setNip] = useState("");
 
     // Permission setup
     useEffect(() => {
@@ -114,26 +120,29 @@ const SettingSampleImage = () => {
     };
 
 
-    // Upload foto & vektor ke server (dummy endpoint)
+    // Upload foto & vektor ke server (endpoint sesuai backend)
     const handleUpload = () => {
-        if (!imagePath || !vectorData) {
-            Alert.alert('Data incomplete', 'Pastikan foto dan vektor tersedia sebelum upload.');
+        if (!imagePath || !vectorData || !nip) {
+            Alert.alert('Data incomplete', 'Pastikan foto, vektor, dan NIP tersedia sebelum upload.');
             return;
         }
         setUploadLoading(true);
         setUploadStatus(null);
-        const DUMMY_URL = 'https://example.com/api/face/encode';
+        const uploadUrl = URL.URL_presensi_settingProfile + 'addData';
         const form = new FormData();
         const uri = imagePath.startsWith('file://') ? imagePath : 'file://' + imagePath;
         const filename = uri.split('/').pop() || 'photo.jpg';
         // @ts-ignore
-        form.append('photo', { uri, name: filename, type: 'image/jpeg' });
-        form.append('vector', JSON.stringify(vectorData.embedding));
-        form.append('timestamp', vectorData.timestamp);
-        fetch(DUMMY_URL, {
+        form.append('file', { uri, name: filename, type: 'image/jpeg' });
+        form.append('nip', nip);
+        form.append('vectors', JSON.stringify(vectorData.embedding));
+        fetch(uploadUrl, {
             method: 'POST',
             body: form,
-            headers: { 'Accept': 'application/json' },
+            headers: {
+                'Authorization': `kikensbarara ${token}`,
+                'Accept': 'application/json'
+            },
         })
             .then(resp => {
                 return resp.json().catch(() => null).then(json => ({ resp, json }));
@@ -158,6 +167,23 @@ const SettingSampleImage = () => {
                 setUploadLoading(false);
             });
     };
+
+
+    const loadAyncData = async () => {
+        try {
+            const profile = await AsyncStorage.getItem('userProfile');
+            if (profile) {
+                const profile1 = JSON.parse(profile);
+                setNip(profile1.profile.NIP);
+            }
+        } catch (e) {
+            setNip("");
+        }
+    };
+
+    useEffect(() => {
+        loadAyncData();
+    }, []);
 
     const isLoading = loading || isExtracting || uploadLoading;
 
