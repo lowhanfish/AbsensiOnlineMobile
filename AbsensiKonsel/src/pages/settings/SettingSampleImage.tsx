@@ -15,7 +15,7 @@ import {
 
 // Navigation
 import { useNavigation } from '@react-navigation/native';
-
+import { useSelector } from "react-redux";
 // Camera & File System
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
@@ -27,6 +27,8 @@ import { useFaceVector } from '../../hooks';
 // Komponen utama untuk capture foto dan ekstraksi embedding wajah
 const SettingSampleImage = () => {
     const navigation = useNavigation();
+    const URL = useSelector(state => state.URL);
+    const token = useSelector(state => state.TOKEN);
 
     // Refs & hooks
     const cameraRef = useRef<Camera | null>(null);
@@ -108,7 +110,7 @@ const SettingSampleImage = () => {
             Alert.alert('Data incomplete', 'Pastikan foto dan vektor tersedia.');
             return;
         }
-        // navigation.navigate('Settings' as any, { samplePhoto: imagePath, vector: vectorData });
+        // (navigation as any).navigate('Settings', { samplePhoto: imagePath, vector: vectorData });
     };
 
 
@@ -141,7 +143,7 @@ const SettingSampleImage = () => {
                     setUploadStatus('Upload berhasil');
                     Alert.alert('Upload berhasil', JSON.stringify(json || { status: 'ok' }));
                     try { await RNFS.unlink(imagePath); } catch (e) { /* ignore */ }
-                    navigation.navigate('Settings' as any, { samplePhoto: imagePath, vector: vectorData });
+                    (navigation as any).navigate('Settings', { samplePhoto: imagePath, vector: vectorData });
                 } else {
                     setUploadStatus('Upload gagal');
                     Alert.alert('Upload gagal', json?.message || 'Terjadi kesalahan saat upload');
@@ -216,10 +218,10 @@ const SettingSampleImage = () => {
                             )}
                             <View style={styles.actionRow}>
                                 <TouchableOpacity style={styles.btn} onPress={handleRetake}>
-                                    <Text style={styles.btnText}>Ambil Ulang</Text>
+                                    <Text style={styles.btnText}>🔁 Ambil Ulang</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.btn} onPress={handleSaveAndReturn}>
-                                    <Text style={styles.btnText}>Simpan & Kembali</Text>
+                                    <Text style={styles.btnText}> Simpan & Kembali</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.btn, styles.btnPrimary]}
@@ -305,7 +307,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     actionRow: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         gap: 12,
         justifyContent: 'center',
         alignItems: 'center',
@@ -317,6 +319,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         marginHorizontal: 8,
+        width: 265,
     },
     btnPrimary: {
         backgroundColor: '#2ecc71',
