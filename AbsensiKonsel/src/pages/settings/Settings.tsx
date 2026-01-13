@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View, Text, StyleSheet, ImageBackground, Image,
     TouchableOpacity, Switch, ScrollView, TextInput
@@ -8,6 +8,8 @@ import ButtonBack from "../../components/ButtonBack";
 import Photo from "../../assets/images/image5.png";
 import Badgex from "../../assets/images/icon/true.png";
 import { useNavigation } from "@react-navigation/native"
+import axios from 'axios';
+
 
 const Settings = () => {
 
@@ -19,12 +21,47 @@ const Settings = () => {
     const [password, setPassword] = useState('password123');
     const [email, setEmail] = useState('kikensbatara@gmail.com');
 
+
+    const [listPhoto, setListPhoto] = useState([]);
+
     const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
 
     const handleLogout = () => {
         // Logout logic here
         console.log('Logout pressed');
     };
+
+    const viewDataPhoto = () => {
+
+
+
+        axios.post(URL.URL_AbsenHarian + 'viewListDarurat_v2', JSON.stringify({
+            data_ke: pageFirst,
+            cari_value: cariValue,
+            pageFirst: pageFirst,
+            pageLimit: pageLimit,
+        }), {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        }).then(result => {
+            setLoading(true);
+            console.log(result.data);
+            setListData(result.data.data); // Update state with fetched data
+            setPageLast(result.data.jml_data)
+        }).catch(error => {
+            setLoading(true);
+            // console.log("errornya : ", error);
+        })
+        console.log(URL.URL_AbsenHarian + 'viewListDarurat')
+
+    }
+
+
+    useEffect(() => {
+
+    }, [])
 
     return (
         <View style={{ flex: 1 }}>
