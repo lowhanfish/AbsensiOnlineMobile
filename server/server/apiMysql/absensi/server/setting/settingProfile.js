@@ -41,27 +41,32 @@ router.post('/view', (req, res) => {
 });
 
 
-router.post('/addData',upload.single("file"), (req,res)=>{
-
-
+router.post('/addData', upload.single("file"), (req, res) => {
     console.log("UPLOAD SAMPEL FOTO DI PANGGIL")
     console.log(req.body);
-    
-    var insert = `INSERT INTO fotosample (file, nip, vectors) 
-    VALUES (?, ?, ?)
-    `;
 
-    const values = [req.file.filename, req.body.nip, req.body.vectors];
-  
-    db.query(insert, values, (err, row)=>{
-        if(err) {
+    // Batasi maksimal 2 foto per NIP
+    const nip = req.body.nip;
+    db.query(`SELECT COUNT(*) as total FROM fotosample WHERE nip = ?`, [nip], (err, result) => {
+        if (err) {
             console.log(err);
-            res.status(500).send(err);
-        }else{
-            res.status(200).send(row);
+            return res.status(500).send({ error: 'Database error saat cek jumlah foto.' });
         }
-    })
-    // console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+        if (result[0].total >= 2) {
+            return res.status(400).send({ error: 'Maksimal 2 foto sample per NIP.' });
+        }
+
+        var insert = `INSERT INTO fotosample (file, nip, vectors) VALUES (?, ?, ?)`;
+        const values = [req.file.filename, nip, req.body.vectors];
+        db.query(insert, values, (err, row) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send(err);
+            } else {
+                res.status(200).send(row);
+            }
+        });
+    });
 });
 
 
