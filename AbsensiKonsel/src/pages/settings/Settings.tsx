@@ -7,8 +7,13 @@ import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
 import Photo from "../../assets/images/image5.png";
 import Badgex from "../../assets/images/icon/true.png";
+import { useNavigation } from "@react-navigation/native"
 
 const Settings = () => {
+
+
+    const navigation = useNavigation();
+
     const [isNotifEnabled, setIsNotifEnabled] = useState(true);
     const [username, setUsername] = useState('administrator');
     const [password, setPassword] = useState('password123');
@@ -51,7 +56,9 @@ const Settings = () => {
 
                             {/* Foto Sampel Wajah */}
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>FOTO SAMPEL WAJAH</Text>
+                                <TouchableOpacity onPress={() => { (navigation as any).navigate("MainPage", { screen: "SettingSampleImage" }); }} style={styles.btnAddPhoto}>
+                                    <Text style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>➕ FOTO SAMPEL WAJAH</Text>
+                                </TouchableOpacity>
                                 <View style={styles.photoContainer}>
                                     <View style={styles.photoWrapper}>
                                         <Image source={Photo} style={styles.photo} />
@@ -63,6 +70,9 @@ const Settings = () => {
                                     </View>
                                 </View>
                             </View>
+
+
+
 
                             {/* Divider */}
                             <View style={styles.divider} />
@@ -146,7 +156,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flex: 1,
-        paddingTop: 20,
+        // paddingTop: 20,
     },
     infoContainer: {
         paddingHorizontal: 12,
@@ -261,6 +271,10 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#fff',
     },
+
+    btnAddPhoto: {
+        backgroundColor: 'white', flex: 1, justifyContent: 'center', alignItems: 'center', height: 45, borderWidth: 0.3, borderColor: '#555', borderRadius: 10, marginBottom: 15
+    }
 });
 
 export default Settings;

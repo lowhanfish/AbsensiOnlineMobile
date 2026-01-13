@@ -34,6 +34,7 @@ import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
 
 // Settings
 import Settings from './settings/Settings';
+import SettingSampleImage from './settings/SettingSampleImage';
 
 
 import { Stylex } from '../assets/styles/main';
@@ -62,6 +63,7 @@ const ContentAll = () => {
             <ContentStack.Screen name="IzinForm" component={IzinForm} />
 
             <ContentStack.Screen name="Settings" component={Settings} />
+            <ContentStack.Screen name="SettingSampleImage" component={SettingSampleImage} />
 
             {/* Offline Absensi */}
             <ContentStack.Screen name="AbsenOffline" component={AbsenOffline} />

@@ -58,23 +58,23 @@ router.post('/UpdateAll', async (req, res)=>{
 
 //di non-aktifkan sementara
 
-//    var data = req.body   
-//    var biodata  =  await getBioData(data[0])
+   var data = req.body   
+   var biodata  =  await getBioData(data[0])
 
-//    console.log(biodata)
+   console.log(biodata)
 
-//    for (let i = 0; i < data.length; i++) {
+   for (let i = 0; i < data.length; i++) {
         
         
 
-//        if (data[i].inject == true) {
-//            console.log("INJEKSI")
-//            console.log(data[i].inject)
-//            await updateData (data[i], req, biodata)
-//        } 
+       if (data[i].inject == true) {
+           console.log("INJEKSI")
+           console.log(data[i].inject)
+           await updateData (data[i], req, biodata)
+       } 
 
         
-//    }
+   }
 
 
 
@@ -96,20 +96,23 @@ router.post('/Update', async (req, res)=>{
 
     console.log(levelAkses)
 
+    await updateData (req.body, req, biodata)
+     res.send("Sukses")
 
-    if (levelAkses.updatex == 1) {
+    // if (levelAkses.updatex == 1) {
 
-       // Di bawah dinonaktifkan sementara
-       // await updateData (req.body, req, biodata)
-        res.send("Sukses")
+    //  await updateData (req.body, req, biodata)
+    //  res.send("Sukses")
 
-    }else {
-        res.json({
-            icon : 'check_circle_outline',
-            color : 'red',
-            ket : 'Anda tidak memiliki hak akses ini... 🙏',
-        })
-    }
+    //    // Di bawah dinonaktifkan sementara
+
+    // }else {
+    //     res.json({
+    //         icon : 'check_circle_outline',
+    //         color : 'red',
+    //         ket : 'Anda tidak memiliki hak akses ini... 🙏',
+    //     })
+    // }
 
 
 
