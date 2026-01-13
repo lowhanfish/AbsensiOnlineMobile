@@ -113,44 +113,48 @@ const SettingSampleImage = () => {
 
 
     // Upload foto & vektor ke server (dummy endpoint)
-    const handleUpload = async () => {
+    const handleUpload = () => {
         if (!imagePath || !vectorData) {
             Alert.alert('Data incomplete', 'Pastikan foto dan vektor tersedia sebelum upload.');
             return;
         }
-        try {
-            setUploadLoading(true);
-            setUploadStatus(null);
-            const DUMMY_URL = 'https://example.com/api/face/encode';
-            const form = new FormData();
-            const uri = imagePath.startsWith('file://') ? imagePath : 'file://' + imagePath;
-            const filename = uri.split('/').pop() || 'photo.jpg';
-            // @ts-ignore
-            form.append('photo', { uri, name: filename, type: 'image/jpeg' });
-            form.append('vector', JSON.stringify(vectorData.embedding));
-            form.append('timestamp', vectorData.timestamp);
-            const resp = await fetch(DUMMY_URL, {
-                method: 'POST',
-                body: form,
-                headers: { 'Accept': 'application/json' },
+        setUploadLoading(true);
+        setUploadStatus(null);
+        const DUMMY_URL = 'https://example.com/api/face/encode';
+        const form = new FormData();
+        const uri = imagePath.startsWith('file://') ? imagePath : 'file://' + imagePath;
+        const filename = uri.split('/').pop() || 'photo.jpg';
+        // @ts-ignore
+        form.append('photo', { uri, name: filename, type: 'image/jpeg' });
+        form.append('vector', JSON.stringify(vectorData.embedding));
+        form.append('timestamp', vectorData.timestamp);
+        fetch(DUMMY_URL, {
+            method: 'POST',
+            body: form,
+            headers: { 'Accept': 'application/json' },
+        })
+            .then(resp => {
+                return resp.json().catch(() => null).then(json => ({ resp, json }));
+            })
+            .then(async ({ resp, json }) => {
+                if (resp.ok) {
+                    setUploadStatus('Upload berhasil');
+                    Alert.alert('Upload berhasil', JSON.stringify(json || { status: 'ok' }));
+                    try { await RNFS.unlink(imagePath); } catch (e) { /* ignore */ }
+                    navigation.navigate('Settings' as any, { samplePhoto: imagePath, vector: vectorData });
+                } else {
+                    setUploadStatus('Upload gagal');
+                    Alert.alert('Upload gagal', json?.message || 'Terjadi kesalahan saat upload');
+                }
+            })
+            .catch((err) => {
+                console.error('❌ Upload error:', err);
+                setUploadStatus('Upload error');
+                Alert.alert('Upload error', err?.message || 'Gagal menghubungi server');
+            })
+            .finally(() => {
+                setUploadLoading(false);
             });
-            const json = await resp.json().catch(() => null);
-            if (resp.ok) {
-                setUploadStatus('Upload berhasil');
-                Alert.alert('Upload berhasil', JSON.stringify(json || { status: 'ok' }));
-                try { await RNFS.unlink(imagePath); } catch (e) { /* ignore */ }
-                navigation.navigate('Settings' as any, { samplePhoto: imagePath, vector: vectorData });
-            } else {
-                setUploadStatus('Upload gagal');
-                Alert.alert('Upload gagal', json?.message || 'Terjadi kesalahan saat upload');
-            }
-        } catch (err: any) {
-            console.error('❌ Upload error:', err);
-            setUploadStatus('Upload error');
-            Alert.alert('Upload error', err?.message || 'Gagal menghubungi server');
-        } finally {
-            setUploadLoading(false);
-        }
     };
 
     const isLoading = loading || isExtracting || uploadLoading;
