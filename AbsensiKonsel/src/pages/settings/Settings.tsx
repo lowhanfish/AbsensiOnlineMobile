@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    View, Text, StyleSheet, ImageBackground, Image,
-    TouchableOpacity, Switch, ScrollView, TextInput
+    View, Text, StyleSheet, ImageBackground,
+    TouchableOpacity, ScrollView, TextInput
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
 
 import { useNavigation } from "@react-navigation/native"
-
-import axios from 'axios';
-import { useSelector } from 'react-redux';
-// import { string } from 'joi';
-
 
 import SettingListWajah from './components/SettingListWajah';
 import SettingNotifikasi from './components/SettingNotifikasi';
@@ -21,29 +16,13 @@ import SettingNotifikasi from './components/SettingNotifikasi';
 const Settings = () => {
 
     const navigation = useNavigation();
-    // const token = useSelector((state: any) => state.TOKEN);
-    // const URL = useSelector((state: any) => state.URL);
 
-    const [isNotifEnabled, setIsNotifEnabled] = useState(true);
     const [username, setUsername] = useState('administrator');
     const [password, setPassword] = useState('password123');
-    const [email, setEmail] = useState('kikensbatara@gmail.com');
-
-
-
-
-    const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
 
     const handleLogout = () => {
-        // Logout logic here
         console.log('Logout pressed');
     };
-
-
-
-    useEffect(() => {
-        // No side effect needed
-    }, [])
 
     return (
         <View style={{ flex: 1 }}>
@@ -173,10 +152,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 8,
     },
-
-
-
-
 
     logoutButton: {
         backgroundColor: '#E8B4B4',

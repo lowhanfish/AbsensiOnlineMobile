@@ -10,6 +10,54 @@ const router = express.Router();
 
 
 
+// SAMPLE
+router.post('/viewData', (req, res) => {
+    const query = `
+        SELECT * FROM fotosample
+        WHERE nip = ?
+    
+    `
+    const values = [req.body.nip]
+
+    db.query(query, values, (err, rows)=>{
+        if (err) {
+            console.log(err);
+            res.status(500).send(rows)
+        } else {
+            res.status(200).send(rows)
+        }
+    })
+})
+
+
+// SAMPLE
+router.post('/changeData', (req, res) => {
+    const query = `
+        UPDATE fotosample SET
+        status = ?,
+        keterangan = ?
+
+        WHERE id = ?
+    
+    `
+    const values = [req.body.status, req.body.keterangan, req.body.id]
+
+    db.query(query, values, (err, rows)=>{
+        if (err) {
+            console.log(err);
+            res.status(500).send(rows)
+        } else {
+            res.status(200).send(rows)
+        }
+    })
+})
+
+
+
+
+
+
+
 router.get('/aa', (req, res) => {
 
     var data = req.user.profile
@@ -68,8 +116,6 @@ router.post('/addData', upload.single("file"), (req, res) => {
         });
     });
 });
-
-
 
 router.post('/removeData', (req, res)=> {
     var file = req.body.file
