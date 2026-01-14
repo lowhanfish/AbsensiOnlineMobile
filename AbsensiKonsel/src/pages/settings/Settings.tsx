@@ -6,15 +6,18 @@ import {
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
 import Photo from "../../assets/images/image5.png";
-import Badgex from "../../assets/images/icon/true.png";
+import BadgexPending from "../../assets/images/icon/true.png";
+import BadgexApprove from "../../assets/images/icon/true.png";
+import BadgexReject from "../../assets/images/icon/true.png";
 import { useNavigation } from "@react-navigation/native"
 import axios from 'axios';
-
+import { useSelector } from 'react-redux';
 
 const Settings = () => {
 
-
     const navigation = useNavigation();
+    const token = useSelector((state: any) => state.TOKEN);
+    const URL = useSelector((state: any) => state.URL);
 
     const [isNotifEnabled, setIsNotifEnabled] = useState(true);
     const [username, setUsername] = useState('administrator');
@@ -32,35 +35,24 @@ const Settings = () => {
     };
 
     const viewDataPhoto = () => {
-
-
-
-        axios.post(URL.URL_AbsenHarian + 'viewListDarurat_v2', JSON.stringify({
-            data_ke: pageFirst,
-            cari_value: cariValue,
-            pageFirst: pageFirst,
-            pageLimit: pageLimit,
+        axios.post(URL.URL_presensi_settingProfile + 'view', JSON.stringify({
+            data_ke: "",
         }), {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             }
         }).then(result => {
-            setLoading(true);
             console.log(result.data);
-            setListData(result.data.data); // Update state with fetched data
-            setPageLast(result.data.jml_data)
-        }).catch(error => {
-            setLoading(true);
-            // console.log("errornya : ", error);
-        })
-        console.log(URL.URL_AbsenHarian + 'viewListDarurat')
+            setListPhoto(result.data);
 
+        }).catch(error => {
+            console.log("errornya : ", error);
+        })
     }
 
-
     useEffect(() => {
-
+        viewDataPhoto();
     }, [])
 
     return (
@@ -97,19 +89,29 @@ const Settings = () => {
                                     <Text style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>➕ FOTO SAMPEL WAJAH</Text>
                                 </TouchableOpacity>
                                 <View style={styles.photoContainer}>
-                                    <View style={styles.photoWrapper}>
-                                        <Image source={Photo} style={styles.photo} />
-                                        <Image source={Badgex} style={styles.badge} />
-                                    </View>
-                                    <View style={styles.photoWrapper}>
-                                        <Image source={Photo} style={styles.photo} />
-                                        <Image source={Badgex} style={styles.badge} />
-                                    </View>
+
+                                    {
+                                        listPhoto.length < 1 ? (
+                                            <View style={Stylex.emptyDataContainer}>
+                                                <Text style={Stylex.emptyDataContainerText}>❌ Tidak ada foto wajah..! 📷</Text>
+                                            </View>
+                                        ) : (
+                                            <>
+                                                {
+                                                    listPhoto.map((item, index) => (
+                                                        <View key={index} style={styles.photoWrapper}>
+                                                            {/* <Text>{URL.URL_APP + 'uploads/' + item}</Text> */}
+                                                            <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={styles.photo} />
+                                                            <Image source={BadgexApprove} style={styles.badge} />
+                                                        </View>
+
+                                                    ))
+                                                }
+                                            </>
+                                        )
+                                    }
                                 </View>
                             </View>
-
-
-
 
                             {/* Divider */}
                             <View style={styles.divider} />

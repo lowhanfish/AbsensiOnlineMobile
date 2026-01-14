@@ -344,6 +344,23 @@ export const Stylex = StyleSheet.create({
         color: '#3B3B3B',
         marginTop:15
 
+    },
+    emptyDataContainer :{
+        // backgroundColor : 'pink',
+        borderStyle : 'dashed',
+        borderWidth : 0.5,
+        borderColor : '#A29DAC',
+        flex : 1,
+        height : 35,
+        justifyContent : 'center',
+        alignItems : 'center',
+        flexDirection :'row',
+        gap : 5
+    },
+
+    emptyDataContainerText : {
+        color : '#A29DAC',
+
     }
 
 });

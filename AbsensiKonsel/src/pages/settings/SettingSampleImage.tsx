@@ -207,6 +207,17 @@ const SettingSampleImage = () => {
                                 isActive={true}
                                 photo={true}
                             />
+                            {/* Overlay area wajah lebih keren */}
+                            <View style={styles.faceCircleOverlay} pointerEvents="none">
+                                <View style={styles.faceCircleKeren}>
+                                    {/* Garis bantu vertikal */}
+                                    <View style={styles.guideLineVertical} />
+                                    {/* Garis bantu horizontal */}
+                                    <View style={styles.guideLineHorizontal} />
+                                    {/* Efek highlight gradasi */}
+                                    <View style={styles.faceCircleGradient} />
+                                </View>
+                            </View>
                             <View style={styles.captureContainer}>
                                 <TouchableOpacity
                                     style={styles.captureButton}
@@ -272,6 +283,64 @@ const SettingSampleImage = () => {
 
 // StyleSheet
 const styles = StyleSheet.create({
+    faceCircleOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+    },
+    faceCircleKeren: {
+        width: 250,
+        height: 350,
+        borderRadius: 210,
+        borderWidth: 4,
+        borderColor: 'rgba(46,204,113,0.95)',
+        backgroundColor: 'rgba(255,255,255,0.07)',
+        shadowColor: '#2ecc71',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 24,
+        elevation: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'visible',
+    },
+    faceCircleGradient: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: 320,
+        height: 420,
+        borderRadius: 210,
+        // Simulasi gradasi highlight dengan border tambahan
+        borderWidth: 12,
+        borderColor: 'rgba(46,204,113,0.13)',
+        opacity: 0.7,
+    },
+    guideLineVertical: {
+        position: 'absolute',
+        left: (250 / 2) - (3 / 2), // center of oval - half width of line
+        top: 0,
+        width: 3,
+        height: 345,
+        backgroundColor: 'rgba(46,204,113,0.28)',
+        borderRadius: 1.5,
+        zIndex: 3,
+    },
+    guideLineHorizontal: {
+        position: 'absolute',
+        top: (350 / 2) - (3 / 2), // center of oval - half height of line
+        left: 0,
+        width: 250,
+        height: 3,
+        backgroundColor: 'rgba(46,204,113,0.28)',
+        borderRadius: 1.5,
+        zIndex: 3,
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
