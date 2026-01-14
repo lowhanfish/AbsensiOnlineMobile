@@ -12,19 +12,84 @@ const router = express.Router();
 
 // SAMPLE
 router.post('/viewData', (req, res) => {
-    const query = `
-        SELECT * FROM fotosample
-        WHERE nip = ?
-    
-    `
-    const values = [req.body.nip]
+    var data_batas = 10;
+    var data_star = (req.body.data_ke - 1) * data_batas;
+    var cari = req.body.cari_value;
+    var halaman = 1;
 
-    db.query(query, values, (err, rows)=>{
+    let jml_data = `
+        SELECT
+        fotosample.id,
+        fotosample.nip,
+
+        biodata.nama as biodata_nama,
+        biodata.gelar_belakang as biodata_gelar_belakang,
+        biodata.gelar_depan as biodata_gelar_depan,
+        biodata.unit_kerja AS unit_kerja_id,
+        unit_kerja.unit_kerja AS unit_kerja_uraian
+
+        FROM fotosample
+
+        LEFT JOIN simpeg.biodata biodata
+        ON fotosample.nip = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON biodata.unit_kerja = unit_kerja.id
+
+        WHERE biodata.nama LIKE '%`+ cari + `%' 
+    `
+
+    const query = `
+        SELECT
+        fotosample.id,
+        fotosample.file,
+        fotosample.nip,
+        fotosample.status,
+        fotosample.keterangan,
+
+        biodata.nama as biodata_nama,
+        biodata.gelar_belakang as biodata_gelar_belakang,
+        biodata.gelar_depan as biodata_gelar_depan,
+        biodata.unit_kerja AS unit_kerja_id,
+        unit_kerja.unit_kerja AS unit_kerja_uraian
+
+        FROM fotosample
+
+        LEFT JOIN simpeg.biodata biodata
+        ON fotosample.nip = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON biodata.unit_kerja = unit_kerja.id
+
+        WHERE biodata.nama LIKE '%`+ cari + `%' 
+
+        LIMIT `+ data_star + `,` + data_batas + `
+    `
+    
+    db.query(jml_data, (err, rows) => {
         if (err) {
             console.log(err);
             res.status(500).send(rows)
         } else {
-            res.status(200).send(rows)
+            // res.status(200).send(rows)
+            halaman = Math.ceil(rows.length / data_batas);
+            if (halaman < 1) { halaman = 1 }
+            // ========================
+            db.query(query, (err2, result) => {
+                if (err2) {
+                    // console.log(err2)
+                    res.json(err)
+                }
+                else {
+                    halaman = Math.ceil(rows.length / data_batas);
+                    if (halaman < 1) { halaman = 1 }
+                    res.json({
+                        data: result,
+                        jml_data: halaman
+                    })
+                }
+            })
+            // ========================
         }
     })
 })
