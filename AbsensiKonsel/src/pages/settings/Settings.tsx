@@ -97,10 +97,16 @@ const Settings = () => {
                             <View style={styles.section}>
 
 
+                                {
+                                    listPhoto.length < 2 ? (
+                                        <TouchableOpacity onPress={() => { (navigation as any).navigate("MainPage", { screen: "SettingSampleImage" }); }} style={styles.btnAddPhoto}>
+                                            <Text style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>➕ FOTO SAMPEL WAJAH</Text>
+                                        </TouchableOpacity>
 
-                                <TouchableOpacity disabled={true} onPress={() => { (navigation as any).navigate("MainPage", { screen: "SettingSampleImage" }); }} style={styles.btnAddPhoto}>
-                                    <Text style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>➕ FOTO SAMPEL WAJAH</Text>
-                                </TouchableOpacity>
+                                    ) : (
+                                        <Text style={styles.sectionTitle}>SAMPLE FOTO WAJAH</Text>
+                                    )
+                                }
                                 <View style={styles.photoContainer}>
 
                                     {
