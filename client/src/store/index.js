@@ -66,6 +66,10 @@ export default new Vuex.Store({
       URL_simpeg_unit_kerja: URL+'api/v1/dm_unitKerja/',
       URL_simpeg_instansi : URL+'api/v1/dm_instansi/',
 
+
+      URL_presensi_settingProfile : URL+'api/v1/presensi_settingProfile/',
+
+
       
     },
 
