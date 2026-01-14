@@ -1,23 +1,95 @@
 //import liraries
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState, } from 'react';
+import { View, Text, StyleSheet, Switch, TextInput } from 'react-native';
+import { Stylex } from '../../../assets/styles/main';
 
 // create a component
 const SettingNotifikasi = () => {
+    const [isNotifEnabled, setIsNotifEnabled] = useState(true);
+    const [email, setEmail] = useState('kikensbatara@gmail.com');
+    const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
+
     return (
-        <View style={styles.container}>
-            <Text>SettingNotifikasi</Text>
+        <View style={Stylex.sectionx}>
+            <Text style={Stylex.sectionTitle}>EMAIL NOTIFIKASI</Text>
+            <View style={styles.toggleRow}>
+                <Switch
+                    trackColor={{ false: '#ccc', true: '#4CD964' }}
+                    thumbColor={'#fff'}
+                    onValueChange={toggleSwitch}
+                    value={isNotifEnabled}
+                />
+                <View style={[styles.statusBadge, isNotifEnabled ? styles.activeBadge : styles.inactiveBadge]}>
+                    <Text style={[styles.statusText, isNotifEnabled ? styles.activeText : styles.inactiveText]}>
+                        {isNotifEnabled ? 'AKTIF' : 'NON-AKTIF'}
+                    </Text>
+                </View>
+            </View>
+            <View style={styles.fieldRow}>
+                <Text style={styles.fieldLabel}>Email :</Text>
+                <TextInput
+                    style={styles.fieldValue}
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                />
+                <Text style={styles.editIcon}>✏️</Text>
+            </View>
         </View>
     );
 };
 
 // define your styles
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
+    statusBadge: {
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        borderRadius: 4,
+        borderWidth: 1,
+    },
+    toggleRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#2c3e50',
+        marginBottom: 12,
+        gap: 12,
+    },
+    activeBadge: {
+        borderColor: '#4CD964',
+        backgroundColor: '#fff',
+    },
+    inactiveBadge: {
+        borderColor: '#ccc',
+        backgroundColor: '#f5f5f5',
+    },
+    fieldRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    editIcon: {
+        fontSize: 14,
+        marginLeft: 8,
+    },
+    statusText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    fieldLabel: {
+        fontSize: 13,
+        color: '#888',
+        width: 80,
+    },
+    activeText: {
+        color: '#4CD964',
+    },
+    inactiveText: {
+        color: '#888',
+    },
+    fieldValue: {
+        flex: 1,
+        fontSize: 14,
+        color: '#333',
+        paddingVertical: 4,
     },
 });
 

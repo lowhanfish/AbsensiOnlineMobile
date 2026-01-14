@@ -5,25 +5,24 @@ import {
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
-import Photo from "../../assets/images/image5.png";
-import BadgexPending from "../../assets/images/icon/process.png";
-import BadgexApprove from "../../assets/images/icon/true.png";
-import BadgexReject from "../../assets/images/icon/false.png";
+
 import { useNavigation } from "@react-navigation/native"
 
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import { string } from 'joi';
+// import { string } from 'joi';
+
 
 import SettingListWajah from './components/SettingListWajah';
+import SettingNotifikasi from './components/SettingNotifikasi';
 
 
 
 const Settings = () => {
 
     const navigation = useNavigation();
-    const token = useSelector((state: any) => state.TOKEN);
-    const URL = useSelector((state: any) => state.URL);
+    // const token = useSelector((state: any) => state.TOKEN);
+    // const URL = useSelector((state: any) => state.URL);
 
     const [isNotifEnabled, setIsNotifEnabled] = useState(true);
     const [username, setUsername] = useState('administrator');
@@ -43,7 +42,7 @@ const Settings = () => {
 
 
     useEffect(() => {
-
+        // No side effect needed
     }, [])
 
     return (
@@ -108,32 +107,7 @@ const Settings = () => {
                             <View style={styles.divider} />
 
                             {/* Email Notifikasi */}
-                            <View style={Stylex.sectionx}>
-                                <Text style={Stylex.sectionTitle}>EMAIL NOTIFIKASI</Text>
-                                <View style={styles.toggleRow}>
-                                    <Switch
-                                        trackColor={{ false: '#ccc', true: '#4CD964' }}
-                                        thumbColor={'#fff'}
-                                        onValueChange={toggleSwitch}
-                                        value={isNotifEnabled}
-                                    />
-                                    <View style={[styles.statusBadge, isNotifEnabled ? styles.activeBadge : styles.inactiveBadge]}>
-                                        <Text style={[styles.statusText, isNotifEnabled ? styles.activeText : styles.inactiveText]}>
-                                            {isNotifEnabled ? 'AKTIF' : 'NON-AKTIF'}
-                                        </Text>
-                                    </View>
-                                </View>
-                                <View style={styles.fieldRow}>
-                                    <Text style={styles.fieldLabel}>Email :</Text>
-                                    <TextInput
-                                        style={styles.fieldValue}
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        keyboardType="email-address"
-                                    />
-                                    <Text style={styles.editIcon}>✏️</Text>
-                                </View>
-                            </View>
+                            <SettingNotifikasi />
 
                             {/* Divider */}
                             <View style={styles.divider} />
@@ -172,13 +146,13 @@ const styles = StyleSheet.create({
         marginVertical: 15,
         marginHorizontal: 12,
     },
-    badge: {
-        position: 'absolute',
-        top: -5,
-        right: -5,
-        width: 28,
-        height: 28,
-    },
+    // badge: {
+    //     position: 'absolute',
+    //     top: -5,
+    //     right: -5,
+    //     width: 28,
+    //     height: 28,
+    // },
     fieldRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -199,36 +173,11 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 8,
     },
-    toggleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-        gap: 12,
-    },
-    statusBadge: {
-        paddingHorizontal: 16,
-        paddingVertical: 4,
-        borderRadius: 4,
-        borderWidth: 1,
-    },
-    activeBadge: {
-        borderColor: '#4CD964',
-        backgroundColor: '#fff',
-    },
-    inactiveBadge: {
-        borderColor: '#ccc',
-        backgroundColor: '#f5f5f5',
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    activeText: {
-        color: '#4CD964',
-    },
-    inactiveText: {
-        color: '#888',
-    },
+
+
+
+
+
     logoutButton: {
         backgroundColor: '#E8B4B4',
         marginHorizontal: 12,
