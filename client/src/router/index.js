@@ -160,6 +160,14 @@ function isLoggedIn(to, from, next) {
   },
 
 
+  {
+    path: '/verifikasiWajah',
+    name: 'verifikasiWajah',
+    component: () => import('../views/verifikasiWajah/verifikasiWajah.vue'),
+    beforeEnter: isLoggedIn,
+  },
+
+
   
   {
     path: '/jenisIzin',
