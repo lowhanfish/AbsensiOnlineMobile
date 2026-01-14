@@ -6,12 +6,22 @@ import {
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
 import Photo from "../../assets/images/image5.png";
-import BadgexPending from "../../assets/images/icon/true.png";
+import BadgexPending from "../../assets/images/icon/process.png";
 import BadgexApprove from "../../assets/images/icon/true.png";
-import BadgexReject from "../../assets/images/icon/true.png";
+import BadgexReject from "../../assets/images/icon/false.png";
 import { useNavigation } from "@react-navigation/native"
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { string } from 'joi';
+
+type listPhotoProps = {
+    id: number,
+    file: string,
+    keterangan: string,
+    nip: string,
+    status: number,
+    vector: string,
+}
 
 const Settings = () => {
 
@@ -25,7 +35,7 @@ const Settings = () => {
     const [email, setEmail] = useState('kikensbatara@gmail.com');
 
 
-    const [listPhoto, setListPhoto] = useState([]);
+    const [listPhoto, setListPhoto] = useState([] as listPhotoProps[]);
 
     const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
 
@@ -85,7 +95,10 @@ const Settings = () => {
 
                             {/* Foto Sampel Wajah */}
                             <View style={styles.section}>
-                                <TouchableOpacity onPress={() => { (navigation as any).navigate("MainPage", { screen: "SettingSampleImage" }); }} style={styles.btnAddPhoto}>
+
+
+
+                                <TouchableOpacity disabled={true} onPress={() => { (navigation as any).navigate("MainPage", { screen: "SettingSampleImage" }); }} style={styles.btnAddPhoto}>
                                     <Text style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>➕ FOTO SAMPEL WAJAH</Text>
                                 </TouchableOpacity>
                                 <View style={styles.photoContainer}>
@@ -98,11 +111,13 @@ const Settings = () => {
                                         ) : (
                                             <>
                                                 {
-                                                    listPhoto.map((item, index) => (
+                                                    listPhoto?.map((item, index) => (
                                                         <View key={index} style={styles.photoWrapper}>
                                                             {/* <Text>{URL.URL_APP + 'uploads/' + item}</Text> */}
                                                             <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={styles.photo} />
-                                                            <Image source={BadgexApprove} style={styles.badge} />
+                                                            <Image source={item.status === 0 ? (BadgexPending) : (item.status === 1 ? (BadgexApprove) : (BadgexReject))} style={styles.badge} />
+
+                                                            {/* <Text>{item.status}</Text> */}
                                                         </View>
 
                                                     ))
