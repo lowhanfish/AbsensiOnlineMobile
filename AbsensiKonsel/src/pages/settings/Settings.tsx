@@ -94,7 +94,7 @@ const Settings = () => {
                             <View style={styles.divider} />
 
                             {/* Foto Sampel Wajah */}
-                            <View style={styles.section}>
+                            <View style={Stylex.sectionx}>
 
 
                                 {
@@ -104,10 +104,10 @@ const Settings = () => {
                                         </TouchableOpacity>
 
                                     ) : (
-                                        <Text style={styles.sectionTitle}>SAMPLE FOTO WAJAH</Text>
+                                        <Text style={Stylex.sectionTitle}>SAMPLE FOTO WAJAH</Text>
                                     )
                                 }
-                                <View style={styles.photoContainer}>
+                                <View style={Stylex.photoContainer}>
 
                                     {
                                         listPhoto.length < 1 ? (
@@ -118,9 +118,9 @@ const Settings = () => {
                                             <>
                                                 {
                                                     listPhoto?.map((item, index) => (
-                                                        <View key={index} style={styles.photoWrapper}>
+                                                        <View key={index} style={Stylex.photoWrapper}>
                                                             {/* <Text>{URL.URL_APP + 'uploads/' + item}</Text> */}
-                                                            <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={styles.photo} />
+                                                            <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={Stylex.photoSample} />
                                                             <Image source={item.status === 0 ? (BadgexPending) : (item.status === 1 ? (BadgexApprove) : (BadgexReject))} style={styles.badge} />
 
                                                             {/* <Text>{item.status}</Text> */}
@@ -138,8 +138,8 @@ const Settings = () => {
                             <View style={styles.divider} />
 
                             {/* Akun Pengguna */}
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>AKUN PENGGUNA</Text>
+                            <View style={Stylex.sectionx}>
+                                <Text style={Stylex.sectionTitle}>AKUN PENGGUNA</Text>
                                 <View style={styles.fieldRow}>
                                     <Text style={styles.fieldLabel}>Username :</Text>
                                     <TextInput
@@ -165,8 +165,8 @@ const Settings = () => {
                             <View style={styles.divider} />
 
                             {/* Email Notifikasi */}
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>EMAIL NOTIFIKASI</Text>
+                            <View style={Stylex.sectionx}>
+                                <Text style={Stylex.sectionTitle}>EMAIL NOTIFIKASI</Text>
                                 <View style={styles.toggleRow}>
                                     <Switch
                                         trackColor={{ false: '#ccc', true: '#4CD964' }}
@@ -216,16 +216,6 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flex: 1,
-        // paddingTop: 20,
-    },
-    infoContainer: {
-        paddingHorizontal: 12,
-        marginBottom: 10,
-    },
-    infoText: {
-        fontSize: 12,
-        color: '#6b6b6b',
-        lineHeight: 18
     },
     fontTitle: {
         fontSize: 24,
@@ -238,28 +228,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#E6E4EF',
         marginVertical: 15,
         marginHorizontal: 12,
-    },
-    section: {
-        paddingHorizontal: 12,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#555',
-        marginBottom: 12,
-    },
-    photoContainer: {
-        flexDirection: 'row',
-        gap: 15,
-    },
-    photoWrapper: {
-        position: 'relative',
-    },
-    photo: {
-        width: 120,
-        height: 140,
-        borderRadius: 8,
-        resizeMode: 'cover',
     },
     badge: {
         position: 'absolute',
@@ -331,7 +299,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#fff',
     },
-
     btnAddPhoto: {
         backgroundColor: 'white', flex: 1, justifyContent: 'center', alignItems: 'center', height: 45, borderWidth: 0.3, borderColor: '#555', borderRadius: 10, marginBottom: 15
     }

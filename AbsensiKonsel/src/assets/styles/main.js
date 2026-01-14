@@ -360,7 +360,28 @@ export const Stylex = StyleSheet.create({
 
     emptyDataContainerText : {
         color : '#A29DAC',
-
-    }
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#555',
+        marginBottom: 12,
+    },
+    sectionx: {
+        paddingHorizontal: 12,
+    },
+    photoContainer: {
+        flexDirection: 'row',
+        gap: 15,
+    },
+    photoSample: {
+        width: 120,
+        height: 140,
+        borderRadius: 8,
+        resizeMode: 'cover',
+    },
+    photoWrapper: {
+        position: 'relative',
+    },
 
 });
