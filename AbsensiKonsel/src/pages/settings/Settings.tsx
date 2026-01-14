@@ -10,18 +10,14 @@ import BadgexPending from "../../assets/images/icon/process.png";
 import BadgexApprove from "../../assets/images/icon/true.png";
 import BadgexReject from "../../assets/images/icon/false.png";
 import { useNavigation } from "@react-navigation/native"
+
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { string } from 'joi';
 
-type listPhotoProps = {
-    id: number,
-    file: string,
-    keterangan: string,
-    nip: string,
-    status: number,
-    vector: string,
-}
+import SettingListWajah from './components/SettingListWajah';
+
+
 
 const Settings = () => {
 
@@ -35,7 +31,7 @@ const Settings = () => {
     const [email, setEmail] = useState('kikensbatara@gmail.com');
 
 
-    const [listPhoto, setListPhoto] = useState([] as listPhotoProps[]);
+
 
     const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
 
@@ -44,25 +40,10 @@ const Settings = () => {
         console.log('Logout pressed');
     };
 
-    const viewDataPhoto = () => {
-        axios.post(URL.URL_presensi_settingProfile + 'view', JSON.stringify({
-            data_ke: "",
-        }), {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        }).then(result => {
-            console.log(result.data);
-            setListPhoto(result.data);
 
-        }).catch(error => {
-            console.log("errornya : ", error);
-        })
-    }
 
     useEffect(() => {
-        viewDataPhoto();
+
     }, [])
 
     return (
@@ -94,45 +75,7 @@ const Settings = () => {
                             <View style={styles.divider} />
 
                             {/* Foto Sampel Wajah */}
-                            <View style={Stylex.sectionx}>
-
-
-                                {
-                                    listPhoto.length < 2 ? (
-                                        <TouchableOpacity onPress={() => { (navigation as any).navigate("MainPage", { screen: "SettingSampleImage" }); }} style={styles.btnAddPhoto}>
-                                            <Text style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>➕ FOTO SAMPEL WAJAH</Text>
-                                        </TouchableOpacity>
-
-                                    ) : (
-                                        <Text style={Stylex.sectionTitle}>SAMPLE FOTO WAJAH</Text>
-                                    )
-                                }
-                                <View style={Stylex.photoContainer}>
-
-                                    {
-                                        listPhoto.length < 1 ? (
-                                            <View style={Stylex.emptyDataContainer}>
-                                                <Text style={Stylex.emptyDataContainerText}>❌ Tidak ada foto wajah..! 📷</Text>
-                                            </View>
-                                        ) : (
-                                            <>
-                                                {
-                                                    listPhoto?.map((item, index) => (
-                                                        <View key={index} style={Stylex.photoWrapper}>
-                                                            {/* <Text>{URL.URL_APP + 'uploads/' + item}</Text> */}
-                                                            <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={Stylex.photoSample} />
-                                                            <Image source={item.status === 0 ? (BadgexPending) : (item.status === 1 ? (BadgexApprove) : (BadgexReject))} style={styles.badge} />
-
-                                                            {/* <Text>{item.status}</Text> */}
-                                                        </View>
-
-                                                    ))
-                                                }
-                                            </>
-                                        )
-                                    }
-                                </View>
-                            </View>
+                            <SettingListWajah />
 
                             {/* Divider */}
                             <View style={styles.divider} />
@@ -299,9 +242,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#fff',
     },
-    btnAddPhoto: {
-        backgroundColor: 'white', flex: 1, justifyContent: 'center', alignItems: 'center', height: 45, borderWidth: 0.3, borderColor: '#555', borderRadius: 10, marginBottom: 15
-    }
+
 });
 
 export default Settings;
