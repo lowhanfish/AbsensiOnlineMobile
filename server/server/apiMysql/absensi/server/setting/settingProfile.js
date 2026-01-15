@@ -36,7 +36,8 @@ router.post('/viewData', (req, res) => {
         LEFT JOIN simpeg.unit_kerja unit_kerja
         ON biodata.unit_kerja = unit_kerja.id
 
-        WHERE biodata.nama LIKE '%`+ cari + `%' 
+        WHERE biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND biodata.nama LIKE '%`+cari+`%'
+
     `
 
     const query = `
@@ -61,7 +62,7 @@ router.post('/viewData', (req, res) => {
         LEFT JOIN simpeg.unit_kerja unit_kerja
         ON biodata.unit_kerja = unit_kerja.id
 
-        WHERE biodata.nama LIKE '%`+ cari + `%' 
+        WHERE biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND biodata.nama LIKE '%`+cari+`%'
 
         LIMIT `+ data_star + `,` + data_batas + `
     `
