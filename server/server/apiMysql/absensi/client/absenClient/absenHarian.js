@@ -11,6 +11,7 @@ const router = express.Router();
 const lib = require('../../../library/umum');
 const libAbsen = require('../../../library/absen');
 const libIzin = require('../../../library/izin');
+const faceEmbedding = require('../../../library/faceEmbedding');
 
 
 var fetch = require('node-fetch');
