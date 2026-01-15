@@ -26,6 +26,40 @@
       <q-separator dark inset />
 
       <q-card-section>
+        <div class="row">
+
+          <div class="col-12 col-md-12 inputFilterku">
+            <span class="h_lable ">Unit Kerja</span>
+            <q-select
+                v-model="filterku.unit_kerja_id"
+                @input="getView()"
+                use-input
+                hide-selected
+                fill-input
+                input-debounce="0"
+                :options="$store.state.list_unit_kerja_auto"
+                option-value="id"
+                option-label="unit_kerja"
+                @filter="filterUnitKerja"
+                emit-value
+                map-options
+                clearable
+                outlined
+                square
+                :dense="true"
+              >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    Tidak ditemukan
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+          </div>
+        </div>
+
+        <hr class="hrpagin">
         <div class="tbl_responsive">
 
           <!-- =================================================== KONTENT =========================================================== -->
@@ -45,17 +79,6 @@
 
               </td>
               <td>{{ data.unit_kerja_uraian }}</td>
-              <!-- <td>
-                <span v-if="data.status === 0">
-                  Menunggu diverifikasi
-                </span>
-                <span v-else-if="data.status === 1">
-                  Data diverifikasi
-                </span>
-                <span v-else-if="data.status === 2">
-                  Data ditolak
-                </span>
-              </td> -->
               <td class="text-center">
                 <q-btn-group>
                   <q-btn @click="mdl_maps = true, selectData(data)" glossy color="blue" icon="search" class="tbl_btn">
@@ -76,8 +99,6 @@
                     </q-tooltip>
                   </q-btn>
                 </q-btn-group>
-
-
               </td>
             </tr>
 
@@ -254,6 +275,7 @@
 
 
 import UMUM from '../../library/umum'
+import FETCHING from '../../library/fetching'
 
 
 export default {
@@ -269,6 +291,10 @@ export default {
         file_old: '',
         unit_kerja: '',
         status: 0,
+      },
+
+      filterku: {
+        unit_kerja_id: '',
       },
 
       list_data: [],
@@ -290,6 +316,7 @@ export default {
 
 
       UMUM: UMUM,
+      FETCHING : FETCHING,
     }
   },
   methods: {
@@ -305,7 +332,8 @@ export default {
         },
         body: JSON.stringify({
           data_ke: this.page_first,
-          cari_value: this.cari_value
+          cari_value: this.cari_value,
+          unit_kerja_id: this.filterku.unit_kerja_id,
         })
       })
         .then(res => res.json())
@@ -313,7 +341,7 @@ export default {
           this.list_data = res_data.data;
           this.page_last = res_data.jml_data;
           this.$store.commit("hideLoading");
-          console.log(res_data);
+          // console.log(res_data);
         });
     },
 
@@ -355,10 +383,6 @@ export default {
       });
     },
 
-
-
-
-
     selectData: function (data) {
       this.form.id = data.id;
       this.form.uraian = data.uraian;
@@ -368,31 +392,6 @@ export default {
       this.form.unit_kerja = data.unit_kerja;
       this.form.status = data.status;
     },
-
-    // ====================================== TAMBAHAN ====================================
-    clearCoordinate() {
-      this.form.lat = ''; this.form.lng = '';
-    },
-
-    getCoordinate() {
-      this.$getLocation()
-        .then(coordinates => {
-          this.form.lat = coordinates.lat;
-          this.form.lng = coordinates.lng;
-        });
-    },
-
-    updateCoordinates(location) {
-      this.form.lat = location.latLng.lat();
-      this.form.lng = location.latLng.lng();
-    },
-
-    parseFloatku(data) {
-      return parseFloat(data)
-    },
-
-
-    // ====================================== TAMBAHAN ====================================
 
     // ====================================== PAGINATE ====================================
     Notify: function (message, positive, icon) {
@@ -448,7 +447,14 @@ export default {
         }
       }
 
-    }
+    },
+
+    filterUnitKerja: function (val, update, abort) {
+      update(() => {
+        if (val === '') { }
+        else { FETCHING.postUnitKerjaAuto(val) }
+      })
+    },
 
 
     // ====================================== PAGINATE ====================================
@@ -463,19 +469,9 @@ export default {
 
   mounted() {
 
+    this.filterku.unit_kerja_id = this.$store.state.unit_kerja
+    this.FETCHING.postUnitKerjaAuto('', this.filterku.unit_kerja_id)
     this.getView();
-    this.$getLocation().then(coordinates => {
-      this.form.lat = coordinates.lat;
-      this.form.lng = coordinates.lng;
-
-      this.$store.state.coordinat.lat = coordinates.lat;
-      this.$store.state.coordinat.lng = coordinates.lng;
-    });
-
-    this.$store.commit("listJeniskategorilokasi");
-    this.$store.commit("getStorage");
-
-    this.form.unit_kerja = this.$store.state.unit_kerja
 
 
 
