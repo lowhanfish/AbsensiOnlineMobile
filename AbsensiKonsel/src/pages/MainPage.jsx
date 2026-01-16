@@ -17,15 +17,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Dashboard from './Dashboard/dashboard';
-import Absensi from './Absensi/Absensi';
-import AbsensiFaceRecognation from './Absensi/AbsensiFaceRecognation';
+import Absensi from './absensi/Absensi';
+import AbsensiFaceRecognation from './absensi/AbsensiFaceRecognation';
 import Darurat from './Darurat.jsx/Darurat';
 import DaruratDetail from './Darurat.jsx/DaruratDetail';
 import DaruratForm from './Darurat.jsx/DaruratForm';
-import Apel from './Apel/Apel';
-import ApelDetail from './Apel/ApelDetail';
-import Izin from './Izin/Izin';
-import IzinForm from './Izin/IzinForm';
+import Apel from './apel/Apel';
+import ApelDetail from './apel/ApelDetail';
+import Izin from './izin/Izin';
+import IzinForm from './izin/IzinForm';
 
 // Offline Absensi Screens
 import AbsenOffline from './Auth/Offline/AbsenOffline';
