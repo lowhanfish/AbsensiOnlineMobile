@@ -60,9 +60,8 @@ export interface UploadResult {
 // ============ CONSTANTS ============
 const TARGET_SIZE = 480;           // 480x480 pixel (square)
 const JPEG_QUALITY = 80;           // 80% quality
-const FACE_STABILITY_FRAMES = 3;   // Frames untuk validasi stabilitas
-const FACE_SIZE_MIN = 100;         // Minimum face size in pixels
-const FACE_SIZE_MAX = 400;         // Maximum face size (too close)
+const FACE_SIZE_MIN = 80;          // Minimum face size in pixels (too small = too far)
+const FACE_SIZE_MAX = 600;         // Maximum face size in pixels (too close)
 
 // ============ HELPER FUNCTIONS ============
 
@@ -241,19 +240,14 @@ export const usePassiveCapture = (): UsePassiveCaptureReturn => {
                 return null;
             }
 
-            // Validasi ukuran wajah
-            if (faceResult) {
-                if (faceResult.faceSize < FACE_SIZE_MIN) {
-                    await cleanupFiles(originalPath);
-                    setCaptureError(`Wajah terlalu kecil (${faceResult.faceSize}px). Dekatkan wajah ke kamera.`);
-                    return null;
-                }
-                if (faceResult.faceSize > FACE_SIZE_MAX) {
-                    await cleanupFiles(originalPath);
-                    setCaptureError('Wajah terlalu dekat. Mundur sedikit.');
-                    return null;
-                }
+            // Validasi ukuran wajah (hanya minimum, tidak ada maksimum)
+            if (faceResult && faceResult.faceSize < FACE_SIZE_MIN) {
+                await cleanupFiles(originalPath);
+                setCaptureError(`Wajah terlalu kecil (${faceResult.faceSize}px). Dekatkan wajah ke kamera.`);
+                return null;
             }
+            // CATATAN: Dihapus validasi "too close" karena tidak konsisten di berbagai device
+            // Lebih baik foto sedikit dekat daripada terlalu jauh
 
             console.log('✅ Face validated:', faceResult?.faceCount, 'face(s), size:', faceResult?.faceSize, 'px');
 
