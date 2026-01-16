@@ -304,6 +304,10 @@ const CameraSection = ({
                 device={device}
                 isActive={true}
                 photo={true}
+                video={false}
+                audio={false}
+                frameProcessor={undefined}
+                format={undefined}
             />
 
             {/* Face Guide */}
