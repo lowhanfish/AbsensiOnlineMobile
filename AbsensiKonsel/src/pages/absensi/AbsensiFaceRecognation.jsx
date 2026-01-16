@@ -370,13 +370,17 @@ const PreviewSection = ({
             <View style={styles.imagePreview}>
                 {capturedPhoto?.imagePath ? (
                     <Image
+                        key={capturedPhoto.imagePath} // Force re-render when path changes
                         source={{
                             uri: capturedPhoto.imagePath.startsWith('file://')
                                 ? capturedPhoto.imagePath
-                                : `file://${capturedPhoto.imagePath}`
+                                : `file://${capturedPhoto.imagePath}`,
                         }}
                         style={styles.capturedImage}
                         resizeMode="cover"
+                        onLoadStart={() => console.log('📷 Loading image...')}
+                        onLoadEnd={() => console.log('📷 Image loaded')}
+                        onError={(e) => console.error('📷 Image error:', e.nativeEvent.error)}
                     />
                 ) : (
                     <Text style={styles.previewText}>📸 Foto Tersimpan</Text>

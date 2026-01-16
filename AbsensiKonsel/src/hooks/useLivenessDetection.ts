@@ -93,8 +93,8 @@ const resizeImage = async (imagePath: string): Promise<string> => {
         console.log('✅ Resize berhasil:', response.uri);
         return response.uri;
     } catch (error) {
-        console.warn('⚠️ Resize failed, using original:', error);
-        // Fallback: return original path
+        console.warn('⚠️ Resize failed, using original (with file://):', error);
+        // Fallback: return original path dengan file:// prefix
         return cleanPath;
     }
 };
@@ -265,9 +265,21 @@ export const usePassiveCapture = (): UsePassiveCaptureReturn => {
 
             // Step 3: Resize ke 480x480
             setDetectionStatus('📐 Mengubah ukuran gambar...');
-            const resizedPath = await resizeImage(originalPath);
+            let resizedPath = await resizeImage(originalPath);
+            
+            // Pastikan path memiliki file:// prefix
+            if (!resizedPath.startsWith('file://')) {
+                resizedPath = 'file://' + resizedPath;
+            }
+            
+            console.log('📷 Resized path:', resizedPath);
+            console.log('📷 Original path:', originalPath);
 
-            // Step 4: Hitung ukuran file
+            // Step 4: Check apakah resize berhasil (path berbeda dari original)
+            const isResizeSuccessful = resizedPath !== originalPath && 
+                                         resizedPath !== 'file://' + originalPath;
+            
+            // Step 5: Hitung ukuran file
             let fileSize = 0;
             const cleanResizedPath = resizedPath.startsWith('file://') 
                 ? resizedPath.replace('file://', '') 
@@ -279,9 +291,16 @@ export const usePassiveCapture = (): UsePassiveCaptureReturn => {
                 fileSize = 0;
             }
 
-            // Step 5: Cleanup original jika berbeda dari resized
-            if (resizedPath !== originalPath) {
+            // Step 6: Cleanup - JANGAN cleanup jika resize gagal!
+            if (isResizeSuccessful) {
+                // Resize berhasil, cleanup original
                 await cleanupFiles(originalPath);
+            } else {
+                // Resize gagal, gunakan original
+                resizedPath = originalPath.startsWith('file://') 
+                    ? originalPath 
+                    : 'file://' + originalPath;
+                console.log('📷 Using original photo (resize failed)');
             }
 
             // Step 6: Return result
@@ -297,6 +316,8 @@ export const usePassiveCapture = (): UsePassiveCaptureReturn => {
             setCapturedPhoto(result);
             setDetectionStatus('✅ Foto siap dikirim ke server');
             console.log('✅ Capture selesai:', `${(fileSize / 1024).toFixed(1)} KB`);
+            console.log('📷 Foto path:', resizedPath);
+            console.log('📷 Foto exists:', await RNFS.exists(resizedPath.replace('file://', '')));
 
             return result;
 
