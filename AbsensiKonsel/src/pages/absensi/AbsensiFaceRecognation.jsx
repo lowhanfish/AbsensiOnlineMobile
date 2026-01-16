@@ -352,7 +352,11 @@ const PreviewSection = ({
             <View style={styles.imagePreview}>
                 {capturedPhoto?.imagePath ? (
                     <Image
-                        source={{ uri: `file://${capturedPhoto.imagePath}` }}
+                        source={{
+                            uri: capturedPhoto.imagePath.startsWith('file://')
+                                ? capturedPhoto.imagePath
+                                : `file://${capturedPhoto.imagePath}`
+                        }}
                         style={styles.capturedImage}
                         resizeMode="cover"
                     />
