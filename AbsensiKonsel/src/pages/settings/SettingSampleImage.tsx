@@ -22,7 +22,7 @@ import { Camera, useCameraDevice, useCameraPermission } from 'react-native-visio
 import RNFS from 'react-native-fs';
 
 // Custom Hooks
-import { useFaceVector } from '../../hooks';
+import { usePassiveCapture } from '../../hooks';
 
 
 // Komponen utama untuk capture foto dan ekstraksi embedding wajah
@@ -38,7 +38,7 @@ const SettingSampleImage = () => {
     const cameraRef = useRef<Camera | null>(null);
     const { hasPermission, requestPermission } = useCameraPermission();
     const device = useCameraDevice('front');
-    const { vectorData, isExtracting, extractError, extractVectorFromImage, clearVector } = useFaceVector();
+    const { capturedPhoto, isCapturing, captureError, detectionStatus, capturePhoto, clearCapture } = usePassiveCapture();
 
     // State
     const [cameraReady, setCameraReady] = useState(false);
@@ -71,24 +71,18 @@ const SettingSampleImage = () => {
     }, [hasPermission, requestPermission]);
 
 
-    // Ambil foto dan ekstrak vektor wajah
+    // Ambil foto menggunakan passive capture
     const handleCapture = async () => {
         try {
             setLoading(true);
             setError(null);
-            if (!cameraRef.current) {
-                setError('Kamera belum siap');
-                return;
+            const userNip = nip || 'UNKNOWN'; // Gunakan NIP jika tersedia
+            const result = await capturePhoto(cameraRef, nip);
+
+            if (result) {
+                setImagePath(result.imagePath);
+                setIsCaptured(true);
             }
-            const photo = await cameraRef.current.takePhoto({ flash: 'off' } as any);
-            const path = photo?.path;
-            if (!path) {
-                setError('Gagal mengambil foto');
-                return;
-            }
-            setImagePath(path);
-            setIsCaptured(true);
-            await extractVectorFromImage(path);
         } catch (err: any) {
             console.error('❌ Capture error:', err);
             setError(err?.message || 'Gagal mengambil foto');
@@ -100,30 +94,27 @@ const SettingSampleImage = () => {
 
     // Ambil ulang foto
     const handleRetake = async () => {
-        if (imagePath) {
-            try { await RNFS.unlink(imagePath); } catch (e) { /* ignore */ }
-        }
+        clearCapture();
         setIsCaptured(false);
         setImagePath(null);
-        clearVector();
         setError(null);
     };
 
 
     // Simpan dan kembali (jika ingin dipakai)
     const handleSaveAndReturn = () => {
-        if (!imagePath || !vectorData) {
-            Alert.alert('Data incomplete', 'Pastikan foto dan vektor tersedia.');
+        if (!imagePath) {
+            Alert.alert('Data incomplete', 'Pastikan foto tersedia.');
             return;
         }
-        // (navigation as any).navigate('Settings', { samplePhoto: imagePath, vector: vectorData });
+        // (navigation as any).navigate('Settings', { samplePhoto: imagePath });
     };
 
 
-    // Upload foto & vektor ke server (endpoint sesuai backend)
+    // Upload foto ke server (endpoint sesuai backend)
     const handleUpload = () => {
-        if (!imagePath || !vectorData || !nip) {
-            Alert.alert('Data incomplete', 'Pastikan foto, vektor, dan NIP tersedia sebelum upload.');
+        if (!imagePath || !nip) {
+            Alert.alert('Data incomplete', 'Pastikan foto dan NIP tersedia sebelum upload.');
             return;
         }
         setUploadLoading(true);
@@ -135,7 +126,7 @@ const SettingSampleImage = () => {
         // @ts-ignore
         form.append('file', { uri, name: filename, type: 'image/jpeg' });
         form.append('nip', nip);
-        form.append('vectors', JSON.stringify(vectorData.embedding));
+        // Note: Vektor akan diekstrak di server-side
         fetch(uploadUrl, {
             method: 'POST',
             body: form,
@@ -152,7 +143,7 @@ const SettingSampleImage = () => {
                     setUploadStatus('Upload berhasil');
                     Alert.alert('Upload berhasil', JSON.stringify(json || { status: 'ok' }));
                     try { await RNFS.unlink(imagePath); } catch (e) { /* ignore */ }
-                    (navigation as any).navigate('Settings', { samplePhoto: imagePath, vector: vectorData });
+                    (navigation as any).navigate('Settings', { samplePhoto: imagePath });
                 } else {
                     setUploadStatus('Upload gagal');
                     Alert.alert('Upload gagal', json?.message || 'Terjadi kesalahan saat upload');
@@ -185,7 +176,7 @@ const SettingSampleImage = () => {
         loadAyncData();
     }, []);
 
-    const isLoading = loading || isExtracting || uploadLoading;
+    const isLoading = loading || isCapturing || uploadLoading;
 
     return (
         <View style={styles.container}>
@@ -242,13 +233,13 @@ const SettingSampleImage = () => {
                                 />
                             )}
                             <View style={styles.infoRow}>
-                                <Text style={styles.infoText}>Vector:</Text>
+                                <Text style={styles.infoText}>Status:</Text>
                                 <Text style={styles.infoValue}>
-                                    {vectorData ? `${vectorData.embedding.length} dimensi` : 'Belum diekstrak'}
+                                    Foto siap diupload ke server
                                 </Text>
                             </View>
-                            {extractError && (
-                                <Text style={styles.errorText}>{extractError}</Text>
+                            {captureError && (
+                                <Text style={styles.errorText}>{captureError}</Text>
                             )}
                             {error && (
                                 <Text style={styles.errorText}>{error}</Text>
