@@ -21,6 +21,8 @@ router.post('/viewData', (req, res) => {
         SELECT
         fotosample.id,
         fotosample.nip,
+        fotosample.status,
+        fotosample.private,
 
         biodata.nama as biodata_nama,
         biodata.gelar_belakang as biodata_gelar_belakang,
@@ -36,7 +38,10 @@ router.post('/viewData', (req, res) => {
         LEFT JOIN simpeg.unit_kerja unit_kerja
         ON biodata.unit_kerja = unit_kerja.id
 
-        WHERE biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND biodata.nama LIKE '%`+cari+`%'
+        WHERE
+        biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND
+        biodata.nama LIKE '%`+cari+`%' AND
+        fotosample.private = '`+req.body.is_private+`'
 
     `
 
@@ -47,6 +52,9 @@ router.post('/viewData', (req, res) => {
         fotosample.nip,
         fotosample.status,
         fotosample.keterangan,
+        fotosample.private,
+				
+        biodata_verifikator.nama AS verificationBy,
 
         biodata.nama as biodata_nama,
         biodata.gelar_belakang as biodata_gelar_belakang,
@@ -61,8 +69,14 @@ router.post('/viewData', (req, res) => {
 
         LEFT JOIN simpeg.unit_kerja unit_kerja
         ON biodata.unit_kerja = unit_kerja.id
+				
+        LEFT JOIN simpeg.biodata biodata_verifikator
+        ON fotosample.verificationBy = biodata_verifikator.nip
 
-        WHERE biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND biodata.nama LIKE '%`+cari+`%'
+        WHERE
+        biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND
+        biodata.nama LIKE '%`+cari+`%' AND
+        fotosample.private = '`+req.body.is_private+`'
 
         LIMIT `+ data_star + `,` + data_batas + `
     `
@@ -101,12 +115,13 @@ router.post('/changeData', (req, res) => {
     const query = `
         UPDATE fotosample SET
         status = ?,
-        keterangan = ?
+        keterangan = ?,
+        verificationBy = ?
 
         WHERE id = ?
     
     `
-    const values = [req.body.status, req.body.keterangan, req.body.id]
+    const values = [req.body.status, req.body.keterangan, req.user.profile.NIP, req.body.id];
 
     db.query(query, values, (err, rows)=>{
         if (err) {
