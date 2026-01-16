@@ -29,7 +29,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 
 // Import Custom Hooks
-import { usePassiveCapture, cleanupPhoto } from '../../../hooks';
+import { usePassiveCapture } from '../../../hooks';
 
 // Import Database Functions
 import { saveAbsensiOffline, countUnsyncedAbsensi } from '../../../lib/database';
@@ -149,9 +149,11 @@ const VerifikasiWajah = () => {
                     [{ text: 'OK', onPress: () => navigation.goBack() }]
                 );
 
-                // Cleanup
-                await cleanupPhoto(capturedPhoto.imagePath);
-                clearCapture();
+                // ✅ TIDAK memanggil clearCapture() setelah simpan!
+                // Foto diperlukan untuk ditampilkan di halaman detail AbsenOffline
+                // Foto akan tetap tersimpan di cache direktori device
+                // Foto akan dihapus hanya saat sync ke server BERHASIL
+                // clearCapture(); // DIHAPUS - agar foto tidak terhapus!
                 setIsCaptured(false);
             } else {
                 Alert.alert('Error', 'Gagal menyimpan data');
@@ -165,10 +167,7 @@ const VerifikasiWajah = () => {
     };
 
     // ============ RETRY ============
-    const handleRetake = async () => {
-        if (capturedPhoto) {
-            await cleanupPhoto(capturedPhoto.imagePath);
-        }
+    const handleRetake = () => {
         clearCapture();
         setIsCaptured(false);
     };
@@ -255,10 +254,6 @@ const CameraSection = ({
                 device={device}
                 isActive={true}
                 photo={true}
-                video={false}
-                audio={false}
-                frameProcessor={undefined}
-                format={undefined}
             />
 
             {/* Face Guide */}

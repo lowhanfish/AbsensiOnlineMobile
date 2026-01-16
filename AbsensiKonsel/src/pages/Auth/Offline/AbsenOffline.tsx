@@ -396,9 +396,14 @@ const Darurat = () => {
                                     {selectedItem.image_path && (
                                         <View style={styles.photoContainer}>
                                             <Image
-                                                source={{ uri: `file://${selectedItem.image_path}` }}
+                                                source={{
+                                                    uri: selectedItem.image_path.startsWith('file://')
+                                                        ? selectedItem.image_path
+                                                        : `file://${selectedItem.image_path}`
+                                                }}
                                                 style={styles.capturedPhoto}
                                                 resizeMode="cover"
+                                                onError={(e) => console.error('📷 Foto error:', e.nativeEvent.error)}
                                             />
                                         </View>
                                     )}

@@ -74,10 +74,14 @@ const resizeImage = async (imagePath: string): Promise<string> => {
         cleanPath = 'file://' + imagePath;
     }
 
-    // Gunakan path yang sama dengan file asli untuk avoid directory issues
-    const outputPath = imagePath.replace(/\.[^.]+$/, '_resized.jpg');
-
     try {
+        // Pastikan output path menggunakan RNFS CachesDirectoryPath
+        const outputPath = `${RNFS.CachesDirectoryPath}/resize_${Date.now()}.jpg`;
+        
+        console.log('📐 Starting resize to 480x480...');
+        console.log('📁 Input:', cleanPath);
+        console.log('📁 Output:', outputPath);
+
         const response = await ImageResizer.createResizedImage(
             cleanPath,
             TARGET_SIZE,
@@ -92,8 +96,8 @@ const resizeImage = async (imagePath: string): Promise<string> => {
 
         console.log('✅ Resize berhasil:', response.uri);
         return response.uri;
-    } catch (error) {
-        console.warn('⚠️ Resize failed, using original (with file://):', error);
+    } catch (error: any) {
+        console.warn('⚠️ Resize failed:', error?.message);
         // Fallback: return original path dengan file:// prefix
         return cleanPath;
     }
