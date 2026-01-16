@@ -1,9 +1,16 @@
 /**
  * ============================================
- * VERIFIKASI WAJAH - REFACTORED
+ * VERIFIKASI WAJAH - OFFLINE MODE (SIMPLIFIED)
  * ============================================
- * Komponen untuk verifikasi wajah dengan liveness detection
- * Menggunakan custom hooks untuk logic yang lebih clean
+ * 
+ * ARSIKTURE BARU: Offline mode dengan passive capture
+ * Foto disimpan ke database lokal, embedding dibuat saat sync ke server
+ * 
+ * Flow:
+ * 1. Passive capture foto wajah (dengan validasi ML Kit)
+ * 2. Resize ke 480x480, JPEG 80%
+ * 3. Simpan ke SQLite lokal (path foto + metadata)
+ * 4. Saat online: sync ke server → server buat embedding
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -20,12 +27,11 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
-import * as RNFS from 'react-native-fs';
 
 // Import Custom Hooks
-import { useLivenessDetection, useFaceVector } from '../../../hooks';
+import { usePassiveCapture, cleanupPhoto } from '../../../hooks';
 
-// Import Database Functions (langsung tanpa hook wrapper)
+// Import Database Functions
 import { saveAbsensiOffline, countUnsyncedAbsensi } from '../../../lib/database';
 
 // ============ TYPES ============
@@ -42,40 +48,38 @@ const VerifikasiWajah = () => {
     const { lokasi } = (route.params as { lokasi?: LokasiParams }) || {};
 
     // Camera
-    const cameraRef = useRef<Camera>(null);
+    const cameraRef = useRef(null);
     const { hasPermission, requestPermission } = useCameraPermission();
     const device = useCameraDevice('front');
 
-    // Custom Hooks
+    // Custom Hook - Passive Capture
     const {
+        capturedPhoto,
+        isCapturing,
+        captureError,
         detectionStatus,
-        isDetecting,
-        performLivenessCheck,
-        setDetectionStatus,
-    } = useLivenessDetection();
-
-    const {
-        vectorData,
-        isExtracting,
-        extractError,
-        extractVectorFromImage,
-        clearVector,
-    } = useFaceVector();
+        capturePhoto,
+        clearCapture,
+    } = usePassiveCapture();
 
     // Local State
     const [cameraReady, setCameraReady] = useState(false);
     const [isCaptured, setIsCaptured] = useState(false);
-    const [imageData, setImageData] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [unsyncedCount, setUnsyncedCount] = useState(0);
 
     console.log('📍 Lokasi yang diterima:', lokasi);
 
     // ============ CAMERA PERMISSION ============
     useEffect(() => {
         requestCameraPermission();
+        updateUnsyncedCount();
     }, []);
+
+    const updateUnsyncedCount = async () => {
+        const count = await countUnsyncedAbsensi();
+        setUnsyncedCount(count);
+    };
 
     const requestCameraPermission = async () => {
         if (!hasPermission) {
@@ -90,7 +94,7 @@ const VerifikasiWajah = () => {
                     }
                 );
                 if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                    setError('Izin kamera ditolak');
+                    Alert.alert('Error', 'Izin kamera ditolak');
                     return;
                 }
             } else {
@@ -100,81 +104,29 @@ const VerifikasiWajah = () => {
         setCameraReady(true);
     };
 
-    // ============ CAPTURE & VERIFY ============
+    // ============ CAPTURE PHOTO ============
     const handleCapturePhoto = async () => {
         try {
-            setLoading(true);
-            setError(null);
+            const nip = lokasi?.nip || 'UNKNOWN';
+            const result = await capturePhoto(cameraRef, nip);
 
-            if (!cameraRef.current) {
-                setError('Kamera tidak siap');
-                return;
+            if (result) {
+                setIsCaptured(true);
             }
-
-            // Step 1: Liveness Check
-            setDetectionStatus('🎬 Persiapan verifikasi...');
-            console.log('🎬 Memulai verifikasi liveness...');
-
-            const livenessResult = await performLivenessCheck(cameraRef);
-
-            console.log('📊 Hasil liveness:', livenessResult);
-
-            if (!livenessResult.isLive) {
-                setDetectionStatus('❌ Verifikasi gagal');
-                setError(`Liveness check gagal: ${livenessResult.reason}`);
-                return;
-            }
-
-            console.log(`✅ Liveness terverifikasi! Skor: ${livenessResult.score}`);
-            setDetectionStatus('✅ Liveness terverifikasi!');
-
-            // Step 2: Save Photo
-            if (livenessResult.finalPhotoPath) {
-                const fileExists = await RNFS.exists(livenessResult.finalPhotoPath);
-                if (fileExists) {
-                    console.log('✅ Foto diam tersimpan:', livenessResult.finalPhotoPath);
-                    setImageData(livenessResult.finalPhotoPath);
-                    setIsCaptured(true);
-                    setDetectionStatus('✅ Verifikasi Berhasil');
-
-                    // Step 3: Extract Vector
-                    console.log('🧠 Mengekstrak vektor wajah...');
-                    setDetectionStatus('🧠 Mengekstrak vektor wajah...');
-                    await extractVectorFromImage(livenessResult.finalPhotoPath);
-                } else {
-                    setError('File foto tidak ditemukan');
-                }
-            } else {
-                setError('Foto final tidak tersedia');
-            }
-
         } catch (err: any) {
             console.error('❌ Error capture:', err);
-            setError(`Gagal: ${err?.message || 'Silakan coba lagi'}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // ============ RETRY EXTRACT VECTOR ============
-    const handleRetryExtract = async () => {
-        if (imageData) {
-            setError(null);
-            await extractVectorFromImage(imageData);
-        } else {
-            setError('Tidak ada foto untuk diekstrak');
+            Alert.alert('Error', `Gagal mengambil foto: ${err?.message || 'Silakan coba lagi'}`);
         }
     };
 
     // ============ SAVE TO DATABASE ============
     const handleSaveToDatabase = async () => {
-        if (!imageData || !vectorData) {
-            setError('Data tidak lengkap');
+        if (!capturedPhoto) {
+            Alert.alert('Error', 'Foto tidak tersedia');
             return;
         }
 
         setIsSaving(true);
-        setError(null);
 
         try {
             const insertId = await saveAbsensiOffline({
@@ -182,41 +134,48 @@ const VerifikasiWajah = () => {
                 latitude: lokasi?.latitude || 0,
                 longitude: lokasi?.longitude || 0,
                 timestamp: new Date().toISOString(),
-                image_path: imageData,
-                vektor: JSON.stringify(vectorData.embedding),
+                image_path: capturedPhoto.imagePath,
+                // Note: vektor tidak lagi disimpan di client
+                // Server akan membuat embedding saat sync
+                vektor: '[]', // String kosong, akan diisi saat sync ke server
             });
 
             if (insertId) {
-                const unsyncedCount = await countUnsyncedAbsensi();
+                await updateUnsyncedCount();
 
                 Alert.alert(
                     '✅ Berhasil',
-                    `Absensi tersimpan secara offline.\nTotal pending sync: ${unsyncedCount} data`,
+                    `Absensi tersimpan secara offline.\nTotal pending sync: ${unsyncedCount + 1} data`,
                     [{ text: 'OK', onPress: () => navigation.goBack() }]
                 );
+
+                // Cleanup
+                await cleanupPhoto(capturedPhoto.imagePath);
+                clearCapture();
+                setIsCaptured(false);
             } else {
-                setError('Gagal menyimpan data');
+                Alert.alert('Error', 'Gagal menyimpan data');
             }
         } catch (err: any) {
             console.error('❌ Error saving to database:', err);
-            setError(`Gagal menyimpan: ${err?.message || 'Unknown error'}`);
+            Alert.alert('Error', `Gagal menyimpan: ${err?.message || 'Unknown error'}`);
         } finally {
             setIsSaving(false);
         }
     };
 
-    // ============ RESET ============
-    const handleRetake = () => {
+    // ============ RETRY ============
+    const handleRetake = async () => {
+        if (capturedPhoto) {
+            await cleanupPhoto(capturedPhoto.imagePath);
+        }
+        clearCapture();
         setIsCaptured(false);
-        setImageData(null);
-        clearVector();
-        setError(null);
-        setDetectionStatus('📷 Siap untuk verifikasi');
     };
 
     // ============ COMPUTED ============
-    const isLoading = loading || isDetecting || isExtracting || isSaving;
-    const displayError = error || extractError;
+    const isLoading = isCapturing || isSaving;
+    const nip = lokasi?.nip || 'Unknown';
 
     // ============ RENDER: LOADING ============
     if (!device || !cameraReady) {
@@ -230,35 +189,40 @@ const VerifikasiWajah = () => {
         );
     }
 
-    // ============ RENDER: MAIN ============
+    // ============ RENDER ============
     return (
         <View style={styles.container}>
-            {/* CAMERA SECTION */}
+            {/* HEADER */}
+            <View style={styles.header}>
+                <Text style={styles.offlineMode}>📴 Offline Mode</Text>
+            </View>
+
+            {/* CAMERA / PREVIEW */}
             {!isCaptured ? (
                 <CameraSection
                     cameraRef={cameraRef}
                     device={device}
                     detectionStatus={detectionStatus}
                     isLoading={isLoading}
+                    captureError={captureError}
                     onCapture={handleCapturePhoto}
                 />
             ) : (
-                <ReviewSection
-                    imageData={imageData}
-                    vectorData={vectorData}
+                <PreviewSection
+                    capturedPhoto={capturedPhoto}
                     lokasi={lokasi}
                     isLoading={isLoading}
                     isSaving={isSaving}
-                    onRetryExtract={handleRetryExtract}
-                    onSave={handleSaveToDatabase}
+                    unsyncedCount={unsyncedCount}
                     onRetake={handleRetake}
+                    onSave={handleSaveToDatabase}
                 />
             )}
 
             {/* ERROR MESSAGE */}
-            {displayError && (
+            {captureError && (
                 <View style={styles.errorBox}>
-                    <Text style={styles.errorText}>⚠️ {displayError}</Text>
+                    <Text style={styles.errorText}>⚠️ {captureError}</Text>
                 </View>
             )}
 
@@ -275,107 +239,88 @@ const VerifikasiWajah = () => {
 
 // ============ SUB-COMPONENTS ============
 
-interface CameraSectionProps {
-    cameraRef: React.RefObject<Camera | null>;
-    device: any;
-    detectionStatus: string;
-    isLoading: boolean;
-    onCapture: () => void;
-}
-
-const CameraSection: React.FC<CameraSectionProps> = ({
+const CameraSection = ({
     cameraRef,
     device,
     detectionStatus,
     isLoading,
+    captureError,
     onCapture,
 }) => (
     <View style={styles.cameraSection}>
-        <Camera
-            ref={cameraRef}
-            style={styles.camera}
-            device={device}
-            isActive={true}
-            photo={true}
-        />
+        <View style={styles.cameraContainer}>
+            <Camera
+                ref={cameraRef}
+                style={styles.camera}
+                device={device}
+                isActive={true}
+                photo={true}
+            />
 
-        {/* Face Guide */}
-        <View style={styles.faceGuideOverlay}>
-            <View style={styles.faceGuideCircle}>
-                <Text style={styles.faceGuideText}>Posisikan wajah di sini</Text>
-            </View>
-        </View>
-
-        {/* Status */}
-        <View style={styles.statusIndicator}>
-            <Text style={styles.statusText}>{detectionStatus}</Text>
-        </View>
-
-        {/* Loading */}
-        {isLoading && (
-            <>
-                <View style={styles.loadingOverlay}>
-                    <ActivityIndicator size="large" color="#2196F3" />
+            {/* Face Guide */}
+            <View style={styles.faceGuideOverlay}>
+                <View style={styles.faceGuideCircle}>
+                    <Text style={styles.faceGuideText}>Posisikan wajah di sini</Text>
                 </View>
+            </View>
+
+            {/* Status */}
+            <View style={styles.statusIndicator}>
+                <Text style={styles.statusText}>{detectionStatus}</Text>
+            </View>
+
+            {/* Loading */}
+            {isLoading && (
                 <View style={styles.blinkProgressContainer}>
-                    <Text style={styles.blinkProgressText}>🔍 Menganalisis liveness...</Text>
+                    <ActivityIndicator size="small" color="#2196F3" style={{ marginBottom: 8 }} />
+                    <Text style={styles.blinkProgressText}>🔍 Memproses foto...</Text>
                     <View style={styles.progressBar}>
                         <View style={[styles.progressFill, { width: '100%' }]} />
                     </View>
                 </View>
-            </>
-        )}
+            )}
+        </View>
 
         {/* Capture Button */}
-        <TouchableOpacity
-            style={[styles.button, styles.captureBtn]}
-            onPress={onCapture}
-            disabled={isLoading}
-        >
-            {isLoading ? (
-                <ActivityIndicator color="#fff" />
-            ) : (
-                <Text style={styles.buttonText}>📸 Ambil Foto</Text>
-            )}
-        </TouchableOpacity>
+        <View style={styles.captureButtonContainer}>
+            <TouchableOpacity
+                style={[styles.button, styles.captureBtn]}
+                onPress={onCapture}
+                disabled={isLoading}
+            >
+                {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.buttonText}>📸 Ambil Foto</Text>
+                )}
+            </TouchableOpacity>
+        </View>
     </View>
 );
 
-interface ReviewSectionProps {
-    imageData: string | null;
-    vectorData: any;
-    lokasi?: LokasiParams;
-    isLoading: boolean;
-    isSaving: boolean;
-    onRetryExtract: () => void;
-    onSave: () => void;
-    onRetake: () => void;
-}
-
-const ReviewSection: React.FC<ReviewSectionProps> = ({
-    imageData,
-    vectorData,
+const PreviewSection = ({
+    capturedPhoto,
     lokasi,
     isLoading,
     isSaving,
-    onRetryExtract,
-    onSave,
+    unsyncedCount,
     onRetake,
+    onSave,
 }) => (
-    <View style={styles.reviewSection}>
+    <View style={styles.previewSection}>
         {/* Success Badge */}
         <View style={styles.successBadge}>
             <Text style={styles.successIcon}>✅</Text>
-            <Text style={styles.successTitle}>Verifikasi Berhasil!</Text>
-            <Text style={styles.successSubtitle}>Wajah Anda telah terverifikasi</Text>
+            <Text style={styles.successTitle}>Foto Tersimpan!</Text>
+            <Text style={styles.successSubtitle}>Siap disimpan ke database lokal</Text>
         </View>
 
         {/* Image Preview */}
         <View style={styles.imagePreviewContainer}>
             <View style={styles.imagePreview}>
-                {imageData ? (
+                {capturedPhoto?.imagePath ? (
                     <Image
-                        source={{ uri: `file://${imageData}` }}
+                        source={{ uri: `file://${capturedPhoto.imagePath}` }}
                         style={styles.capturedImage}
                         resizeMode="cover"
                     />
@@ -384,78 +329,57 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
                 )}
             </View>
             <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedText}>✓ Terverifikasi</Text>
+                <Text style={styles.verifiedText}>✓ {capturedPhoto?.width}x{capturedPhoto?.height}</Text>
             </View>
         </View>
 
-        {/* Action Buttons */}
-        {!vectorData ? (
-            <View style={styles.actionContainer}>
-                <Text style={styles.actionHint}>⏳ Mengekstrak vektor wajah...</Text>
-                {isLoading ? (
-                    <ActivityIndicator size="large" color="#4CAF50" />
-                ) : (
-                    <TouchableOpacity
-                        style={[styles.button, styles.primaryBtn]}
-                        onPress={onRetryExtract}
-                        disabled={isLoading}
-                    >
-                        <Text style={styles.buttonIcon}>🔄</Text>
-                        <Text style={styles.buttonText}>Coba Ekstrak Ulang</Text>
-                    </TouchableOpacity>
-                )}
+        {/* Info Card */}
+        <View style={styles.completedCard}>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>📷 Foto</Text>
+                <Text style={styles.statusOnline}>✅ {((capturedPhoto?.fileSize || 0) / 1024).toFixed(1)} KB</Text>
             </View>
-        ) : (
-            <View style={styles.completedContainer}>
-                <View style={styles.completedCard}>
-                    <View style={styles.completedHeader}>
-                        <Text style={styles.completedIcon}>🎉</Text>
-                        <Text style={styles.completedTitle}>Data Siap Disimpan!</Text>
-                    </View>
-                    <View style={styles.completedInfo}>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>🧠 Vektor</Text>
-                            <Text style={styles.statusOnline}>✅ {vectorData.embedding.length} dimensi</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>📍 Lokasi</Text>
-                            <Text style={styles.infoValue}>
-                                {lokasi?.latitude?.toFixed(4)}, {lokasi?.longitude?.toFixed(4)}
-                            </Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>⏰ Waktu</Text>
-                            <Text style={styles.infoValue}>{new Date().toLocaleTimeString('id-ID')}</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>📶 Status</Text>
-                            <Text style={styles.statusOnline}>Siap Sinkronisasi</Text>
-                        </View>
-                    </View>
-                </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>📍 Lokasi</Text>
+                <Text style={styles.infoValue}>
+                    {lokasi?.latitude?.toFixed(4)}, {lokasi?.longitude?.toFixed(4)}
+                </Text>
+            </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>⏰ Waktu</Text>
+                <Text style={styles.infoValue}>{new Date().toLocaleTimeString('id-ID')}</Text>
+            </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>📶 Pending Sync</Text>
+                <Text style={styles.statusOnline}>📴 {unsyncedCount} data</Text>
+            </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>🤖 Embedding</Text>
+                <Text style={styles.infoValue}>Dibuat saat sync</Text>
+            </View>
+        </View>
 
-                <TouchableOpacity
-                    style={[styles.button, styles.syncBtn]}
-                    onPress={onSave}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <>
-                            <Text style={styles.buttonIcon}>💾</Text>
-                            <Text style={styles.buttonText}>Simpan ke Database Lokal</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
-            </View>
-        )}
+        {/* Save Button */}
+        <TouchableOpacity
+            style={[styles.button, styles.syncBtn]}
+            onPress={onSave}
+            disabled={isSaving}
+        >
+            {isSaving ? (
+                <ActivityIndicator color="#fff" />
+            ) : (
+                <>
+                    <Text style={styles.buttonIcon}>💾</Text>
+                    <Text style={styles.buttonText}>Simpan (Offline)</Text>
+                </>
+            )}
+        </TouchableOpacity>
 
         {/* Retake Button */}
         <TouchableOpacity
             style={[styles.button, styles.retakeBtn]}
             onPress={onRetake}
-            disabled={isLoading || isSaving}
+            disabled={isSaving}
         >
             <Text style={styles.retakeBtnText}>🔄 Ambil Ulang Foto</Text>
         </TouchableOpacity>
@@ -468,7 +392,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#1a1a1a',
         padding: 20,
-        justifyContent: 'space-between',
+    },
+    header: {
+        marginBottom: 15,
+    },
+    offlineMode: {
+        color: '#ff9800',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     loadingContainer: {
         flex: 1,
@@ -482,27 +413,31 @@ const styles = StyleSheet.create({
     },
     cameraSection: {
         flex: 1,
-        justifyContent: 'flex-end',
-        alignItems: 'stretch',
-        gap: 20,
+        justifyContent: 'space-between',
+    },
+    cameraContainer: {
+        flex: 1,
+        borderRadius: 20,
+        overflow: 'hidden',
         position: 'relative',
+        backgroundColor: '#000',
     },
     camera: {
         flex: 1,
         width: '100%',
-        alignSelf: 'center',
-        borderRadius: 15,
-        overflow: 'hidden',
     },
     faceGuideOverlay: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: 70,
+        bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 1,
+    },
+    captureButtonContainer: {
+        paddingTop: 15,
     },
     faceGuideCircle: {
         width: 240,
@@ -524,14 +459,13 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         borderRadius: 10,
     },
-    reviewSection: {
+    previewSection: {
         flex: 1,
-        justifyContent: 'center',
         gap: 12,
     },
     successBadge: {
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 5,
     },
     successIcon: {
         fontSize: 40,
@@ -548,7 +482,6 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     imagePreviewContainer: {
-        position: 'relative',
         alignItems: 'center',
     },
     imagePreview: {
@@ -573,11 +506,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 6,
         borderRadius: 20,
-        shadowColor: '#4CAF50',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
-        elevation: 5,
     },
     verifiedText: {
         color: '#fff',
@@ -589,18 +517,6 @@ const styles = StyleSheet.create({
         color: '#4CAF50',
         fontWeight: 'bold',
     },
-    actionContainer: {
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    actionHint: {
-        color: '#888',
-        fontSize: 13,
-        marginBottom: 12,
-    },
-    completedContainer: {
-        marginTop: 15,
-    },
     completedCard: {
         backgroundColor: '#1e3a1e',
         borderRadius: 16,
@@ -608,31 +524,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#2d5a2d',
     },
-    completedHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 16,
-        paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#2d5a2d',
-    },
-    completedIcon: {
-        fontSize: 24,
-        marginRight: 8,
-    },
-    completedTitle: {
-        color: '#4CAF50',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    completedInfo: {
-        gap: 10,
-    },
     infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginBottom: 10,
     },
     infoLabel: {
         color: '#888',
@@ -653,25 +549,9 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 10,
     },
     captureBtn: {
         backgroundColor: '#4CAF50',
-    },
-    primaryBtn: {
-        backgroundColor: '#4CAF50',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        paddingVertical: 16,
-        borderRadius: 12,
-        width: '100%',
-        shadowColor: '#4CAF50',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 5,
     },
     syncBtn: {
         backgroundColor: '#2196F3',
@@ -679,9 +559,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        marginTop: 16,
-        paddingVertical: 16,
-        borderRadius: 12,
+        marginTop: 10,
         shadowColor: '#2196F3',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
@@ -709,43 +587,34 @@ const styles = StyleSheet.create({
     },
     statusIndicator: {
         position: 'absolute',
-        top: 60,
-        alignSelf: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
+        top: 20,
+        left: 20,
+        right: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         borderRadius: 12,
         zIndex: 10,
     },
     statusText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
         textAlign: 'center',
-        lineHeight: 24,
-    },
-    loadingOverlay: {
-        position: 'absolute',
-        bottom: 120,
-        alignSelf: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        paddingHorizontal: 30,
-        paddingVertical: 20,
-        borderRadius: 10,
-        zIndex: 5,
     },
     blinkProgressContainer: {
         position: 'absolute',
-        bottom: 120,
-        alignSelf: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 15,
-        width: '80%',
+        bottom: 20,
+        left: 20,
+        right: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderRadius: 12,
+        zIndex: 10,
     },
     blinkProgressText: {
-        color: '#4CAF50',
+        color: '#2196F3',
         fontSize: 12,
         fontWeight: 'bold',
         marginBottom: 5,
@@ -759,13 +628,13 @@ const styles = StyleSheet.create({
     },
     progressFill: {
         height: '100%',
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#2196F3',
     },
     errorBox: {
         backgroundColor: '#f44336',
         padding: 12,
         borderRadius: 8,
-        marginBottom: 10,
+        marginTop: 10,
     },
     errorText: {
         color: '#fff',
@@ -776,16 +645,16 @@ const styles = StyleSheet.create({
         padding: 14,
         borderRadius: 12,
         borderLeftWidth: 4,
-        borderLeftColor: '#2196F3',
+        borderLeftColor: '#ff9800',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
+        marginTop: 10,
     },
     infoText: {
-        color: '#4CAF50',
+        color: '#ff9800',
         fontSize: 14,
         fontWeight: 'bold',
-        marginBottom: 5,
     },
     locationText: {
         color: '#aaa',
@@ -796,3 +665,4 @@ const styles = StyleSheet.create({
 });
 
 export default VerifikasiWajah;
+

@@ -1,9 +1,16 @@
 /**
  * ============================================
- * ABSENSI FACE RECOGNATION - ONLINE VERSION
+ * ABSENSI FACE RECOGNATION - ONLINE VERSION (SIMPLIFIED)
  * ============================================
- * Komponen untuk verifikasi wajah dengan liveness detection
- * Data dikirim langsung ke server (versi online)
+ * 
+ * ARSIKTURE BARU: Client-side hanya untuk passive capture
+ * Seluruh proses AI (embedding, comparison) dilakukan di SERVER (RTX 5090)
+ * 
+ * Flow:
+ * 1. Passive capture foto wajah (dengan validasi ML Kit)
+ * 2. Resize ke 480x480, JPEG 80%
+ * 3. Upload foto ke server (NIP + foto)
+ * 4. Server melakukan: Face Detection → Embedding → Comparison
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -17,15 +24,14 @@ import {
     Platform,
     PermissionsAndroid,
     Image,
-    ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
-import * as RNFS from 'react-native-fs';
+import RNFS from 'react-native-fs';
 
 // Import Custom Hooks
-import { useLivenessDetection, useFaceVector } from '../../hooks';
+import { usePassiveCapture, uploadPhotoToServer, cleanupPhoto } from '../../hooks';
 
 // ============ COMPONENT ============
 const AbsensiFaceRecognation = () => {
@@ -45,27 +51,19 @@ const AbsensiFaceRecognation = () => {
 
     // Custom Hooks
     const {
+        capturedPhoto,
+        isCapturing,
+        captureError,
         detectionStatus,
-        isDetecting,
-        performLivenessCheck,
-        setDetectionStatus,
-    } = useLivenessDetection();
-
-    const {
-        vectorData,
-        isExtracting,
-        extractError,
-        extractVectorFromImage,
-        clearVector,
-    } = useFaceVector();
+        capturePhoto,
+        clearCapture,
+    } = usePassiveCapture();
 
     // Local State
     const [cameraReady, setCameraReady] = useState(false);
     const [isCaptured, setIsCaptured] = useState(false);
-    const [imageData, setImageData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [isSending, setIsSending] = useState(false);
+    const [serverResponse, setServerResponse] = useState(null);
 
     console.log('📍 Profile:', PROFILE?.profile?.NIP);
     console.log('⏰ Waktu:', WAKTU);
@@ -88,7 +86,7 @@ const AbsensiFaceRecognation = () => {
                     }
                 );
                 if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                    setError('Izin kamera ditolak');
+                    Alert.alert('Error', 'Izin kamera ditolak');
                     return;
                 }
             } else {
@@ -98,149 +96,112 @@ const AbsensiFaceRecognation = () => {
         setCameraReady(true);
     };
 
-    // ============ CAPTURE & VERIFY ============
+    // ============ CAPTURE PHOTO ============
     const handleCapturePhoto = async () => {
         try {
-            setLoading(true);
-            setError(null);
-
-            if (!cameraRef.current) {
-                setError('Kamera tidak siap');
+            const nip = PROFILE?.profile?.NIP || '';
+            if (!nip) {
+                Alert.alert('Error', 'NIP tidak ditemukan');
                 return;
             }
 
-            // Step 1: Liveness Check
-            setDetectionStatus('🎬 Persiapan verifikasi...');
-            console.log('🎬 Memulai verifikasi liveness...');
+            const result = await capturePhoto(cameraRef, nip);
 
-            const livenessResult = await performLivenessCheck(cameraRef);
-
-            console.log('📊 Hasil liveness:', livenessResult);
-
-            if (!livenessResult.isLive) {
-                setDetectionStatus('❌ Verifikasi gagal');
-                setError(`Liveness check gagal: ${livenessResult.reason}`);
-                return;
+            if (result) {
+                setIsCaptured(true);
             }
-
-            console.log(`✅ Liveness terverifikasi! Skor: ${livenessResult.score}`);
-            setDetectionStatus('✅ Liveness terverifikasi!');
-
-            // Step 2: Save Photo
-            if (livenessResult.finalPhotoPath) {
-                const fileExists = await RNFS.exists(livenessResult.finalPhotoPath);
-                if (fileExists) {
-                    console.log('✅ Foto diam tersimpan:', livenessResult.finalPhotoPath);
-                    setImageData(livenessResult.finalPhotoPath);
-                    setIsCaptured(true);
-                    setDetectionStatus('✅ Verifikasi Berhasil');
-
-                    // Step 3: Extract Vector
-                    console.log('🧠 Mengekstrak vektor wajah...');
-                    setDetectionStatus('🧠 Mengekstrak vektor wajah...');
-                    await extractVectorFromImage(livenessResult.finalPhotoPath);
-                } else {
-                    setError('File foto tidak ditemukan');
-                }
-            } else {
-                setError('Foto final tidak tersedia');
-            }
-
         } catch (err) {
             console.error('❌ Error capture:', err);
-            setError(`Gagal: ${err?.message || 'Silakan coba lagi'}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // ============ RETRY EXTRACT VECTOR ============
-    const handleRetryExtract = async () => {
-        if (imageData) {
-            setError(null);
-            await extractVectorFromImage(imageData);
-        } else {
-            setError('Tidak ada foto untuk diekstrak');
+            Alert.alert('Error', `Gagal mengambil foto: ${err?.message || 'Silakan coba lagi'}`);
         }
     };
 
     // ============ SEND TO SERVER ============
-    const handleSendToServer = () => {
-        if (!imageData || !vectorData) {
-            setError('Data tidak lengkap');
+    const handleSendToServer = async () => {
+        if (!capturedPhoto || !PROFILE?.profile?.NIP) {
+            Alert.alert('Error', 'Data tidak lengkap');
             return;
         }
 
         setIsSending(true);
-        setError(null);
+        setServerResponse(null);
 
-        // Prepare data for server
-        const absenData = {
-            NIP: PROFILE?.profile?.NIP || '',
-            lat: PROFILE?.profile?.lokasi_absen?.[0]?.lat || 0,
-            lng: PROFILE?.profile?.lokasi_absen?.[0]?.lng || 0,
-            JenisStatus: WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG',
-            VERSI_APP: VERSI_APP,
-            isUseEmulator: 'false',
-            vektor: JSON.stringify(vectorData.embedding),
-        };
+        const nip = PROFILE.profile.NIP;
+        const apiUrl = `${URL.URL_AbsenHarian}Add_v2`;
 
-        console.log('📤 Mengirim data absensi:', absenData);
+        try {
+            // Prepare data for server (tanpa embedding, hanya NIP + metadata)
+            const absenData = {
+                NIP: nip,
+                lat: PROFILE?.profile?.lokasi_absen?.[0]?.lat || 0,
+                lng: PROFILE?.profile?.lokasi_absen?.[0]?.lng || 0,
+                JenisStatus: WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG',
+                VERSI_APP: VERSI_APP,
+                isUseEmulator: 'false',
+                // Note: Foto sudah di-upload via uploadPhotoToServer
+                // Server akan melakukan face detection & embedding
+            };
 
-        fetch(`${URL.URL_AbsenHarian}Add_v2`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `kikensbatara ${TOKEN}`,
-            },
-            body: JSON.stringify(absenData),
-        })
-            .then(response => response.json())
-            .then(result => {
-                console.log('📥 Response server:', result);
+            // Kirim data absensi
+            console.log('📤 Mengirim data absensi:', absenData);
 
-                if (result.status === 'OK' || result.status === 'ABSEN SUKSES') {
-                    // Hapus foto temp
-                    if (imageData) {
-                        RNFS.unlink(imageData).catch(() => { });
-                    }
-
-                    Alert.alert(
-                        '✅ Absen Berhasil',
-                        `${result.ket || 'Absensi berhasil dicatat'}\nJam: ${result.jam || new Date().toLocaleTimeString('id-ID')}`,
-                        [{ text: 'OK', onPress: () => navigation.goBack() }]
-                    );
-                } else if (result.status === 'ABSEN TERKUNCI') {
-                    Alert.alert(
-                        '🔒 Absen Terkunci',
-                        result.ket || 'Anda sudah melakukan absensi',
-                        [{ text: 'OK', onPress: () => navigation.goBack() }]
-                    );
-                } else {
-                    setError(result.ket || result.status || 'Gagal mengirim absensi');
-                }
-            })
-            .catch(err => {
-                console.error('❌ Error sending to server:', err);
-                setError(`Gagal mengirim: ${err?.message || 'Periksa koneksi internet'}`);
-            })
-            .finally(() => {
-                setIsSending(false);
+            const response = await fetch(`${apiUrl}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `kikensbatara ${TOKEN}`,
+                },
+                body: JSON.stringify(absenData),
             });
+
+            const result = await response.json();
+            console.log('📥 Response server:', result);
+
+            setServerResponse(result);
+
+            if (result.status === 'OK' || result.status === 'ABSEN SUKSES') {
+                // Cleanup foto setelah sukses
+                await cleanupPhoto(capturedPhoto.imagePath);
+                clearCapture();
+                setIsCaptured(false);
+
+                Alert.alert(
+                    '✅ Absen Berhasil',
+                    `${result.ket || 'Absensi berhasil dicatat'}\nJam: ${result.jam || new Date().toLocaleTimeString('id-ID')}`,
+                    [{ text: 'OK', onPress: () => navigation.goBack() }]
+                );
+            } else if (result.status === 'ABSEN TERKUNCI') {
+                Alert.alert(
+                    '🔒 Absen Terkunci',
+                    result.ket || 'Anda sudah melakukan absensi',
+                    [{ text: 'OK', onPress: () => navigation.goBack() }]
+                );
+            } else {
+                Alert.alert('❌ Gagal', result.ket || result.status || 'Gagal mengirim absensi');
+            }
+
+        } catch (err) {
+            console.error('❌ Error sending to server:', err);
+            Alert.alert('Error', `Gagal mengirim: ${err?.message || 'Periksa koneksi internet'}`);
+        } finally {
+            setIsSending(false);
+        }
     };
 
-    // ============ RESET ============
-    const handleRetake = () => {
+    // ============ RETRY ============
+    const handleRetake = async () => {
+        if (capturedPhoto) {
+            await cleanupPhoto(capturedPhoto.imagePath);
+        }
+        clearCapture();
         setIsCaptured(false);
-        setImageData(null);
-        clearVector();
-        setError(null);
-        setDetectionStatus('📷 Siap untuk verifikasi');
+        setServerResponse(null);
     };
 
     // ============ COMPUTED ============
-    const isLoading = loading || isDetecting || isExtracting || isSending;
-    const displayError = error || extractError;
+    const isLoading = isCapturing || isSending;
+    const nip = PROFILE?.profile?.NIP || '';
+    const userName = PROFILE?.profile?.nama || 'Unknown';
 
     // ============ RENDER: LOADING ============
     if (!device || !cameraReady) {
@@ -254,7 +215,7 @@ const AbsensiFaceRecognation = () => {
         );
     }
 
-    // ============ RENDER: MAIN ============
+    // ============ RENDER ============
     return (
         <View style={styles.container}>
             {/* HEADER */}
@@ -270,45 +231,37 @@ const AbsensiFaceRecognation = () => {
                 </View>
             </View>
 
-            {/* CAMERA SECTION */}
+            {/* USER INFO */}
+            <View style={styles.infoBar}>
+                <Text style={styles.infoText}>👤 {userName}</Text>
+                <Text style={styles.infoSubText}>NIP: {nip}</Text>
+            </View>
+
+            {/* CAMERA / PREVIEW */}
             {!isCaptured ? (
                 <CameraSection
                     cameraRef={cameraRef}
                     device={device}
                     detectionStatus={detectionStatus}
                     isLoading={isLoading}
+                    captureError={captureError}
                     onCapture={handleCapturePhoto}
                 />
             ) : (
-                <ReviewSection
-                    imageData={imageData}
-                    vectorData={vectorData}
-                    waktu={WAKTU}
-                    profile={PROFILE}
-                    isLoading={isLoading}
+                <PreviewSection
+                    capturedPhoto={capturedPhoto}
                     isSending={isSending}
-                    onRetryExtract={handleRetryExtract}
-                    onSend={handleSendToServer}
+                    serverResponse={serverResponse}
+                    waktuStatus={WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG'}
                     onRetake={handleRetake}
+                    onSend={handleSendToServer}
                 />
             )}
 
             {/* ERROR MESSAGE */}
-            {displayError && (
+            {captureError && (
                 <View style={styles.errorBox}>
-                    <Text style={styles.errorText}>⚠️ {displayError}</Text>
-                </View>
-            )}
-
-            {/* INFO - Only show on Camera mode, not on Review */}
-            {!isCaptured && (
-                <View style={styles.infoBar}>
-                    <Text style={styles.infoText}>
-                        👤 {PROFILE?.profile?.nama || 'Unknown'}
-                    </Text>
-                    <Text style={styles.infoSubText}>
-                        NIP: {PROFILE?.profile?.NIP || '-'}
-                    </Text>
+                    <Text style={styles.errorText}>⚠️ {captureError}</Text>
                 </View>
             )}
         </View>
@@ -322,10 +275,10 @@ const CameraSection = ({
     device,
     detectionStatus,
     isLoading,
+    captureError,
     onCapture,
 }) => (
     <View style={styles.cameraSection}>
-        {/* Camera Container */}
         <View style={styles.cameraContainer}>
             <Camera
                 ref={cameraRef}
@@ -351,7 +304,7 @@ const CameraSection = ({
             {isLoading && (
                 <View style={styles.blinkProgressContainer}>
                     <ActivityIndicator size="small" color="#2196F3" style={{ marginBottom: 8 }} />
-                    <Text style={styles.blinkProgressText}>🔍 Menganalisis liveness...</Text>
+                    <Text style={styles.blinkProgressText}>🔍 Memproses foto...</Text>
                     <View style={styles.progressBar}>
                         <View style={[styles.progressFill, { width: '100%' }]} />
                     </View>
@@ -376,43 +329,30 @@ const CameraSection = ({
     </View>
 );
 
-const ReviewSection = ({
-    imageData,
-    vectorData,
-    waktu,
-    profile,
-    isLoading,
+const PreviewSection = ({
+    capturedPhoto,
     isSending,
-    onRetryExtract,
-    onSend,
+    serverResponse,
+    waktuStatus,
     onRetake,
+    onSend,
 }) => (
-    <ScrollView
-        style={styles.reviewSection}
-        contentContainerStyle={styles.reviewSectionContent}
-        showsVerticalScrollIndicator={false}
-    >
-        {/* Compact User Info */}
-        <View style={styles.compactUserInfo}>
-            <Text style={styles.compactUserName}>👤 {profile?.profile?.nama || 'Unknown'}</Text>
-            <Text style={styles.compactUserNip}>NIP: {profile?.profile?.NIP || '-'}</Text>
-        </View>
-
-        {/* Success Badge - More Compact */}
+    <View style={styles.previewSection}>
+        {/* Compact Success Badge */}
         <View style={styles.successBadgeCompact}>
             <Text style={styles.successIconSmall}>✅</Text>
             <View>
-                <Text style={styles.successTitleSmall}>Verifikasi Berhasil!</Text>
-                <Text style={styles.successSubtitleSmall}>Wajah Anda telah terverifikasi</Text>
+                <Text style={styles.successTitleSmall}>Foto Tersimpan!</Text>
+                <Text style={styles.successSubtitleSmall}>Siap dikirim ke server</Text>
             </View>
         </View>
 
         {/* Image Preview */}
         <View style={styles.imagePreviewContainer}>
             <View style={styles.imagePreview}>
-                {imageData ? (
+                {capturedPhoto?.imagePath ? (
                     <Image
-                        source={{ uri: `file://${imageData}` }}
+                        source={{ uri: `file://${capturedPhoto.imagePath}` }}
                         style={styles.capturedImage}
                         resizeMode="cover"
                     />
@@ -421,82 +361,55 @@ const ReviewSection = ({
                 )}
             </View>
             <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedText}>✓ Terverifikasi</Text>
+                <Text style={styles.verifiedText}>✓ {capturedPhoto?.width}x{capturedPhoto?.height}</Text>
             </View>
         </View>
 
-        {/* Action Buttons */}
-        {!vectorData ? (
-            <View style={styles.actionContainer}>
-                <Text style={styles.actionHint}>⏳ Mengekstrak vektor wajah...</Text>
-                {isLoading ? (
-                    <ActivityIndicator size="large" color="#4CAF50" />
-                ) : (
-                    <TouchableOpacity
-                        style={[styles.button, styles.primaryBtn]}
-                        onPress={onRetryExtract}
-                        disabled={isLoading}
-                    >
-                        <Text style={styles.buttonIcon}>🔄</Text>
-                        <Text style={styles.buttonText}>Coba Ekstrak Ulang</Text>
-                    </TouchableOpacity>
-                )}
+        {/* Info Card */}
+        <View style={styles.completedCard}>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>📷 Foto</Text>
+                <Text style={styles.statusOnline}>✅ {((capturedPhoto?.fileSize || 0) / 1024).toFixed(1)} KB</Text>
             </View>
-        ) : (
-            <View style={styles.completedContainer}>
-                <View style={styles.completedCard}>
-                    <View style={styles.completedHeader}>
-                        <Text style={styles.completedIcon}>🎉</Text>
-                        <Text style={styles.completedTitle}>Siap Kirim ke Server!</Text>
-                    </View>
-                    <View style={styles.completedInfo}>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>🧠 Vektor</Text>
-                            <Text style={styles.statusOnline}>✅ {vectorData.embedding.length} dimensi</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>📋 Jenis</Text>
-                            <Text style={styles.infoValue}>
-                                {waktu?.status ? 'ABSEN DATANG' : 'ABSEN PULANG'}
-                            </Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>⏰ Waktu</Text>
-                            <Text style={styles.infoValue}>{new Date().toLocaleTimeString('id-ID')}</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>📶 Mode</Text>
-                            <Text style={styles.statusOnline}>🌐 Online</Text>
-                        </View>
-                    </View>
-                </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>📋 Jenis</Text>
+                <Text style={styles.infoValue}>{waktuStatus}</Text>
+            </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>⏰ Waktu</Text>
+                <Text style={styles.infoValue}>{new Date().toLocaleTimeString('id-ID')}</Text>
+            </View>
+            <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>📶 Mode</Text>
+                <Text style={styles.statusOnline}>🌐 Server AI</Text>
+            </View>
+        </View>
 
-                <TouchableOpacity
-                    style={[styles.button, styles.sendBtn]}
-                    onPress={onSend}
-                    disabled={isSending}
-                >
-                    {isSending ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <>
-                            <Text style={styles.buttonIcon}>📤</Text>
-                            <Text style={styles.buttonText}>Kirim ke Server</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
-            </View>
-        )}
+        {/* Send Button */}
+        <TouchableOpacity
+            style={[styles.button, styles.sendBtn]}
+            onPress={onSend}
+            disabled={isSending}
+        >
+            {isSending ? (
+                <ActivityIndicator color="#fff" />
+            ) : (
+                <>
+                    <Text style={styles.buttonIcon}>📤</Text>
+                    <Text style={styles.buttonText}>Kirim ke Server (AI)</Text>
+                </>
+            )}
+        </TouchableOpacity>
 
         {/* Retake Button */}
         <TouchableOpacity
             style={[styles.button, styles.retakeBtn]}
             onPress={onRetake}
-            disabled={isLoading || isSending}
+            disabled={isSending}
         >
             <Text style={styles.retakeBtnText}>🔄 Ambil Ulang Foto</Text>
         </TouchableOpacity>
-    </ScrollView>
+    </View>
 );
 
 // ============ STYLES ============
@@ -588,41 +501,34 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         borderRadius: 10,
     },
-    reviewSection: {
+    previewSection: {
         flex: 1,
+        gap: 12,
     },
-    reviewSectionContent: {
-        gap: 10,
-        paddingBottom: 20,
-    },
-    // Compact User Info
-    compactUserInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#2a2a2a',
-        padding: 10,
-        borderRadius: 8,
-        borderLeftWidth: 3,
+    infoBar: {
+        backgroundColor: '#222',
+        padding: 14,
+        borderRadius: 12,
+        borderLeftWidth: 4,
         borderLeftColor: '#2196F3',
+        marginBottom: 15,
     },
-    compactUserName: {
+    infoText: {
         color: '#fff',
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 'bold',
-        flex: 1,
     },
-    compactUserNip: {
-        color: '#888',
+    infoSubText: {
+        color: '#aaa',
         fontSize: 11,
         fontFamily: 'monospace',
+        marginTop: 4,
     },
-    // Compact Success Badge
     successBadgeCompact: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(76, 175, 80, 0.15)',
-        padding: 10,
+        padding: 12,
         borderRadius: 8,
         gap: 10,
     },
@@ -638,31 +544,11 @@ const styles = StyleSheet.create({
         color: '#aaa',
         fontSize: 11,
     },
-    // Original (keep for backward compatibility)
-    successBadge: {
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    successIcon: {
-        fontSize: 40,
-        marginBottom: 8,
-    },
-    successTitle: {
-        color: '#4CAF50',
-        fontSize: 22,
-        fontWeight: 'bold',
-    },
-    successSubtitle: {
-        color: '#aaa',
-        fontSize: 14,
-        marginTop: 4,
-    },
     imagePreviewContainer: {
-        position: 'relative',
         alignItems: 'center',
     },
     imagePreview: {
-        width: 140,
+        width: 160,
         height: 160,
         borderRadius: 12,
         backgroundColor: '#333',
@@ -670,7 +556,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         overflow: 'hidden',
         borderWidth: 2,
-        borderColor: '#2196F3',
+        borderColor: '#4CAF50',
     },
     capturedImage: {
         width: '100%',
@@ -683,11 +569,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
-        shadowColor: '#4CAF50',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
-        elevation: 5,
     },
     verifiedText: {
         color: '#fff',
@@ -696,70 +577,38 @@ const styles = StyleSheet.create({
     },
     previewText: {
         fontSize: 16,
-        color: '#2196F3',
+        color: '#4CAF50',
         fontWeight: 'bold',
-    },
-    actionContainer: {
-        alignItems: 'center',
-        marginTop: 12,
-    },
-    actionHint: {
-        color: '#888',
-        fontSize: 12,
-        marginBottom: 8,
-    },
-    completedContainer: {
-        marginTop: 8,
     },
     completedCard: {
         backgroundColor: '#1e2a3e',
         borderRadius: 10,
-        padding: 12,
+        padding: 14,
         borderWidth: 1,
         borderColor: '#2d4a5a',
-    },
-    completedHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 8,
-        paddingBottom: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#2d4a5a',
-    },
-    completedIcon: {
-        fontSize: 18,
-        marginRight: 6,
-    },
-    completedTitle: {
-        color: '#2196F3',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    completedInfo: {
-        gap: 6,
     },
     infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginBottom: 8,
     },
     infoLabel: {
         color: '#888',
-        fontSize: 11,
+        fontSize: 12,
     },
     infoValue: {
         color: '#fff',
-        fontSize: 11,
+        fontSize: 12,
         fontFamily: 'monospace',
     },
     statusOnline: {
         color: '#4CAF50',
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: '600',
     },
     button: {
-        paddingVertical: 12,
+        paddingVertical: 14,
         paddingHorizontal: 20,
         borderRadius: 10,
         alignItems: 'center',
@@ -773,31 +622,13 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 5,
     },
-    primaryBtn: {
+    sendBtn: {
         backgroundColor: '#4CAF50',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        paddingVertical: 16,
-        borderRadius: 12,
-        width: '100%',
         shadowColor: '#4CAF50',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 5,
-    },
-    sendBtn: {
-        backgroundColor: '#2196F3',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        marginTop: 10,
-        paddingVertical: 12,
-        borderRadius: 10,
-        shadowColor: '#2196F3',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 6,
@@ -807,20 +638,18 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: '#f44336',
-        marginTop: 8,
-        paddingVertical: 10,
     },
     buttonText: {
         color: '#fff',
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 'bold',
     },
     buttonIcon: {
-        fontSize: 14,
+        fontSize: 16,
     },
     retakeBtnText: {
         color: '#f44336',
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
     },
     statusIndicator: {
@@ -878,25 +707,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
     },
-    infoBar: {
-        backgroundColor: '#222',
-        padding: 14,
-        borderRadius: 12,
-        borderLeftWidth: 4,
-        borderLeftColor: '#2196F3',
-        marginTop: 10,
-    },
-    infoText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    infoSubText: {
-        color: '#aaa',
-        fontSize: 11,
-        fontFamily: 'monospace',
-        marginTop: 4,
-    },
 });
 
 export default AbsensiFaceRecognation;
+
