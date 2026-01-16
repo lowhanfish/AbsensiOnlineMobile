@@ -2,19 +2,23 @@
  * ============================================
  * HOOK: useFaceVector
  * ============================================
- * Hook untuk ekstraksi vektor wajah menggunakan TFLite + MobileFaceNet
+ * Hook untuk pengambilan foto wajah dengan:
+ * - Face detection menggunakan ML Kit
+ * - Face crop (center/cover)
+ * - Resize ke 480x480 pixel
+ * - Compress JPEG quality 80%
  * 
- * Prioritas:
- * 1. TFLite MobileFaceNet → 192 dimensi embedding UNIK per wajah
- * 2. Fallback ke ML Kit geometris features
- * 
- * UPDATED: Menggunakan useFaceEmbedding untuk TFLite inference
+ * Output: Path gambar wajah yang siap dikirim ke server
+ * untuk embedding extraction di sisi server (RTX 5090)
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { useFaceEmbedding } from './useFaceEmbedding';
+import { useState, useCallback, useEffect, RefObject } from 'react';
+import { Camera } from 'react-native-vision-camera';
+import RNFS from 'react-native-fs';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
+import { check_gelar_depan, check_gelar_belakang, namaLengkap } from '../lib/kiken';
 
-// Import ML Kit Face Detection untuk fallback
+// Import ML Kit Face Detection
 let FaceDetection: any = null;
 try {
     FaceDetection = require('@react-native-ml-kit/face-detection').default;
@@ -23,295 +27,593 @@ try {
 }
 
 // ============ TYPES ============
-export interface VectorData {
-    embedding: number[];
-    confidence: number;
-    faceCount: number;
-    timestamp: string;
+export interface FaceCropResult {
     imagePath: string;
-    rawFaceData?: any;
+    fileSize: number;
+    width: number;
+    height: number;
+    confidence: number;
+    faceBounds: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    timestamp: string;
 }
 
 export interface UseFaceVectorReturn {
-    vectorData: VectorData | null;
-    isExtracting: boolean;
-    extractError: string | null;
-    extractVectorFromImage: (imagePath: string) => Promise<VectorData | null>;
-    clearVector: () => void;
+    cropResult: FaceCropResult | null;
+    isProcessing: boolean;
+    processError: string | null;
+    processFaceImage: (
+        imagePath: string,
+        cameraRef?: RefObject<Camera | null>
+    ) => Promise<FaceCropResult | null>;
+    clearResult: () => void;
+    // Liveness methods
+    startLivenessCheck: (cameraRef: RefObject<Camera | null>) => Promise<LivenessResult | null>;
+    livenessStatus: string;
+    isLivenessChecking: boolean;
 }
 
 // ============ CONSTANTS ============
-const TARGET_DIMENSION = 192; // Match MobileFaceNet output
-
-const LANDMARK_TYPES = [
-    'LEFT_EYE', 'RIGHT_EYE', 'LEFT_EAR', 'RIGHT_EAR', 'NOSE_BASE',
-    'LEFT_CHEEK', 'RIGHT_CHEEK', 'MOUTH_LEFT', 'MOUTH_RIGHT', 'MOUTH_BOTTOM',
-];
-
-const CONTOUR_TYPES = [
-    'FACE', 'LEFT_EYEBROW_TOP', 'LEFT_EYEBROW_BOTTOM',
-    'RIGHT_EYEBROW_TOP', 'RIGHT_EYEBROW_BOTTOM',
-    'LEFT_EYE', 'RIGHT_EYE',
-    'UPPER_LIP_TOP', 'UPPER_LIP_BOTTOM',
-    'LOWER_LIP_TOP', 'LOWER_LIP_BOTTOM',
-    'NOSE_BRIDGE', 'NOSE_BOTTOM',
-];
+const TARGET_SIZE = 480;           // 480x480 pixel
+const JPEG_QUALITY = 80;           // 80% quality
+const MIN_FACE_SIZE = 100;         // Minimum face size in pixels
+const MAX_FILE_SIZE = 180 * 1024;  // 180 KB max
+const MIN_FILE_SIZE = 100 * 1024;  // 100 KB min
 
 // ============ HELPER FUNCTIONS ============
-const normalizeCoord = (value: number, max: number): number => {
-    if (!max || max === 0) return 0;
-    return Math.min(Math.max(value / max, 0), 1);
+
+/**
+ * Hitung aspect ratio untuk cover crop
+ */
+const getCoverCropParams = (
+    imageWidth: number,
+    imageHeight: number,
+    _targetSize: number
+): { cropX: number; cropY: number; cropWidth: number; cropHeight: number } => {
+    const imageAspect = imageWidth / imageHeight;
+    const targetAspect = 1; // Square
+
+    let cropWidth: number;
+    let cropHeight: number;
+    let cropX: number;
+    let cropY: number;
+
+    if (imageAspect > targetAspect) {
+        // Image lebih lebar, potong sisi kiri-kanan
+        cropHeight = imageHeight;
+        cropWidth = imageHeight; // Square crop
+        cropX = (imageWidth - cropWidth) / 2;
+        cropY = 0;
+    } else {
+        // Image lebih tinggi, potong atas-bawah
+        cropWidth = imageWidth;
+        cropHeight = imageWidth;
+        cropX = 0;
+        cropY = (imageHeight - cropHeight) / 2;
+    }
+
+    return { cropX, cropY, cropWidth, cropHeight };
 };
 
-const extractLandmarks = (face: any, imageWidth: number, imageHeight: number): number[] => {
-    const landmarks: number[] = [];
-    
-    if (face.landmarks && typeof face.landmarks === 'object' && !Array.isArray(face.landmarks)) {
-        for (const type of LANDMARK_TYPES) {
-            const lm = face.landmarks[type] || face.landmarks[type.toLowerCase()];
-            if (lm && typeof lm.x === 'number' && typeof lm.y === 'number') {
-                landmarks.push(normalizeCoord(lm.x, imageWidth), normalizeCoord(lm.y, imageHeight));
-            } else {
-                landmarks.push(0, 0);
-            }
-        }
-    } else if (Array.isArray(face.landmarks)) {
-        for (const lm of face.landmarks.slice(0, LANDMARK_TYPES.length)) {
-            if (lm && typeof lm.x === 'number') {
-                landmarks.push(normalizeCoord(lm.x, imageWidth), normalizeCoord(lm.y, imageHeight));
-            } else {
-                landmarks.push(0, 0);
-            }
-        }
-        while (landmarks.length < LANDMARK_TYPES.length * 2) landmarks.push(0);
-    } else {
-        for (let i = 0; i < LANDMARK_TYPES.length; i++) landmarks.push(0, 0);
+/**
+ * Deteksi wajah menggunakan ML Kit danambil bounding box
+ */
+const detectFaceBounds = async (imagePath: string): Promise<{
+    bounds: { x: number; y: number; width: number; height: number } | null;
+    confidence: number;
+} | null> => {
+    if (!FaceDetection || !FaceDetection.detect) {
+        console.warn('⚠️ ML Kit Face Detection tidak tersedia');
+        return null;
     }
-    
-    return landmarks;
+
+    try {
+        let detectionPath = imagePath;
+        if (!detectionPath.startsWith('file://')) {
+            detectionPath = 'file://' + detectionPath;
+        }
+
+        const faces = await FaceDetection.detect(detectionPath, {
+            performanceMode: 'accurate',
+            landmarkMode: 'none',
+            contourMode: 'none',
+            classificationMode: 'none',
+        });
+
+        if (!faces || faces.length === 0) {
+            console.warn('⚠️ Tidak ada wajah terdeteksi');
+            return null;
+        }
+
+        // Ambil wajah terbesar
+        let largestFace = faces[0];
+        let maxArea = 0;
+
+        for (const face of faces) {
+            const bounds = face.bounds || face.frame || face.boundingBox || {};
+            const area = (bounds.width || 0) * (bounds.height || 0);
+            if (area > maxArea) {
+                maxArea = area;
+                largestFace = face;
+            }
+        }
+
+        const bounds = largestFace.bounds || largestFace.frame || largestFace.boundingBox || {};
+        const confidence = largestFace.trackingId ? 1.0 : 0.8;
+
+        // Validasi ukuran wajah
+        const faceSize = Math.min(bounds.width || 0, bounds.height || 0);
+        if (faceSize < MIN_FACE_SIZE) {
+            console.warn(`⚠️ Wajah terlalu kecil: ${faceSize}px (min: ${MIN_FACE_SIZE}px)`);
+            return null;
+        }
+
+        return { bounds, confidence };
+    } catch (error) {
+        console.error('❌ Error detecting face:', error);
+        return null;
+    }
 };
 
-const extractContours = (face: any, imageWidth: number, imageHeight: number): number[] => {
-    const contours: number[] = [];
-    
-    if (face.contours && typeof face.contours === 'object' && !Array.isArray(face.contours)) {
-        for (const type of CONTOUR_TYPES) {
-            const contour = face.contours[type] || face.contours[type.toLowerCase()];
-            if (Array.isArray(contour) && contour.length > 0) {
-                const midIdx = Math.floor(contour.length / 2);
-                const point = contour[midIdx] || contour[0];
-                if (point && typeof point.x === 'number') {
-                    contours.push(normalizeCoord(point.x, imageWidth), normalizeCoord(point.y, imageHeight));
-                } else {
-                    contours.push(0, 0);
-                }
-            } else {
-                contours.push(0, 0);
-            }
-        }
-    } else {
-        for (let i = 0; i < CONTOUR_TYPES.length; i++) contours.push(0, 0);
+/**
+ * Crop wajah dari gambar menggunakan bounding box
+ * Simplifikasi: langsung cover crop karena ImageResizer tidak support precise crop
+ */
+const cropFace = async (
+    imagePath: string,
+    _faceBounds: { x: number; y: number; width: number; height: number }
+): Promise<string> => {
+    // ImageResizer tidak support precise crop dengan coordinates
+    // Kita gunakan cover crop saja yang akan auto-center wajah
+    return await coverCropImage(imagePath);
+};
+
+/**
+ * Fallback: Cover crop (ambil center gambar)
+ */
+const coverCropImage = async (imagePath: string): Promise<string> => {
+    const tempPath = `${RNFS.CachesDirectoryPath}/face_cover_${Date.now()}.jpg`;
+
+    try {
+        // Pertama resize biar lebih kecil
+        const resizedPath = `${RNFS.CachesDirectoryPath}/temp_resize_${Date.now()}.jpg`;
+        
+        await ImageResizer.createResizedImage(
+            imagePath,
+            800,  // Max dimension sebelum crop
+            800,
+            'JPEG',
+            90,
+            0,
+            resizedPath,
+            true
+        );
+
+        // Cover crop ke 480x480
+        const response = await ImageResizer.createResizedImage(
+            resizedPath,
+            TARGET_SIZE,
+            TARGET_SIZE,
+            'JPEG',
+            JPEG_QUALITY,
+            0,
+            tempPath,
+            true,
+            { mode: 'cover' as const }
+        );
+
+        // Cleanup temp file
+        try { await RNFS.unlink(resizedPath); } catch (e) { }
+
+        return response.uri;
+    } catch (error) {
+        console.error('❌ Cover crop failed:', error);
+        
+        // Last resort: Just resize
+        const lastResortPath = `${RNFS.CachesDirectoryPath}/face_final_${Date.now()}.jpg`;
+        const response = await ImageResizer.createResizedImage(
+            imagePath,
+            TARGET_SIZE,
+            TARGET_SIZE,
+            'JPEG',
+            JPEG_QUALITY,
+            0,
+            lastResortPath,
+            true
+        );
+        return response.uri;
     }
-    
-    return contours;
+};
+
+/**
+ * Resize gambar ke 480x480 dengan quality 80%
+ */
+const resizeToTarget = async (imagePath: string): Promise<string> => {
+    const tempPath = `${RNFS.CachesDirectoryPath}/face_resized_${Date.now()}.jpg`;
+
+    try {
+        const response = await ImageResizer.createResizedImage(
+            imagePath,
+            TARGET_SIZE,
+            TARGET_SIZE,
+            'JPEG',
+            JPEG_QUALITY,
+            0,
+            tempPath,
+            true,
+            { mode: 'cover' as const }
+        );
+
+        return response.uri;
+    } catch (error) {
+        console.error('❌ Resize failed:', error);
+        return imagePath; // Return original if resize fails
+    }
+};
+
+/**
+ * Hitung ukuran file dalam KB
+ */
+const getFileSize = async (path: string): Promise<number> => {
+    try {
+        const stat = await RNFS.stat(path);
+        return stat.size;
+    } catch (error) {
+        return 0;
+    }
+};
+
+/**
+ * Cleanup temporary files
+ */
+const safeCleanup = async (...paths: string[]): Promise<void> => {
+    for (const path of paths) {
+        try {
+            if (await RNFS.exists(path)) {
+                await RNFS.unlink(path);
+            }
+        } catch (e) {
+            // Silent fail
+        }
+    }
 };
 
 // ============ HOOK ============
 export const useFaceVector = (): UseFaceVectorReturn => {
-    const [vectorData, setVectorData] = useState<VectorData | null>(null);
-    const [isExtracting, setIsExtracting] = useState(false);
-    const [extractError, setExtractError] = useState<string | null>(null);
+    const [cropResult, setCropResult] = useState<FaceCropResult | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [processError, setProcessError] = useState<string | null>(null);
+    const [livenessStatus, setLivenessStatus] = useState('📷 Siap untuk verifikasi');
+    const [isLivenessChecking, setIsLivenessChecking] = useState(false);
 
-    // Use TFLite face embedding hook
-    const {
-        embeddingData,
-        isExtracting: isTFLiteExtracting,
-        extractError: tfliteError,
-        isModelLoaded,
-        extractEmbeddingFromImage,
-        clearEmbedding,
-    } = useFaceEmbedding();
+    // Liveness state
+    const [livenessResult, setLivenessResult] = useState<{
+        path: string;
+        gestures: { [key: string]: boolean };
+    } | null>(null);
 
     /**
-     * Ekstrak vektor dari gambar wajah
-     * Prioritas: TFLite MobileFaceNet → Fallback ML Kit
+     * Process gambar wajah: detect → crop → resize
      */
-    const extractVectorFromImage = useCallback(async (imagePath: string): Promise<VectorData | null> => {
+    const processFaceImage = useCallback(async (
+        imagePath: string,
+        cameraRef?: RefObject<Camera | null>
+    ): Promise<FaceCropResult | null> => {
+        let tempCroppedPath: string | null = null;
+
         try {
-            setIsExtracting(true);
-            setExtractError(null);
+            setIsProcessing(true);
+            setProcessError(null);
 
-            console.log('🧠 [useFaceVector] Memulai ekstraksi vektor...');
-            console.log('📁 Image path:', imagePath);
-            console.log('🤖 TFLite model loaded:', isModelLoaded);
+            console.log('🧠 [useFaceVector] Memulai process wajah...');
+            console.log('📁 Input image:', imagePath);
 
-            // Try TFLite MobileFaceNet first
-            console.log('🚀 Mencoba ekstraksi dengan TFLite MobileFaceNet...');
-            const embeddingResult = await extractEmbeddingFromImage(imagePath);
+            // Step 1: Deteksi wajah menggunakan ML Kit
+            console.log('🔍 Mendeteksi wajah...');
+            const faceResult = await detectFaceBounds(imagePath);
 
-            if (embeddingResult && embeddingResult.embedding.length > 0) {
-                const nonZeroCount = embeddingResult.embedding.filter(v => Math.abs(v) > 0.001).length;
-                console.log(`✅ Embedding berhasil: ${embeddingResult.embedding.length} dimensi, ${nonZeroCount} non-zero`);
-                console.log('📊 Embedding sample:', embeddingResult.embedding.slice(0, 10));
+            let croppedPath: string;
 
-                const newVectorData: VectorData = {
-                    embedding: embeddingResult.embedding,
-                    confidence: embeddingResult.confidence,
-                    faceCount: 1,
-                    timestamp: embeddingResult.timestamp,
-                    imagePath: imagePath,
-                    rawFaceData: { model: embeddingResult.modelUsed },
-                };
-
-                setVectorData(newVectorData);
-                return newVectorData;
+            if (faceResult && faceResult.bounds) {
+                console.log('✅ Wajah terdeteksi, melakukan crop...');
+                console.log(`📐 Bounds: x=${faceResult.bounds.x}, y=${faceResult.bounds.y}, w=${faceResult.bounds.width}, h=${faceResult.bounds.height}`);
+                
+                croppedPath = await cropFace(imagePath, faceResult.bounds);
+            } else {
+                console.log('⚠️ Wajah tidak terdeteksi, menggunakan cover crop...');
+                croppedPath = await coverCropImage(imagePath);
             }
 
-            // Fallback to ML Kit based extraction
-            console.log('⚠️ TFLite tidak tersedia, menggunakan ML Kit fallback...');
-            return await extractWithMLKit(imagePath, setVectorData);
+            tempCroppedPath = croppedPath;
+
+            // Step 2: Resize ke 480x480
+            console.log('📐 Resize ke 480x480...');
+            const resizedPath = await resizeToTarget(croppedPath);
+
+            if (resizedPath !== croppedPath) {
+                tempCroppedPath = resizedPath;
+                await safeCleanup(croppedPath);
+            }
+
+            // Step 3: Verifikasi ukuran file
+            let fileSize = await getFileSize(resizedPath);
+            console.log(`📊 Ukuran file: ${(fileSize / 1024).toFixed(1)} KB`);
+
+            // Adjust quality jika perlu
+            if (fileSize > MAX_FILE_SIZE) {
+                console.log('⚠️ File terlalu besar, menurunkan quality...');
+                // Ini akan di-handle oleh server atau client-side recompress
+            } else if (fileSize < MIN_FILE_SIZE) {
+                console.log('⚠️ File terlalu kecil, mungkin kualitas rendah');
+            }
+
+            // Step 4: Get dimensions
+            // Note: Kita asumsikan 480x480 dari resize
+            const result: FaceCropResult = {
+                imagePath: resizedPath,
+                fileSize: fileSize,
+                width: TARGET_SIZE,
+                height: TARGET_SIZE,
+                confidence: faceResult?.confidence || 0.5,
+                faceBounds: faceResult?.bounds || { x: 0, y: 0, width: 0, height: 0 },
+                timestamp: new Date().toISOString(),
+            };
+
+            setCropResult(result);
+            console.log('✅ Face process selesai:', `${(fileSize / 1024).toFixed(1)} KB`);
+
+            return result;
 
         } catch (err: any) {
-            console.error('❌ Error extract vector:', err);
-            const errorMsg = err.message || 'Gagal ekstrak vektor';
-            setExtractError(errorMsg);
-            setVectorData(null);
+            console.error('❌ Error processing face:', err);
+            setProcessError(err?.message || 'Gagal memproses gambar wajah');
+            setCropResult(null);
             return null;
+
         } finally {
-            setIsExtracting(false);
+            setIsProcessing(false);
         }
-    }, [isModelLoaded, extractEmbeddingFromImage]);
+    }, []);
 
     /**
-     * Clear vector data
+     * Clear result
      */
-    const clearVector = useCallback(() => {
-        setVectorData(null);
-        setExtractError(null);
-        clearEmbedding();
-    }, [clearEmbedding]);
-
-    // Sync error state
-    useEffect(() => {
-        if (tfliteError) {
-            console.log('⚠️ TFLite error:', tfliteError);
+    const clearResult = useCallback(() => {
+        if (cropResult?.imagePath) {
+            safeCleanup(cropResult.imagePath);
         }
-    }, [tfliteError]);
+        setCropResult(null);
+        setProcessError(null);
+        setLivenessResult(null);
+    }, [cropResult]);
+
+    // ============ LIVENESS DETECTION ============
+
+    /**
+     * Get 2 random gestures
+     */
+    const getRandomGestures = useCallback((): { id: string; text: string }[] => {
+        const gestures = [
+            { id: 'blink', text: '👁️ KEDIP MATA' },
+            { id: 'smile', text: '😊 SENYUM' },
+            { id: 'right_eye_close', text: '➡️ TUTUP MATA KANAN' },
+        ];
+        return [...gestures].sort(() => 0.5 - Math.random()).slice(0, 2);
+    }, []);
+
+    /**
+     * Analyze gesture frames
+     */
+    const analyzeGesture = useCallback((gestureId: string, frames: any[]): boolean => {
+        if (frames.length < 3) return false;
+
+        switch (gestureId) {
+            case 'blink': {
+                let hasClose = false, hasOpen = false;
+                for (const f of frames) {
+                    const avgEye = ((f.leftEyeOpen || 1) + (f.rightEyeOpen || 1)) / 2;
+                    if (avgEye < 0.3) hasClose = true;
+                    if (avgEye > 0.7) hasOpen = true;
+                }
+                return hasClose && hasOpen;
+            }
+            case 'smile': {
+                let hasSmile = false, hasNeutral = false;
+                for (const f of frames) {
+                    const prob = f.face?.smilingProbability || 0.5;
+                    if (prob > 0.6) hasSmile = true;
+                    if (prob < 0.4) hasNeutral = true;
+                }
+                return hasSmile && hasNeutral;
+            }
+            case 'right_eye_close': {
+                let hasClose = false, hasOpen = false;
+                for (const f of frames) {
+                    const rightEye = f.rightEyeOpen || 1;
+                    const leftEye = f.leftEyeOpen || 1;
+                    if (rightEye < 0.3 && leftEye > 0.5) hasClose = true;
+                    if (rightEye > 0.6) hasOpen = true;
+                }
+                return hasClose && hasOpen;
+            }
+            default: return false;
+        }
+    }, []);
+
+    /**
+     * Record gesture frames
+     */
+    const recordGestureFrames = useCallback(async (
+        gesture: { id: string; text: string },
+        cameraRef: RefObject<Camera | null>
+    ): Promise<boolean> => {
+        const framePaths: string[] = [];
+        const startTime = Date.now();
+        let isRecording = true;
+
+        const captureLoop = async () => {
+            while (isRecording && Date.now() - startTime < 10000) {
+                if (!cameraRef.current) {
+                    await new Promise(r => setTimeout(r, 200));
+                    continue;
+                }
+                try {
+                    const photo = await cameraRef.current.takePhoto();
+                    if (photo) framePaths.push(photo.path);
+                } catch (e) { /* ignore */ }
+                await new Promise(r => setTimeout(r, 100));
+            }
+        };
+
+        captureLoop();
+        await new Promise(r => setTimeout(r, 2500));
+        isRecording = false;
+        await captureLoop();
+
+        if (framePaths.length < 3) {
+            framePaths.forEach(p => RNFS.unlink(p).catch(() => {}));
+            return false;
+        }
+
+        // Analyze frames
+        const frames: any[] = [];
+        for (let i = 0; i < framePaths.length; i++) {
+            try {
+                let path = framePaths[i];
+                if (!path.startsWith('file://')) path = 'file://' + path;
+
+                if (FaceDetection?.detect) {
+                    const faces = await FaceDetection.detect(path, {
+                        performanceMode: 'fast',
+                        classificationMode: 'all',
+                    });
+                    if (faces?.length > 0) {
+                        const face = faces[0];
+                        frames.push({
+                            face,
+                            leftEyeOpen: face.leftEyeOpenProbability,
+                            rightEyeOpen: face.rightEyeOpenProbability,
+                        });
+                    }
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        framePaths.forEach(p => RNFS.unlink(p).catch(() => {}));
+
+        return frames.length >= 3 && analyzeGesture(gesture.id, frames);
+    }, [analyzeGesture]);
+
+    /**
+     * Main liveness check
+     */
+    const startLivenessCheck = useCallback(async (
+        cameraRef: RefObject<Camera | null>
+    ): Promise<LivenessResult | null> => {
+        try {
+            setIsLivenessChecking(true);
+            setLivenessStatus('🎬 Memulai verifikasi liveness...');
+
+            if (!FaceDetection?.detect) {
+                return { isLive: false, score: 0, reason: 'ML Kit tidak tersedia', results: {}, finalPath: null };
+            }
+
+            const gestures = getRandomGestures();
+            const results: { [key: string]: boolean } = {};
+
+            for (let i = 0; i < gestures.length; i++) {
+                const gesture = gestures[i];
+                let detected = false;
+                let attempts = 0;
+
+                while (!detected && attempts < 3) {
+                    attempts++;
+                    setLivenessStatus(`${gesture.text}\n(Upaya ${attempts}/3)`);
+
+                    detected = await recordGestureFrames(gesture, cameraRef);
+
+                    if (detected) {
+                        setLivenessStatus(`✅ ${gesture.text} - Terdeteksi!`);
+                        results[gesture.id] = true;
+                        await new Promise(r => setTimeout(r, 1500));
+                    } else if (attempts < 3) {
+                        setLivenessStatus(`❌ Coba lagi...`);
+                        await new Promise(r => setTimeout(r, 1500));
+                    }
+                }
+
+                if (!detected) {
+                    return { isLive: false, score: 0, reason: `Gesture "${gesture.text}" gagal`, results, finalPath: null };
+                }
+            }
+
+            // Take final photo
+            setLivenessStatus('📸 Mengambil foto final...');
+            await new Promise(r => setTimeout(r, 1000));
+
+            let finalPath: string | null = null;
+            try {
+                const photo = await cameraRef.current?.takePhoto();
+                if (photo?.path) finalPath = photo.path;
+            } catch (e) { /* ignore */ }
+
+            if (finalPath) {
+                // Process final image dengan face crop
+                const result = await processFaceImage(finalPath);
+                if (result) {
+                    setLivenessResult({ path: result.imagePath, gestures: results });
+                    return {
+                        isLive: true,
+                        score: 1.0,
+                        reason: `Semua ${gestures.length} gesture terdeteksi`,
+                        results,
+                        finalPath: result.imagePath,
+                    };
+                }
+            }
+
+            return { isLive: true, score: 1.0, reason: 'Liveness verified', results, finalPath };
+
+        } catch (err: any) {
+            return { isLive: false, score: 0, reason: err?.message || 'Error', results: {}, finalPath: null };
+        } finally {
+            setIsLivenessChecking(false);
+        }
+    }, [getRandomGestures, recordGestureFrames, processFaceImage]);
+
+    // Sync cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (cropResult?.imagePath) {
+                safeCleanup(cropResult.imagePath);
+            }
+        };
+    }, []);
 
     return {
-        vectorData,
-        isExtracting: isExtracting || isTFLiteExtracting,
-        extractError,
-        extractVectorFromImage,
-        clearVector,
+        cropResult,
+        isProcessing,
+        processError,
+        processFaceImage,
+        clearResult,
+        startLivenessCheck,
+        livenessStatus,
+        isLivenessChecking,
     };
 };
 
-/**
- * Fallback: Extract using ML Kit geometric features
- */
-async function extractWithMLKit(
-    imagePath: string,
-    setVectorData: (data: VectorData) => void
-): Promise<VectorData | null> {
-    console.log('🔄 Extracting with ML Kit fallback...');
-
-    if (!FaceDetection || !FaceDetection.detect) {
-        throw new Error('ML Kit tidak tersedia untuk ekstraksi vektor');
-    }
-
-    let detectionPath = imagePath;
-    if (!detectionPath.startsWith('file://')) {
-        detectionPath = 'file://' + detectionPath;
-    }
-
-    const faces = await FaceDetection.detect(detectionPath, {
-        performanceMode: 'accurate',
-        landmarkMode: 'all',
-        contourMode: 'all',
-        classificationMode: 'all',
-    });
-
-    if (!faces || faces.length === 0) {
-        throw new Error('Tidak ada wajah terdeteksi pada foto');
-    }
-
-    const face = faces[0];
-    let extractedVector: number[] = [];
-
-    const bounds = face.bounds || face.frame || face.boundingBox || {};
-    const imageWidth = bounds.width || bounds.right - bounds.left || 1000;
-    const imageHeight = bounds.height || bounds.bottom - bounds.top || 1000;
-
-    // 1. Bounding box normalized (4 nilai)
-    const boxX = bounds.x ?? bounds.left ?? 0;
-    const boxY = bounds.y ?? bounds.top ?? 0;
-    const boxW = bounds.width ?? (bounds.right != null && bounds.left != null ? bounds.right - bounds.left : 0);
-    const boxH = bounds.height ?? (bounds.bottom != null && bounds.top != null ? bounds.bottom - bounds.top : 0);
-    
-    extractedVector.push(
-        normalizeCoord(boxX, 1000),
-        normalizeCoord(boxY, 1000),
-        normalizeCoord(boxW, 1000),
-        normalizeCoord(boxH, 1000)
-    );
-
-    // 2. Probabilitas (3 nilai)
-    extractedVector.push(
-        face.leftEyeOpenProbability ?? 0,
-        face.rightEyeOpenProbability ?? 0,
-        face.smilingProbability ?? 0
-    );
-
-    // 3. Head rotation normalized (3 nilai)
-    extractedVector.push(
-        ((face.headEulerAngleX ?? 0) + 180) / 360,
-        ((face.headEulerAngleY ?? 0) + 180) / 360,
-        ((face.headEulerAngleZ ?? 0) + 180) / 360
-    );
-
-    // 4. Landmarks (20 nilai)
-    const landmarkValues = extractLandmarks(face, imageWidth, imageHeight);
-    extractedVector.push(...landmarkValues);
-
-    // 5. Contours (26 nilai)
-    const contourValues = extractContours(face, imageWidth, imageHeight);
-    extractedVector.push(...contourValues);
-
-    // 6. Derived features
-    const faceRatio = boxH > 0 ? boxW / boxH : 0;
-    extractedVector.push(faceRatio);
-
-    if (landmarkValues[0] !== 0 && landmarkValues[2] !== 0) {
-        const eyeDistance = Math.sqrt(
-            Math.pow(landmarkValues[2] - landmarkValues[0], 2) +
-            Math.pow(landmarkValues[3] - landmarkValues[1], 2)
-        );
-        extractedVector.push(eyeDistance);
-    } else {
-        extractedVector.push(0);
-    }
-
-    // Pad/trim ke TARGET_DIMENSION
-    while (extractedVector.length < TARGET_DIMENSION) {
-        extractedVector.push(0);
-    }
-    extractedVector = extractedVector.slice(0, TARGET_DIMENSION);
-
-    const nonZeroCount = extractedVector.filter(v => v !== 0).length;
-    console.log(`✅ ML Kit vektor: ${extractedVector.length} dimensi, ${nonZeroCount} non-zero`);
-
-    const newVectorData: VectorData = {
-        embedding: extractedVector,
-        confidence: nonZeroCount / TARGET_DIMENSION,
-        faceCount: faces.length,
-        timestamp: new Date().toISOString(),
-        imagePath: imagePath,
-        rawFaceData: face,
-    };
-
-    setVectorData(newVectorData);
-    return newVectorData;
+// ============ LIVENESS RESULT TYPE ============
+export interface LivenessResult {
+    isLive: boolean;
+    score: number;
+    reason: string;
+    results: { [key: string]: boolean };
+    finalPath: string | null;
 }
 
 export default useFaceVector;
+
