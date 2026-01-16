@@ -28,7 +28,7 @@
       <q-card-section>
         <div class="row">
 
-          <div class="col-12 col-md-12 inputFilterku">
+          <div class="col-12 col-md-8 inputFilterku">
             <span class="h_lable ">Unit Kerja</span>
             <q-select
                 v-model="filterku.unit_kerja_id"
@@ -57,6 +57,26 @@
               </template>
             </q-select>
           </div>
+          <div class="col-12 col-md-4 inputFilterku">
+            <span class="h_lable ">Status</span>
+            <q-select
+                v-model="filterku.is_private"
+                @input="getView()"
+                use-input
+                hide-selected
+                fill-input
+                input-debounce="0"
+                :options="opsiPrivate"
+                option-value="id"
+                option-label="value"
+                emit-value
+                map-options
+                clearable
+                outlined
+                square
+                :dense="true"
+            />
+          </div>
         </div>
 
         <hr class="hrpagin">
@@ -66,8 +86,9 @@
           <table width="100%">
             <tr class="h_table_head bg-blue-2">
               <th width="5%" class="text-center">No</th>
-              <th width="20%">Nama/NIP</th>
-              <th width="25%">Instansi</th>
+              <th width="30%" class="text-center">Nama/NIP</th>
+              <th width="30%" class="text-center">Instansi</th>
+              <th width="25%" class="text-center">Status</th>
               <th width="12%"></th>
             </tr>
             <tr v-for="(data, index) in list_data" :key="data.id"
@@ -79,6 +100,23 @@
 
               </td>
               <td>{{ data.unit_kerja_uraian }}</td>
+              <td class="text-center">
+                <q-badge
+                  class="bg-blue-7"
+                  style="height: 20px; min-width: 100px; align-items: center; justify-content: center;"
+                  v-if="data.private === 0 || data.private === '0'"
+                >
+                  Non Private
+                </q-badge>
+
+                <q-badge
+                  class="bg-red-7"
+                  style="height: 20px; min-width: 80px; align-items: center; justify-content: center;"
+                  v-else-if="data.private === 1 || data.private === '1'"
+                >
+                  Private
+                </q-badge>
+              </td>
               <td class="text-center">
                 <q-btn-group>
                   <q-btn @click="mdl_maps = true, selectData(data)" glossy color="blue" icon="search" class="tbl_btn">
@@ -211,6 +249,9 @@
           <span>
             <b>Keterangan : </b>
             {{ form.keterangan }}
+            <br> <br>
+            <b>Di Verifikasi : </b>
+            {{ form.verificationBy }}
 
           </span>
           <br><br>
@@ -295,7 +336,13 @@ export default {
 
       filterku: {
         unit_kerja_id: '',
+        is_private: 0,
       },
+
+      opsiPrivate: [
+        { id: 0, value: 'Non Private'},
+        { id: 1, value: 'Private'},
+      ],
 
       list_data: [],
 
@@ -334,6 +381,7 @@ export default {
           data_ke: this.page_first,
           cari_value: this.cari_value,
           unit_kerja_id: this.filterku.unit_kerja_id,
+          is_private: this.filterku.is_private,
         })
       })
         .then(res => res.json())
@@ -390,6 +438,7 @@ export default {
       this.form.file = data.file;
       this.form.file_old = data.file;
       this.form.unit_kerja = data.unit_kerja;
+      this.form.verificationBy = data.verificationBy;
       this.form.status = data.status;
     },
 
