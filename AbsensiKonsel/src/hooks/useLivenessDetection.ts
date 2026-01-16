@@ -219,9 +219,20 @@ export const usePassiveCapture = (): UsePassiveCaptureReturn => {
 
             // Step 1: Ambil foto dari kamera
             console.log('📸 Mengambil foto...');
-            const photo: PhotoFile = await cameraRef.current.takePhoto({
-                flash: 'off',
-            } as any);
+            
+            let photo: PhotoFile;
+            try {
+                photo = await cameraRef.current.takePhoto({
+                    flash: 'off',
+                } as any);
+            } catch (photoError: any) {
+                // Jika camera timeout, coba lagi sekali
+                console.warn('⚠️ Photo capture timeout, retrying...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                photo = await cameraRef.current.takePhoto({
+                    flash: 'off',
+                } as any);
+            }
 
             if (!photo?.path) {
                 throw new Error('Gagal mengambil foto');

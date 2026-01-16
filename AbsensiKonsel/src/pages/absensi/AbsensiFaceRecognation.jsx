@@ -64,6 +64,7 @@ const AbsensiFaceRecognation = () => {
     const [isCaptured, setIsCaptured] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [serverResponse, setServerResponse] = useState(null);
+    const [cameraError, setCameraError] = useState(null);
 
     console.log('📍 Profile:', PROFILE?.profile?.NIP);
     console.log('⏰ Waktu:', WAKTU);
@@ -71,6 +72,23 @@ const AbsensiFaceRecognation = () => {
     // ============ CAMERA PERMISSION ============
     useEffect(() => {
         requestCameraPermission();
+    }, []);
+
+    // Listen untuk camera errors
+    useEffect(() => {
+        const errorHandler = (error: any) => {
+            console.error('📸 Camera error:', error);
+            if (error.message?.includes('timeout') || error.message?.includes('Session')) {
+                setCameraError('Kamera sedang proses, coba lagi...');
+                // Reset setelah 3 detik
+                setTimeout(() => setCameraError(null), 3000);
+            }
+        };
+
+        // Global error listener (optional)
+        return () => {
+            // Cleanup
+        };
     }, []);
 
     const requestCameraPermission = async () => {
@@ -259,9 +277,9 @@ const AbsensiFaceRecognation = () => {
             )}
 
             {/* ERROR MESSAGE */}
-            {captureError && (
+            {(captureError || cameraError) && (
                 <View style={styles.errorBox}>
-                    <Text style={styles.errorText}>⚠️ {captureError}</Text>
+                    <Text style={styles.errorText}>⚠️ {captureError || cameraError}</Text>
                 </View>
             )}
         </View>
