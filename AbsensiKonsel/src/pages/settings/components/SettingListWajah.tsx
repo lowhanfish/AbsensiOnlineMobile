@@ -1,6 +1,6 @@
 //import liraries
 import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -13,8 +13,9 @@ import BadgexReject from "../../../assets/images/icon/false.png";
 
 
 type formProps = {
-    id: string,
+    id: number,
     file: string,
+    fileOld: string,
     keterangan: string,
     nip: string,
     private: string,
@@ -23,22 +24,27 @@ type formProps = {
     verificationBy: string,
 }
 
+type stateProps = {
+    TOKEN: string,
+    URL: any
+}
 
 
 // create a component
 const SettingListWajah = () => {
 
     const navigation = useNavigation();
-    const token = useSelector((state: any) => state.TOKEN);
-    const URL = useSelector((state: any) => state.URL);
+    const token = useSelector((state: stateProps) => state.TOKEN);
+    const URL = useSelector((state: stateProps) => state.URL);
 
     const [listPhoto, setListPhoto] = useState([] as formProps[]);
 
     const [form, setForm] = useState({
-        id: "",
+        id: 0,
         file: "",
         keterangan: "",
         nip: "",
+        fileOld: "",
         private: "",
         status: 0,
         vectors: "",
@@ -65,16 +71,18 @@ const SettingListWajah = () => {
     }
 
     const selectData = (data: formProps) => {
-        setForm({
+
+        setForm(prev => ({
+            ...prev,
             id: data.id,
-            file: data.file,
+            fileOld: data.file,
             keterangan: data.keterangan,
             nip: data.nip,
             private: data.private,
             status: data.status,
             vectors: data.vectors,
             verificationBy: data.verificationBy,
-        })
+        }))
     }
 
     useEffect(() => {
@@ -106,7 +114,7 @@ const SettingListWajah = () => {
                         <>
                             {
                                 listPhoto?.map((item, index) => (
-                                    <TouchableOpacity onPress={() => SetOpenModal(true)} key={index} style={Stylex.photoWrapper}>
+                                    <TouchableOpacity onPress={() => { SetOpenModal(true); selectData(item); }} key={index} style={Stylex.photoWrapper}>
                                         {/* <Text>{URL.URL_APP + 'uploads/' + item}</Text> */}
                                         <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={Stylex.photoSample} />
                                         <Image source={item.status === 0 ? (BadgexPending) : (item.status === 1 ? (BadgexApprove) : (BadgexReject))} style={styles.badge} />
@@ -123,6 +131,8 @@ const SettingListWajah = () => {
             <ModalSetting
                 openModal={openModal}
                 SetOpenModal={SetOpenModal}
+                form={form}
+                view={viewDataPhoto}
             />
         </View>
     );
@@ -131,13 +141,40 @@ const SettingListWajah = () => {
 
 type ModalSetting = {
     openModal: boolean,
-    SetOpenModal: Dispatch<SetStateAction<boolean>>
+    SetOpenModal: Dispatch<SetStateAction<boolean>>,
+    form: formProps,
+    view: () => void
 }
 
+const ModalSetting = ({ openModal, SetOpenModal, form, view }: ModalSetting) => {
 
-const ModalSetting = ({ openModal, SetOpenModal }: ModalSetting) => {
+    const token = useSelector((state: stateProps) => state.TOKEN);
+    const URL = useSelector((state: stateProps) => state.URL);
+    const postData = () => {
+        fetch(URL.URL_presensi_settingProfile + 'removeData', {
+            method: "POST",
+            headers: {
+                "Content-Type": 'application/json',
+                'Authorization': `kikensbatara ${token}`
+            },
+            body: JSON.stringify(form)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP Error : ${response.status}`)
+            }
+            return response.json();
+        }).then(result => {
+            // console.log(result);
+            view();
+            Alert.alert("Sukses", "🎉 Data berhasil dihapus! Terima kasih. 😊"); // Updated to use Alert
+            SetOpenModal(!openModal);
+        }).catch(error => {
+            console.log(`Gagal mengirim data. error : ${error}`);
+        })
+    }
+
+
     return (
-
         <Modal visible={openModal} transparent animationType="fade" onRequestClose={() => SetOpenModal(!openModal)} >
             <View style={Stylex.overlay}>
                 <View style={Stylex.popup}>
@@ -149,9 +186,14 @@ const ModalSetting = ({ openModal, SetOpenModal }: ModalSetting) => {
                         <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { }} >
-                        <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
-                    </TouchableOpacity>
+                    {
+                        form.status == 2 || form.status == 0 && (
+                            <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { postData(); }} >
+                                <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
+                            </TouchableOpacity>
+                        )
+                    }
+
 
                     <TouchableOpacity style={[Stylex.popupButton, { backgroundColor: '#C66963', borderColor: '#C66963' }]} onPress={() => SetOpenModal(!openModal)} >
                         <Text style={[Stylex.popupButtonText, { color: '#FFFFFF' }]}>Batal</Text>
@@ -159,10 +201,8 @@ const ModalSetting = ({ openModal, SetOpenModal }: ModalSetting) => {
                 </View>
             </View>
         </Modal>
-
     )
 }
-
 
 
 

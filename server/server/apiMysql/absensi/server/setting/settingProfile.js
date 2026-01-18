@@ -199,7 +199,7 @@ router.post('/addData', upload.single("file"), (req, res) => {
 });
 
 router.post('/removeData', (req, res)=> {
-    var file = req.body.file
+    var file = req.body.fileOld
     hapus_file(file);
 
     var query = `
@@ -207,9 +207,9 @@ router.post('/removeData', (req, res)=> {
     `;
     db.query(query, (err, row)=>{
         if(err){
-            res.send(err);
+            res.status(500).send(err);
         }else{
-            res.send(row);
+            res.status(200).send(row);
         }
     });
 })
