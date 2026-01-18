@@ -383,5 +383,9 @@ export const Stylex = StyleSheet.create({
     photoWrapper: {
         position: 'relative',
     },
+    accountText : {
+        fontSize : 11,
+        fontWeight : 550,
+    }
 
 });

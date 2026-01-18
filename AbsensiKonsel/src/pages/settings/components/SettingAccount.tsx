@@ -14,21 +14,12 @@ const SettingAccount = () => {
             <Text style={Stylex.sectionTitle}>AKUN PENGGUNA</Text>
             <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Username :</Text>
-                <TextInput
-                    style={styles.fieldValue}
-                    value={username}
-                    onChangeText={setUsername}
-                />
+                <Text style={Stylex.accountText}>{username}</Text>
                 <Text style={styles.editIcon}>✏️</Text>
             </View>
             <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Password :</Text>
-                <TextInput
-                    style={styles.fieldValue}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
+                <Text style={Stylex.accountText}>{"**************"}</Text>
                 <Text style={styles.editIcon}>✏️</Text>
             </View>
         </View>

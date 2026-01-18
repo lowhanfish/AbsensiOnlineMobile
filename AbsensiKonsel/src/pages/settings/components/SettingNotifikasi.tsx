@@ -27,12 +27,7 @@ const SettingNotifikasi = () => {
             </View>
             <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Email :</Text>
-                <TextInput
-                    style={styles.fieldValue}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                />
+                <Text style={Stylex.accountText}>{email}</Text>
                 <Text style={styles.editIcon}>✏️</Text>
             </View>
         </View>

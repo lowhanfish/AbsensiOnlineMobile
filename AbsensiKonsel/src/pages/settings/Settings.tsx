@@ -9,13 +9,25 @@ import ButtonBack from "../../components/ButtonBack";
 import SettingListWajah from './components/SettingListWajah';
 import SettingNotifikasi from './components/SettingNotifikasi';
 import SettingAccount from './components/SettingAccount';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
 
 
 const Settings = () => {
 
-    const handleLogout = () => {
-        console.log('Logout pressed');
+    const dispatch = useDispatch();
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userProfile');
+
+            dispatch({ type: 'LOGOUT' });
+
+            // Tidak perlu navigation.reset() di sini
+            console.log('✅ Logout berhasil, tunggu navigasi otomatis dari App.tsx');
+        } catch (error) {
+            console.error('❌ Gagal logout:', error);
+        }
     };
 
     return (
