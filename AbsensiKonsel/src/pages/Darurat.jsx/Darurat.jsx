@@ -1,4 +1,3 @@
-
 import { Text, TextInput, ScrollView, View, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Modal } from "react-native"
 import React, { useEffect, useState } from 'react';
 import { Stylex } from "../../assets/styles/main";
@@ -93,21 +92,30 @@ const Darurat = () => {
   }
 
   const removeData = () => {
-    fetch(URL.URL_AbsenHarian + 'viewListDarurat_v2', {
+
+    // console.log("remove data")
+    setModalVisible(false);
+
+    fetch(URL.URL_AbsenHarian + 'removeDarurat_v2', {
+      method: "POST",
       headers: {
-        "Content-Type": 'application/json',
-        'Authorization': `kikensbatara ${token}`
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify(form)
+      body: JSON.stringify(selectedItem)
     }).then((response) => {
+
       if (!response.ok) {
+        closePopup();
         throw new Error(`HTTP Error : ${response.status}`)
       }
       return response.json();
     }).then((result) => {
+      closePopup()
       viewData();
       Alert.alert("Sukses", "🎉 Data berhasil dihapus! Terima kasih. 😊"); // Updated to use Alert
     }).catch((error) => {
+      closePopup()
       console.log(error);
       console.log(`Gagal mengirim data. error : ${error}`);
       Alert.alert("Gagal mengirim data 🥺")
@@ -120,11 +128,11 @@ const Darurat = () => {
 
   const getBackgroundColor = (status) => {
     const statusStr = String(status);
-    if (statusStr === '1') {
+    if (statusStr === '0') {
       return '#FFF8E0';
-    } else if (statusStr === '2') {
+    } else if (statusStr === '1') {
       return '#F7EEFF';
-    } else if (statusStr === '3') {
+    } else if (statusStr === '2') {
       return '#FFE0E0';
     }
     return '#FFF8E0'; // default
@@ -132,18 +140,24 @@ const Darurat = () => {
 
   const getStatusImage = (status) => {
     const statusStr = String(status);
-    if (statusStr === '1') {
+    if (statusStr === '0') {
       return require('../../assets/images/icon/process.png');
-    } else if (statusStr === '2') {
+    } else if (statusStr === '1') {
       return require('../../assets/images/icon/true.png');
-    } else if (statusStr === '3') {
+    } else if (statusStr === '2') {
       return require('../../assets/images/icon/false.png');
     }
     return require('../../assets/images/icon/process.png'); // default
   };
 
+
+
   const openPopup = (item) => {
-    setSelectedItem(item);
+    // console.log(item)
+    setSelectedItem((prev) => ({
+      ...prev,
+      ...item
+    }));
     setModalVisible(true);
   };
 
@@ -231,7 +245,7 @@ const Darurat = () => {
                     <View>
 
                       {listData.map((item) => (
-                        <TouchableOpacity key={item.id} onPress={() => openPopup(item)} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
+                        <TouchableOpacity key={item.id} onPress={() => { openPopup(item) }} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
                           <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
                           <View style={Stylex.textContent}>
                             <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
@@ -245,8 +259,6 @@ const Darurat = () => {
 
                     </View>
                   )
-
-
                 }
 
 
@@ -272,13 +284,28 @@ const Darurat = () => {
                 <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C4C080' }]} onPress={() => handleAction('Update')} >
-                <Text style={[Stylex.popupButtonText, { color: '#C4C080' }]}>Update</Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => handleAction('Delete')} >
-                <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
-              </TouchableOpacity>
+              {/* <Text>{selectedItem.status}</Text> */}
+              {
+
+                selectedItem &&
+
+
+                (selectedItem.status == 2 || selectedItem.status == 0) && (
+                  <>
+                    {/* Uncommented and fixed the Update button */}
+                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C4C080' }]} onPress={() => handleAction('Update')} >
+                      <Text style={[Stylex.popupButtonText, { color: '#C4C080' }]}>Update</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { removeData(); }} >
+                      <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
+                    </TouchableOpacity>
+                  </>
+
+                )
+
+              }
 
               <TouchableOpacity style={[Stylex.popupButton, { backgroundColor: '#C66963', borderColor: '#C66963' }]} onPress={closePopup} >
                 <Text style={[Stylex.popupButtonText, { color: '#FFFFFF' }]}>Batal</Text>

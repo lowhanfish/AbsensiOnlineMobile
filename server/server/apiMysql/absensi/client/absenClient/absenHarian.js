@@ -52,7 +52,7 @@ router.post('/Add_v2', async (req, res) => {
         jam: jam
     });
 });
-
+// INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
 
 // INI UNTUK ABSENSI VERSI LAMA (TANPA FACE RECOGNATION)
 router.post('/Add', async (req, res) => {
@@ -410,6 +410,11 @@ router.post('/viewListDarurat_v2', (req, res) => {
 });
 
 router.post('/removeDarurat_v2', (req, res)=>{
+
+    console.log(req.body);
+    // res.send("OK");
+
+
     const query = `
         DELETE FROM usulanizin
         WHERE id = ?
