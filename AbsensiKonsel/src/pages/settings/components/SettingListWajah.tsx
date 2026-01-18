@@ -1,6 +1,6 @@
 //import liraries
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -11,14 +11,19 @@ import BadgexPending from "../../../assets/images/icon/process.png";
 import BadgexApprove from "../../../assets/images/icon/true.png";
 import BadgexReject from "../../../assets/images/icon/false.png";
 
-type listPhotoProps = {
-    id: number,
+
+type formProps = {
+    id: string,
     file: string,
     keterangan: string,
     nip: string,
+    private: string,
     status: number,
-    vector: string,
+    vectors: string,
+    verificationBy: string,
 }
+
+
 
 // create a component
 const SettingListWajah = () => {
@@ -27,7 +32,20 @@ const SettingListWajah = () => {
     const token = useSelector((state: any) => state.TOKEN);
     const URL = useSelector((state: any) => state.URL);
 
-    const [listPhoto, setListPhoto] = useState([] as listPhotoProps[]);
+    const [listPhoto, setListPhoto] = useState([] as formProps[]);
+
+    const [form, setForm] = useState({
+        id: "",
+        file: "",
+        keterangan: "",
+        nip: "",
+        private: "",
+        status: 0,
+        vectors: "",
+        verificationBy: "",
+    })
+
+    const [openModal, SetOpenModal] = useState(false);
 
     const viewDataPhoto = () => {
         axios.post(URL.URL_presensi_settingProfile + 'view', JSON.stringify({
@@ -43,6 +61,19 @@ const SettingListWajah = () => {
 
         }).catch(error => {
             console.log("errornya : ", error);
+        })
+    }
+
+    const selectData = (data: formProps) => {
+        setForm({
+            id: data.id,
+            file: data.file,
+            keterangan: data.keterangan,
+            nip: data.nip,
+            private: data.private,
+            status: data.status,
+            vectors: data.vectors,
+            verificationBy: data.verificationBy,
         })
     }
 
@@ -75,13 +106,13 @@ const SettingListWajah = () => {
                         <>
                             {
                                 listPhoto?.map((item, index) => (
-                                    <View key={index} style={Stylex.photoWrapper}>
+                                    <TouchableOpacity onPress={() => SetOpenModal(true)} key={index} style={Stylex.photoWrapper}>
                                         {/* <Text>{URL.URL_APP + 'uploads/' + item}</Text> */}
                                         <Image source={{ uri: URL.URL_APP + 'uploads/' + item.file }} style={Stylex.photoSample} />
                                         <Image source={item.status === 0 ? (BadgexPending) : (item.status === 1 ? (BadgexApprove) : (BadgexReject))} style={styles.badge} />
 
                                         {/* <Text>{item.status}</Text> */}
-                                    </View>
+                                    </TouchableOpacity>
 
                                 ))
                             }
@@ -89,9 +120,51 @@ const SettingListWajah = () => {
                     )
                 }
             </View>
+            <ModalSetting
+                openModal={openModal}
+                SetOpenModal={SetOpenModal}
+            />
         </View>
     );
 };
+
+
+type ModalSetting = {
+    openModal: boolean,
+    SetOpenModal: Dispatch<SetStateAction<boolean>>
+}
+
+
+const ModalSetting = ({ openModal, SetOpenModal }: ModalSetting) => {
+    return (
+
+        <Modal visible={openModal} transparent animationType="fade" onRequestClose={() => SetOpenModal(!openModal)} >
+            <View style={Stylex.overlay}>
+                <View style={Stylex.popup}>
+                    <TouchableOpacity style={Stylex.closeButton} onPress={() => SetOpenModal(!openModal)}>
+                        <Text style={Stylex.closeText}>✕</Text>
+                    </TouchableOpacity>
+                    <Text style={Stylex.popupTitle}>Settings</Text>
+                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { }} >
+                        <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { }} >
+                        <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[Stylex.popupButton, { backgroundColor: '#C66963', borderColor: '#C66963' }]} onPress={() => SetOpenModal(!openModal)} >
+                        <Text style={[Stylex.popupButtonText, { color: '#FFFFFF' }]}>Batal</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+
+    )
+}
+
+
+
 
 // define your styles
 const styles = StyleSheet.create({
