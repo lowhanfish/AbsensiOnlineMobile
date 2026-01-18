@@ -13,6 +13,7 @@
 #### Absen Darurat
 
 [❌] Aktifasi fungsi edit usulan
+[❌] Aktifasi fungsi Remove usulan
 [❌] Lock jika status usulan = 1
 [❌] Detail Usulan
 [❌] periksa semua variabel yang di kirim ke endpoint

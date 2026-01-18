@@ -14,12 +14,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stylex } from "../../assets/styles/main";
 import ImageLib from "../../components/ImageLib";
 import { CheckWaktuAbsen, JamRealtime, cekWaktu } from '../../lib/kiken';
-
 import { useDispatch, useSelector } from 'react-redux'
 import { setWaktuData } from '../../redux/actions';
-
-
+import ModalComponentNotActivated from '../../components/ModalComponentNotActivated';
 const { height, width } = Dimensions.get('window');
+
+
 
 const Dashboard = () => {
     const navigation = useNavigation();
@@ -49,6 +49,10 @@ const Dashboard = () => {
     const [text, setText] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalActivated, SetModalActivated] = useState(false);
+
+
+
 
     // --- Fungsi Bantuan ---
 
@@ -174,7 +178,7 @@ const Dashboard = () => {
                             <View style={[styles.navContainer, { marginTop: -39 }]}>
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
-                                        <Text style={styles.navButtonTextNotice}>999</Text>
+                                        <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={() => routex('Absensi')} style={styles.navButtonSubContainer}>
                                         <View>
@@ -188,7 +192,7 @@ const Dashboard = () => {
 
                                 <View style={[styles.navButtonContainer, { marginHorizontal: 15 }]}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
-                                        <Text style={styles.navButtonTextNotice}>999</Text>
+                                        <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={() => routex('Darurat')} style={styles.navButtonSubContainer}>
                                         <View>
@@ -202,7 +206,7 @@ const Dashboard = () => {
 
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
-                                        <Text style={styles.navButtonTextNotice}>999</Text>
+                                        <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.navButtonSubContainer}>
                                         <View>
@@ -218,9 +222,9 @@ const Dashboard = () => {
                             <View style={[styles.navContainer, { marginTop: 15 }]}>
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
-                                        <Text style={styles.navButtonTextNotice}>999</Text>
+                                        <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.navButtonSubContainer}>
+                                    <TouchableOpacity onPress={() => SetModalActivated(true)} style={styles.navButtonSubContainer}>
                                         <View>
                                             <ImageLib urix={require('../../assets/images/icon/kinerja.png')} style={styles.navButtonImage1} />
                                         </View>
@@ -232,9 +236,9 @@ const Dashboard = () => {
 
                                 <View style={[styles.navButtonContainer, { marginHorizontal: 15 }]}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
-                                        <Text style={styles.navButtonTextNotice}>999</Text>
+                                        <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.navButtonSubContainer}>
+                                    <TouchableOpacity onPress={() => SetModalActivated(true)} style={styles.navButtonSubContainer}>
                                         <View>
                                             <ImageLib urix={require('../../assets/images/icon/tte.png')} style={styles.navButtonImage1} />
                                         </View>
@@ -246,9 +250,9 @@ const Dashboard = () => {
 
                                 <View style={styles.navButtonContainer}>
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
-                                        <Text style={styles.navButtonTextNotice}>999</Text>
+                                        <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.navButtonSubContainer}>
+                                    <TouchableOpacity onPress={() => SetModalActivated(true)} style={styles.navButtonSubContainer}>
                                         <View>
                                             <ImageLib urix={require('../../assets/images/icon/apel.png')} style={styles.navButtonImage1} />
                                         </View>
@@ -282,8 +286,16 @@ const Dashboard = () => {
                         </View>
                     </ImageBackground>
                 </View>
-            </View>
-        </ScrollView>
+            </View >
+
+
+            <ModalComponentNotActivated
+                openModal={modalActivated}
+                SetOpenModal={SetModalActivated}
+            />
+
+
+        </ScrollView >
     );
 };
 

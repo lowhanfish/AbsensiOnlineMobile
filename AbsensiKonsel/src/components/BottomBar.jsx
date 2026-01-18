@@ -8,6 +8,10 @@ import ImageLib from './ImageLib';
 
 // create a component
 const BottomBar = ({ navigation }) => {
+
+
+
+
     return (
         <View style={[styles.bottomBarContainer]}>
             <View style={[styles.bottomBar]}>
