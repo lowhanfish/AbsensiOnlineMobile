@@ -409,18 +409,19 @@ router.post('/viewListDarurat_v2', (req, res) => {
     })
 });
 
-router.post('/viewListDarurat_v2', (req, res)=>{
+router.post('/removeDarurat_v2', (req, res)=>{
     const query = `
         DELETE FROM usulanizin
         WHERE id = ?
     `
     const values = [req.body.id];
 
-    db.query(query, values, (err, rows)=> {
+    db.query(query, values, async (err, rows)=> {
         if(err){
             console.log(err);
             res.status(500).send(err)
         }else{
+            await removeLampiran(req.body.id)
             res.status(200).send(rows)
 
         }
