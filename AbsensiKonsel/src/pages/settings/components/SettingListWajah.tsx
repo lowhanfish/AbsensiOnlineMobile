@@ -7,9 +7,12 @@ import axios from 'axios';
 import { Stylex } from '../../../assets/styles/main';
 
 
+
+
 import BadgexPending from "../../../assets/images/icon/process.png";
 import BadgexApprove from "../../../assets/images/icon/true.png";
 import BadgexReject from "../../../assets/images/icon/false.png";
+import ModalFile from '../../../components/ModalFile';
 
 
 type formProps = {
@@ -139,17 +142,23 @@ const SettingListWajah = () => {
 };
 
 
-type ModalSetting = {
+type ModalSettingProps = {
     openModal: boolean,
     SetOpenModal: Dispatch<SetStateAction<boolean>>,
     form: formProps,
     view: () => void
 }
 
-const ModalSetting = ({ openModal, SetOpenModal, form, view }: ModalSetting) => {
+const ModalSetting = ({ openModal, SetOpenModal, form, view }: ModalSettingProps) => {
+
+
 
     const token = useSelector((state: stateProps) => state.TOKEN);
     const URL = useSelector((state: stateProps) => state.URL);
+    const [openModalImage, setOpenModalImage] = useState(false)
+
+
+
     const postData = () => {
         fetch(URL.URL_presensi_settingProfile + 'removeData', {
             method: "POST",
@@ -174,6 +183,11 @@ const ModalSetting = ({ openModal, SetOpenModal, form, view }: ModalSetting) => 
     }
 
 
+    const closeModalFile = () => {
+        setOpenModalImage(!openModalImage)
+    }
+
+
     return (
         <Modal visible={openModal} transparent animationType="fade" onRequestClose={() => SetOpenModal(!openModal)} >
             <View style={Stylex.overlay}>
@@ -182,29 +196,34 @@ const ModalSetting = ({ openModal, SetOpenModal, form, view }: ModalSetting) => 
                         <Text style={Stylex.closeText}>✕</Text>
                     </TouchableOpacity>
                     <Text style={Stylex.popupTitle}>Settings</Text>
-                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { }} >
+                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setOpenModalImage(true) }} >
                         <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
                     </TouchableOpacity>
 
                     {
-                        form.status == 2 || form.status == 0 && (
+                        (form.status === 2 || form.status === 0) && (
                             <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { postData(); }} >
                                 <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
+
                             </TouchableOpacity>
                         )
                     }
-
-
+                    {/* <Text>{form.status}</Text> */}
                     <TouchableOpacity style={[Stylex.popupButton, { backgroundColor: '#C66963', borderColor: '#C66963' }]} onPress={() => SetOpenModal(!openModal)} >
                         <Text style={[Stylex.popupButtonText, { color: '#FFFFFF' }]}>Batal</Text>
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <ModalFile
+                modalVisible={openModalImage}
+                closePopup={closeModalFile}
+                pdfUrl={form.fileOld}
+            />
+
         </Modal>
     )
 }
-
-
 
 // define your styles
 const styles = StyleSheet.create({

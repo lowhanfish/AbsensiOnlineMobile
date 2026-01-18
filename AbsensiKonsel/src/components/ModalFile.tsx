@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View, Text, StyleSheet, Dimensions,
     TouchableOpacity, Modal, SafeAreaView, ActivityIndicator
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import ImageLib from './ImageLib';
+import { useSelector } from 'react-redux';
+
 
 
 const { width } = Dimensions.get('window');
@@ -13,6 +15,32 @@ const ModalFile = ({ modalVisible, closePopup, pdfUrl }: any) => {
     // Default URL jika pdfUrl kosong
     const targetUrl = pdfUrl || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
     const viewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(targetUrl)}`;
+
+    const URL = useSelector((state: { URL: any }) => state.URL)
+
+
+    const [urlData, SetUrlData] = useState('');
+    const [typeData, setTypeData] = useState('pdf');
+
+    const checkFileExisting = () => {
+        if (pdfUrl) {
+
+            const data = pdfUrl.split('.');
+            if (data[1] == 'pdf') {
+                setTypeData('pdf');
+                SetUrlData(`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(URL.URL_APP + "uploads/" + pdfUrl)}` || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf");
+            } else {
+                SetUrlData(URL.URL_APP + "uploads/" + pdfUrl || "https://www.vincyads.com/assets/uploads/no-image.png");
+                setTypeData('image');
+            }
+        }
+    }
+
+
+    useEffect(() => {
+        checkFileExisting();
+    }, [])
+
 
     return (
         <Modal
@@ -30,28 +58,40 @@ const ModalFile = ({ modalVisible, closePopup, pdfUrl }: any) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Konten PDF menggunakan WebView */}
 
-                <View>
-                    <ImageLib urix={"https://mojokertokab.go.id/storage/tenantpuskesmas-kemlagi/app/gambar/berita/1675215987-sosialisasi-posbindu-ptm-oleh-dinas-kesehatan-kab-mojokerto-bersama-upt-puskesmas-kemlagi-1675215987-.jpeg"} customWidth={"100%"} style={{}} />
-                </View>
+                {
+                    typeData == 'image' ? (
+                        <View>
+                            {/* INI IMAGE */}
+                            <ImageLib urix={urlData} customWidth={"100%"} style={{}} />
+                        </View>
+
+                    ) : (
+                        <View style={styles.content}>
+                            {/* INI PDF */}
+                            <WebView
+                                source={{ uri: urlData }}
+                                style={styles.webview}
+                                startInLoadingState={true}
+                                scalesPageToFit={true}
+                                renderLoading={() => (
+                                    <View style={styles.loadingOverlay}>
+                                        <ActivityIndicator size="large" color="#007AFF" />
+                                        <Text style={styles.loadingText}>Memuat Dokumen...</Text>
+                                    </View>
+                                )}
+                            />
+                        </View>
+
+                    )
+
+
+                }
 
 
 
-                <View style={styles.content}>
-                    <WebView
-                        source={{ uri: viewerUrl }}
-                        style={styles.webview}
-                        startInLoadingState={true}
-                        scalesPageToFit={true}
-                        renderLoading={() => (
-                            <View style={styles.loadingOverlay}>
-                                <ActivityIndicator size="large" color="#007AFF" />
-                                <Text style={styles.loadingText}>Memuat Dokumen...</Text>
-                            </View>
-                        )}
-                    />
-                </View>
+
+
 
 
             </SafeAreaView>
