@@ -524,12 +524,19 @@ async function cekWaktu(){
 
 const removeLampiran = async (idreff) => {
     return new Promise((resolve, reject) => {
-        const query = ``
+        const query = `
+            DELETE FROM lampiran
+            WHERE fileRef = ?
+        `;
+        const values = [idreff]
 
-
-
-
-
+        db.query(query, values, (err, rows)=> {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(rows);
+            }
+        })
     })
 }
 
