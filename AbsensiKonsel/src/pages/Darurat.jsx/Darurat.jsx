@@ -92,6 +92,28 @@ const Darurat = () => {
 
   }
 
+  const removeData = () => {
+    fetch(URL.URL_AbsenHarian + 'viewListDarurat_v2', {
+      headers: {
+        "Content-Type": 'application/json',
+        'Authorization': `kikensbatara ${token}`
+      },
+      body: JSON.stringify(form)
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP Error : ${response.status}`)
+      }
+      return response.json();
+    }).then((result) => {
+      viewData();
+      Alert.alert("Sukses", "🎉 Data berhasil dihapus! Terima kasih. 😊"); // Updated to use Alert
+    }).catch((error) => {
+      console.log(error);
+      console.log(`Gagal mengirim data. error : ${error}`);
+      Alert.alert("Gagal mengirim data 🥺")
+    })
+  }
+
   const handleButtonPress = () => {
     console.log('Filter Data By Text', text);
   };

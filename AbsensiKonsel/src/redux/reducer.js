@@ -20,9 +20,9 @@ import {
 const URL_SIMPEG = 'https://server-egov.konaweselatankab.go.id';
 // const URLKU = 'https://serverabsensi.konaweselatankab.go.id';
 // const URLKU = 'http://192.168.1.24:5040';
-// const URLKU = 'http://192.168.1.3:5040';
+const URLKU = 'http://192.168.1.3:5040';
 // const URLKU = 'http://192.168.44.134:5040';
-const URLKU = 'http://192.168.1.219:5040';
+// const URLKU = 'http://192.168.1.219:5040';
 // const URLKU = 'http://10.0.2.2:5040';
 
 // =============================

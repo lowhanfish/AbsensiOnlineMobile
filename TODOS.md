@@ -34,4 +34,4 @@
 
 [❌] Pastikan tester token valid aktif
 [❌] Jika tidak valid kembalikan ke menu login
-[❌] Buat Modal terkait component yang belum aktif
+[✅] Buat Modal terkait component yang belum aktif

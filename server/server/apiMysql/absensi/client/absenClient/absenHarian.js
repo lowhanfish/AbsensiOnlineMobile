@@ -409,6 +409,12 @@ router.post('/viewListDarurat_v2', (req, res) => {
     })
 });
 
+router.post('/viewListDarurat_v2', (req, res)=>{
+    const query = ``
+})
+
+// DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
+
 router.post('/AddMockLocation', (req, res) => {
     var query = `
        INSERT INTO fakegpsuser (nip, absen, createdAt) VALUE 
