@@ -410,7 +410,21 @@ router.post('/viewListDarurat_v2', (req, res) => {
 });
 
 router.post('/viewListDarurat_v2', (req, res)=>{
-    const query = ``
+    const query = `
+        DELETE FROM usulanizin
+        WHERE id = ?
+    `
+    const values = [req.body.id];
+
+    db.query(query, values, (err, rows)=> {
+        if(err){
+            console.log(err);
+            res.status(500).send(err)
+        }else{
+            res.status(200).send(rows)
+
+        }
+    })
 })
 
 // DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
@@ -505,6 +519,18 @@ async function cekWaktu(){
     })
     
     
+}
+
+
+const removeLampiran = async (idreff) => {
+    return new Promise((resolve, reject) => {
+        const query = ``
+
+
+
+
+
+    })
 }
 
 
