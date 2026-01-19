@@ -229,7 +229,7 @@ const IzinForm = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ButtonBack routex="Darurat" />
+      <ButtonBack routex="Izin" />
 
       <View style={{ flex: 1 }}>
         <View style={Stylex.titleContainer}>

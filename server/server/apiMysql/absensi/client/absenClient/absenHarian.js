@@ -100,6 +100,7 @@ router.post('/AddIzin', upload.array('file', 12), (req, res) => {
     // res.send('OK')
 });
 
+// DI GUNAKAN PADA ABSENSI VERSI LAMA (TANPA FACE ID)
 router.post('/viewListIzin', (req, res) => {
     // console.log(req.body)
     var data_batas = 5;
@@ -188,6 +189,99 @@ router.post('/viewListIzin', (req, res) => {
                 }
             })
             // ========================
+        }
+    })
+});
+
+// DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
+router.post('/viewListIzin_v2', (req, res) => {
+    // console.log(req.body)
+    var data_batas = 5;
+    var data_star = (req.body.data_ke - 1)* data_batas;
+    var cari = req.body.cari_value;
+    var halaman = 1; 
+
+
+    let jml_data = `
+        SELECT 
+        COUNT(usulanizin.id) as jumlah
+
+        FROM absensi.usulanizin usulanizin
+
+        LEFT JOIN simpeg.biodata biodata
+        ON usulanizin.NIP = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON usulanizin.unit_kerja = unit_kerja.id
+
+        LEFT JOIN absensi.jenisizin jenisizin
+        ON  usulanizin.jenisizin = jenisizin.id
+
+
+        WHERE 
+        usulanizin.jenisizin <> 0 AND
+        (jenisizin.uraian LIKE '%`+cari+`%' 
+        OR biodata.nama LIKE '%`+cari+`%'
+        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        
+        AND (usulanizin.createdBy = '${req.user._id}' 
+        AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
+        ORDER BY usulanizin.createdAt DESC
+
+    `
+
+    let view = `
+        SELECT usulanizin.*,
+        jenisizin.uraian as jenisizin_uraian,
+        biodata.nama as biodata_nama,
+        biodata.gelar_belakang as biodata_gelar_belakang,
+        biodata.gelar_depan as biodata_gelar_depan,
+        unit_kerja.unit_kerja as unit_kerja_uraian
+
+        FROM absensi.usulanizin usulanizin
+
+        LEFT JOIN simpeg.biodata biodata
+        ON usulanizin.NIP = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON usulanizin.unit_kerja = unit_kerja.id
+
+        LEFT JOIN absensi.jenisizin jenisizin
+        ON  usulanizin.jenisizin = jenisizin.id
+
+
+        WHERE 
+        usulanizin.jenisizin <> 0 AND
+        (jenisizin.uraian LIKE '%`+cari+`%' 
+        OR biodata.nama LIKE '%`+cari+`%'
+        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        
+        AND (usulanizin.createdBy = '${req.user._id}' 
+        AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
+        ORDER BY usulanizin.createdAt DESC
+    `
+    db.query(jml_data, (err, row)=>{
+        if (err) {
+            console.log(err)
+            res.json(err)
+        }else{
+
+            db.query(view, (err2, result)=>{
+                if (err2) {
+                    console.log(err2)
+                    res.json(err2)
+                }
+                else{
+                    halaman = Math.ceil(row[0].jumlah/data_batas);
+                    if(halaman<1){halaman = 1}
+                    res.json({
+                        data : result,
+                        jml_data : halaman
+                    })
+                }
+            })
+            // ========================
+
         }
     })
 });
@@ -386,9 +480,7 @@ router.post('/viewListDarurat_v2', (req, res) => {
             console.log(err)
             res.json(err)
         }else{
-            halaman = Math.ceil(row.length/data_batas);
-            if(halaman<1){halaman = 1}
-            // ========================
+
             db.query(view, (err2, result)=>{
                 if (err2) {
                     console.log(err2)

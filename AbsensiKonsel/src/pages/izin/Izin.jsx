@@ -66,7 +66,7 @@ const Izin = () => {
 
     setLoading(false);
 
-    axios.post(URL.URL_AbsenHarian + 'viewListDarurat_v2', JSON.stringify({
+    axios.post(URL.URL_AbsenHarian + "viewListIzin_v2", JSON.stringify({
       data_ke: pageFirst,
       cari_value: cariValue,
       pageFirst: pageFirst,
@@ -245,7 +245,7 @@ const Izin = () => {
                         <TouchableOpacity key={item.id} onPress={() => { openPopup(item) }} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
                           <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
                           <View style={Stylex.textContent}>
-                            <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
+                            <Text style={Stylex.titleContent}>{item.jenisizin_uraian}</Text>
                             <Text style={[Stylex.dateContent]}>{tglConvert(item.TglMulai)} - {tglConvert(item.TglSelesai)}</Text>
                             <Text style={Stylex.nameContent}>{namaLengkap(item.biodata_gelar_depan, item.biodata_nama, item.biodata_gelar_belakang)}</Text>
                           </View>

@@ -21,6 +21,8 @@
 #### Izin
 
 [✅] Copy file Darurat ke izin
+[✅] List Izin
+[❌] Add FormIzin
 [❌] Sesuaikan parameter yang di kirim
 [❌] Sesuaikan jedah waktu limit mengajukan
 
