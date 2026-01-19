@@ -35,9 +35,9 @@ const IzinForm = () => {
   const [listDarurat, setListDarurat] = useState([]);
   const [maxHari, SetMaxHari] = useState(5);
   const [form, setForm] = useState({
-    jenispresensi: 1,
-    jenisKategori: 4,
-    jenisizin: 0,
+    jenispresensi: 3, //Diambil dari tabel presensi 1. Hadir, 2 TK, 3 Izin, 4 Sakit
+    jenisKategori: 0, // Diambil dari table jeniskategori, selain absen darurat maka nilainya haruslah 0
+    jenisizin: 2, // Diambil dari table jenisIzin, Selain dari usulan izin maka nilainya harus 0
     lat: '',
     lng: '',
     jamDatang: '07:30',
@@ -88,9 +88,9 @@ const IzinForm = () => {
   // Build FormData untuk upload
   const buildFormData = () => {
     var formData = new FormData();
-    formData.append('jenispresensi', 1);
+    formData.append('jenispresensi', form.jenispresensi);
     formData.append('jenisKategori', form.jenisKategori);
-    formData.append('jenisizin', 0);
+    formData.append('jenisizin', form.jenisizin);
     formData.append('lat', form.lat);
     formData.append('lng', form.lng);
     formData.append('jamDatang', form.jamDatang);
@@ -115,9 +115,11 @@ const IzinForm = () => {
 
   // Kirim data ke server
   const saveData = () => {
-    if (!validasiForm()) return;
+    // if (!validasiForm()) return;
 
     const formData = buildFormData();
+
+    // console.log(formData)
     const apiUrl = URL.URL_AbsenHarian + "AddIzin";
 
     fetch(apiUrl, {
@@ -132,6 +134,7 @@ const IzinForm = () => {
     }).then(textResponse => {
       if (textResponse === 'OK' || textResponse === '1') {
         Alert.alert("Berhasil", "Data berhasil dikirim");
+
       } else {
         Alert.alert("Gagal", "Server menolak data");
       }
@@ -166,7 +169,7 @@ const IzinForm = () => {
   // Ambil daftar kategori daruratt
   const getKategori = async () => {
     var listx = await postData(
-      URL.URL_MasterJenisDarurat + "viewOne",
+      URL.URL_MasterJenisIzin + "viewOne",
       token,
       { id: "" }
     )
@@ -254,14 +257,14 @@ const IzinForm = () => {
                 <Text style={Stylex.infoTextform}>Pilih Kategori Darurat</Text>
               </View>
               <View style={styles.textWrapper}>
-                <View style={styles.fakeInput}>
+                <View style={[styles.fakeInput]}>
                   <Picker
-                    selectedValue={form.jenisKategori}
+                    selectedValue={form.jenisizin}
                     onValueChange={(value) => {
-                      setValueForm(value.id, 'jenisKategori');
-                      SetMaxHari(value.hari);
+                      setValueForm(value.id, 'jenisizin');
+                      // SetMaxHari(value.hari);
                     }}
-                    style={styles.picker}
+                    style={[styles.picker]}
                     dropdownIconColor="#7E59C9"
                     mode="dropdown"
                   >

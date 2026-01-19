@@ -387,6 +387,15 @@ export const Stylex = StyleSheet.create({
     accountText : {
         fontSize : 11,
         fontWeight : 550,
+    },
+
+
+    borderPicker : {
+        borderStyle : 'solid',
+        borderWidth : 1,
+        borderColor : 'black',
+        padding :4
+        // color : 'red'
     }
 
 });

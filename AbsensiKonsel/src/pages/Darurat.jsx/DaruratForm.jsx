@@ -35,9 +35,9 @@ const DaruratForm = () => {
   const [listDarurat, setListDarurat] = useState([]);
   const [maxHari, SetMaxHari] = useState(5);
   const [form, setForm] = useState({
-    jenispresensi: 1,
-    jenisKategori: 4,
-    jenisizin: 0,
+    jenispresensi: 1, //Diambil dari tabel presensi 1. Hadir, 2 TK, 3 Izin, 4 Sakit
+    jenisKategori: 4, // Diambil dari table jeniskategori, selain absen darurat maka nilainya haruslah 0
+    jenisizin: 0, // Diambil dari table jenisIzin, Selain dari usulan izin maka nilainya harus 0
     lat: '',
     lng: '',
     jamDatang: '07:30',

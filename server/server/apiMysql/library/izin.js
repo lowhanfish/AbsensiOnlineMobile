@@ -62,7 +62,7 @@ const addIzin = (req, res, db, fileRef)=>{
             console.log(err)
         } else {
             // console.log("tidak errorrrrr")
-            console.log("SUKSESSSS")
+            console.log("SUKSESSSS MENAMBAHKAN IZIN")
             uploadLampiran(req, res, db, fileRef, filex)
 
 
