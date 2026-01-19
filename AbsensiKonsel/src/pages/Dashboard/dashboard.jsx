@@ -18,6 +18,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setWaktuData } from '../../redux/actions';
 import ModalComponentNotActivated from '../../components/ModalComponentNotActivated';
 import { useAuthGuard } from '../../hooks/useAuthGuard';
+import axios from 'axios';
+import DaruratItem from '../Darurat.jsx/components/DaruratItem';
+import DaruratSettings from '../Darurat.jsx/components/DaruratSettings';
 const { height, width } = Dimensions.get('window');
 
 
@@ -33,6 +36,7 @@ const Dashboard = () => {
 
     const dispatch = useDispatch();
     const tetapanWaktuAbsen = useSelector(state => state.WAKTU)
+
     const url = useSelector(state => state.URL)
     const token = useSelector(state => state.TOKEN)
 
@@ -54,6 +58,7 @@ const Dashboard = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalActivated, SetModalActivated] = useState(false);
+
 
 
 
@@ -119,10 +124,58 @@ const Dashboard = () => {
     }
 
 
+
+    // ========================= LIST DARURAT
+
+    const [listData, setListData] = useState([]);
+    const [modalVisibleSetting, setModalVisibleSetting] = useState(false);
+    const [selectedItemSetting, setSelectedItemSetting] = useState(null);
+
+    const handleItemPress = (item) => {
+        // Jika modal sedang terbuka, tutup dulu
+        if (modalVisibleSetting) {
+            setModalVisibleSetting(false);
+            setTimeout(() => {
+                setSelectedItemSetting(item);
+                setModalVisibleSetting(true);
+            }, 200);
+        } else {
+            setSelectedItemSetting(item);
+            setModalVisibleSetting(true);
+        }
+    };
+
+    const viewData = () => {
+        axios.post(url.URL_AbsenHarian + 'viewListDaruratLimit_v2', JSON.stringify({
+            pageLimit: 6,
+        }), {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        }).then(result => {
+            console.log(result.data);
+            setListData(result.data);
+        }).catch(error => {
+            console.log(error)
+        })
+    }
+
+    const closePopupSetting = () => {
+        setModalVisibleSetting(false);
+        setSelectedItemSetting(null);
+    };
+
+
+    // ========================= LIST DARURAT
+
+
     useEffect(() => {
 
         console.log(typeof (profileState.profile));
         setProfile(profileState.profile);
+
+        viewData()
 
     }, [])
 
@@ -271,28 +324,37 @@ const Dashboard = () => {
 
                             <View style={Stylex.barLine}></View>
 
+
                             <View style={Stylex.subTitleContainer}>
                                 <Text style={Stylex.h_subTitle1}>PENGAJUAN TERAHIR</Text>
                             </View>
 
-                            {data.map((item) => (
-                                <TouchableOpacity
-                                    key={item.id}
-                                    onPress={() => openPopup(item)}
-                                    style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10 }]}>
-                                    <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
-                                    <View style={Stylex.textContent}>
-                                        <Text style={Stylex.titleContent}>ABSENSI DARURAT</Text>
-                                        <Text style={[Stylex.dateContent]}>20 Sep 2025 - 22 Sept 2025</Text>
-                                        <Text style={Stylex.nameContent}>Kiken Sukma Batara, S.Si.,MT</Text>
-                                    </View>
-                                    <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
-                                </TouchableOpacity>
-                            ))}
+
+                            <View style={{ marginHorizontal: -30 }}>
+
+                                {listData.map((item, index) => (
+                                    <>
+                                        {/* <Text>{item.jenisizin_uraian}</Text> */}
+                                        <DaruratItem
+                                            key={item.id}
+                                            item={item}
+                                            onPress={handleItemPress}
+                                        />
+                                    </>
+                                ))}
+                            </View>
                         </View>
+
                     </ImageBackground>
                 </View>
             </View >
+            <DaruratSettings
+                modalVisible={modalVisibleSetting}
+                setModalVisible={setModalVisibleSetting}
+                closePopup={closePopupSetting}
+                selectedItem={selectedItemSetting}
+                viewData={viewData}
+            />
 
 
             <ModalComponentNotActivated

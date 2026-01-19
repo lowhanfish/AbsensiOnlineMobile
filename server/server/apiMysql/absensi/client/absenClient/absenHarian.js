@@ -286,6 +286,56 @@ router.post('/viewListIzin_v2', (req, res) => {
     })
 });
 
+// DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
+router.post('/viewListDaruratLimit_v2', (req, res) => {
+    console.log(req.body)
+
+    // Gunakan parameterized query untuk keamanan
+    const createdBy = req.user._id;
+
+    let query = `
+        SELECT usulanizin.*,
+        jenisizin.uraian as jenisizin_uraian,
+        biodata.nama as biodata_nama,
+        biodata.gelar_belakang as biodata_gelar_belakang,
+        biodata.gelar_depan as biodata_gelar_depan,
+        unit_kerja.unit_kerja as unit_kerja_uraian,
+        jeniskategori.uraian as jeniskategori_uraian
+
+        FROM absensi.usulanizin usulanizin
+
+        LEFT JOIN simpeg.biodata biodata
+        ON usulanizin.NIP = biodata.nip
+
+        LEFT JOIN simpeg.unit_kerja unit_kerja
+        ON usulanizin.unit_kerja = unit_kerja.id
+
+        LEFT JOIN absensi.jenisizin jenisizin
+        ON  usulanizin.jenisizin = jenisizin.id
+
+        LEFT JOIN absensi.jeniskategori jeniskategori
+        ON  usulanizin.jenisKategori = jeniskategori.id
+
+
+        WHERE 
+        usulanizin.jenisKategori <> 0
+        AND usulanizin.createdBy = ?
+        AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != '')
+        ORDER BY usulanizin.createdAt DESC
+
+        LIMIT 8
+    `
+    
+    db.query(query, [createdBy], (err, row) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send(err);
+        } else {
+            res.status(200).send(row)
+        }
+    })
+});
+
 
 
 // DI GUNAKAN PADA ABSENSI VERSI LAMA (TANPA FACE ID)

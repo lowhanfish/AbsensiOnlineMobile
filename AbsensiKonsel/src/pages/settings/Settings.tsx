@@ -32,7 +32,7 @@ const Settings = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <ButtonBack routex="Home" />
+            <ButtonBack routex="Dashboard" />
 
             <View style={{ flex: 1 }}>
                 <View style={Stylex.titleContainer}>
