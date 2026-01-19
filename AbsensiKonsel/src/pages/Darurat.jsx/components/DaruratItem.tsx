@@ -1,4 +1,3 @@
-//import liraries
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Stylex } from '../../../assets/styles/main';
@@ -6,7 +5,6 @@ import ImageLib from '../../../components/ImageLib';
 import { tglConvert, namaLengkap } from '../../../lib/kiken';
 const { height, width } = Dimensions.get('window');
 
-// Define the type for the `item` prop
 interface DaruratItemProps {
     id: number;
     jenispresensi: number;
@@ -36,20 +34,14 @@ interface DaruratItemProps {
     jeniskategori_uraian: string;
 }
 
-type DaruratItem = {
-    item: DaruratItemProps,
-    onPress: (item: DaruratItemProps) => void,
+interface DaruratItemComponentProps {
+    item: DaruratItemProps;
+    onPress: (item: DaruratItemProps) => void;
 }
 
-// create a component
-const DaruratItem = ({ item, onPress }: DaruratItem) => {
-    console.log("DaruratItem received item:", item);
-
-
-
+const DaruratItem = ({ item, onPress }: DaruratItemComponentProps) => {
     const getBackgroundColor = (status: number) => {
         const statusStr = String(status);
-        console.log("getBackgroundColor called with status:", statusStr);
         if (statusStr === '0') {
             return '#FFF8E0';
         } else if (statusStr === '1') {
@@ -57,12 +49,11 @@ const DaruratItem = ({ item, onPress }: DaruratItem) => {
         } else if (statusStr === '2') {
             return '#FFE0E0';
         }
-        return '#FFF8E0'; // default
+        return '#FFF8E0';
     };
 
     const getStatusImage = (status: number) => {
         const statusStr = String(status);
-        console.log("getStatusImage called with status:", statusStr);
         if (statusStr === '0') {
             return require('../../../assets/images/icon/process.png');
         } else if (statusStr === '1') {
@@ -70,30 +61,40 @@ const DaruratItem = ({ item, onPress }: DaruratItem) => {
         } else if (statusStr === '2') {
             return require('../../../assets/images/icon/false.png');
         }
-        return require('../../../assets/images/icon/process.png'); // default
+        return require('../../../assets/images/icon/process.png');
     };
 
-
     const handlePress = () => {
-        console.log("handlePress called with item:", item);
         onPress(item);
     };
 
     return (
-        <TouchableOpacity key={item.id} onPress={handlePress} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
-            <ImageLib customWidth={50} style={{ margin: 8, alignSelf: 'center' }} urix={require('../../../assets/images/icon/absenDarurat.png')} />
+        <TouchableOpacity
+            key={item.id}
+            onPress={handlePress}
+            style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}
+        >
+            <ImageLib
+                customWidth={50}
+                style={{ margin: 8, alignSelf: 'center' }}
+                urix={require('../../../assets/images/icon/absenDarurat.png')}
+            />
             <View style={Stylex.textContent}>
                 <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
                 <Text style={[Stylex.dateContent]}>{tglConvert(item.TglMulai)} - {tglConvert(item.TglSelesai)}</Text>
-                <Text style={Stylex.nameContent}>{namaLengkap(item.biodata_gelar_depan, item.biodata_nama, item.biodata_gelar_belakang)}</Text>
+                <Text style={Stylex.nameContent}>
+                    {namaLengkap(item.biodata_gelar_depan, item.biodata_nama, item.biodata_gelar_belakang)}
+                </Text>
             </View>
-
-            <ImageLib customWidth={20} style={{ top: -5 }} urix={getStatusImage(item.status)} />
+            <ImageLib
+                customWidth={20}
+                style={{ top: -5 }}
+                urix={getStatusImage(item.status)}
+            />
         </TouchableOpacity>
     );
 };
 
-// define your styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -103,5 +104,5 @@ const styles = StyleSheet.create({
     },
 });
 
-//make this component available to the app
 export default DaruratItem;
+
