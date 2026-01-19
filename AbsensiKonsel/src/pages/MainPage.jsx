@@ -24,8 +24,10 @@ import DaruratDetail from './Darurat.jsx/DaruratDetail';
 import DaruratForm from './Darurat.jsx/DaruratForm';
 import Apel from './apel/Apel';
 import ApelDetail from './apel/ApelDetail';
+
 import Izin from './izin/Izin';
 import IzinForm from './izin/IzinForm';
+import IzinDetail from './izin/IzinDetail';
 
 // Offline Absensi Screens
 import AbsenOffline from './Auth/Offline/AbsenOffline';
@@ -61,6 +63,7 @@ const ContentAll = () => {
             <ContentStack.Screen name="ApelDetail" component={ApelDetail} />
             <ContentStack.Screen name="Izin" component={Izin} />
             <ContentStack.Screen name="IzinForm" component={IzinForm} />
+            <ContentStack.Screen name="IzinDetail" component={IzinDetail} />
 
             <ContentStack.Screen name="Settings" component={Settings} />
             <ContentStack.Screen name="SettingSampleImage" component={SettingSampleImage} />

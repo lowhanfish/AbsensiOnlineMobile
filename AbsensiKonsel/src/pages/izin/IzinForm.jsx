@@ -12,8 +12,11 @@ import ButtonBack from "../../components/ButtonBack";
 import { postData } from '../../lib/fetching';
 import { useSelector } from "react-redux";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+
 
 const { height } = Dimensions.get('window');
+
 
 // Format tanggal untuk display
 const formatDateDisplay = (date) => {
@@ -29,6 +32,7 @@ const IzinForm = () => {
   // State dari Redux
   const URL = useSelector(state => state.URL);
   const token = useSelector(state => state.TOKEN);
+  const navigation = useNavigation();
 
   // State lokal
   const [activePicker, setActivePicker] = useState(null);
@@ -134,7 +138,7 @@ const IzinForm = () => {
     }).then(textResponse => {
       if (textResponse === 'OK' || textResponse === '1') {
         Alert.alert("Berhasil", "Data berhasil dikirim");
-
+        navigation.navigate("MainPage", { screen: "Izin" })
       } else {
         Alert.alert("Gagal", "Server menolak data");
       }

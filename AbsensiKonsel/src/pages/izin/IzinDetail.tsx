@@ -1,0 +1,262 @@
+import React, { useState, useEffect } from 'react';
+import {
+    View, Text, StyleSheet, Dimensions, ImageBackground, Image,
+    TouchableOpacity, Modal,
+} from 'react-native';
+import { Stylex } from '../../assets/styles/main';
+import ButtonBack from "../../components/ButtonBack";
+import ModalFile from '../../components/ModalFile';
+import { namaLengkap, tglConvert } from '../../lib/kiken';
+import { useSelector } from 'react-redux';
+const { height } = Dimensions.get('window');
+
+
+
+
+type fileProps = {
+    id: number,
+    file: string,
+    createdBy: string,
+    fileRef: string,
+}
+
+
+const IzinDetail = ({ route }: any) => {
+    const [form, setForm] = useState<Record<string, any> | null>(null);
+
+
+
+    const URL = useSelector((state: { URL: any }) => state.URL);
+    const token = useSelector((state: { TOKEN: string }) => state.TOKEN);
+    const [fileLampiran, setFileLampiran] = useState([]);
+
+    const [fileObj, setFileObj] = useState({
+        id: 0,
+        file: "",
+        createdBy: "",
+        fileRef: "",
+    });
+
+    console.log("ASSSUUUU")
+
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const openPopup = () => {
+        // console.log(item)
+        setModalVisible(true);
+    };
+
+    const closePopup = () => {
+        setModalVisible(false);
+    };
+
+
+    const selectData = (item: fileProps) => {
+        setFileObj(prev => ({
+            ...prev,
+            ...item
+        }))
+    }
+
+    const loadAyncData = async () => {
+
+    }
+
+    const getFile = () => {
+
+        fetch(URL.URL_lampiranImg + "viewOne", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `kikensbatara ${token}`
+            },
+            body: JSON.stringify({ fileRef: route.params.fileRef })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("error saat melakukan koneksi ke server")
+            }
+            return response.json();
+        }).then(result => {
+            console.log(result);
+            setFileLampiran(result);
+        }).catch(err => {
+            console.log(err);
+        })
+    }
+
+    useEffect(() => {
+        loadAyncData();
+        console.log("===================")
+
+        if (route.params) {
+            setForm(route.params);
+            console.log(route.params)
+            getFile();
+
+        }
+
+    }, [])
+
+
+    return (
+        <View style={{ flex: 1 }}>
+
+            <ButtonBack
+                routex="Izin"
+            />
+
+            <View style={{ flex: 1 }}>
+                <View style={Stylex.titleContainer}>
+                    <Text style={[styles.fontTitle, Stylex.shaddowText]}>Detail Izin</Text>
+                </View>
+
+                <View style={styles.container}>
+                    <ImageBackground
+                        style={{ flex: 1 }}
+                        resizeMode="stretch"
+                        source={require('../../assets/images/bg1.png')}
+                    >
+                        <View style={styles.textbg2}>
+                            <View style={styles.textform1}>
+                                <Text style={styles.infoTextform2}>URAIAN IZIN</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Nama</Text>
+                                <Text style={styles.infoTextform1}>{namaLengkap(form?.biodata_gelar_depan || "", form?.biodata_nama || "", form?.biodata_gelar_belakang || "")}</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Unit Kerja</Text>
+                                <Text style={styles.infoTextform1}>{form?.unit_kerja_uraian || ""}</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Jenis Izin</Text>
+                                <Text style={styles.infoTextform1}>{form?.jenisizin_uraian || ""}</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Dari Tanggal</Text>
+                                <Text style={styles.infoTextform1}>{tglConvert(form?.TglMulai || "")}</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Hingga Tanggal</Text>
+                                <Text style={styles.infoTextform1}>{tglConvert(form?.TglSelesai || "")}</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Keterangan</Text>
+                                <Text style={styles.infoTextform1}>{form?.keterangan || ""}</Text>
+                            </View>
+                            <View style={styles.textform}>
+                                <Text style={styles.infoTextform}>Keterangan Verifikasi</Text>
+                                <Text style={styles.infoTextform1}>{form?.notif_keterangan || ""}</Text>
+                            </View>
+
+
+
+
+                            <View style={[styles.textform1, { paddingTop: 1 }]}>
+                                <Text style={styles.infoTextform2}>LAMPIRAN</Text>
+                            </View>
+
+                            <View style={{ flex: 1, flexDirection: 'row', gap: 15, flexWrap: 'wrap', paddingTop: 11 }}>
+
+                                {
+                                    fileLampiran.map((item, index) => (
+
+                                        <TouchableOpacity key={index} onPress={() => { selectData(item); openPopup() }}>
+                                            <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/izin.png')} />
+                                        </TouchableOpacity>
+                                    ))
+                                }
+
+                            </View>
+                        </View>
+                    </ImageBackground>
+                </View>
+
+                <ModalFile
+                    modalVisible={modalVisible}
+                    closePopup={closePopup}
+                    pdfUrl={fileObj.file}
+                />
+
+
+            </View>
+        </View>
+
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        minHeight: height,
+        paddingHorizontal: 16
+    },
+    textbg2: {
+        // position: 'absolute',
+        // top: 24,
+        // left: 28,
+        // right: 28,
+        // height: 41,
+        // backgroundColor: 'red',
+
+        paddingTop: 24,
+        paddingLeft: 28,
+        paddingRight: 28,
+        paddingBottom: 24,
+        flex: 1
+    },
+    textform: {
+        // flex: 1,
+        // flexDirection: 'column',
+        marginTop: 2,
+        marginBottom: 5,
+        fontSize: 10,
+        borderStyle: 'dashed',
+        borderColor: '#ADADAD',
+        borderBottomWidth: 0.5,
+        paddingVertical: 5,
+    },
+    textform1: {
+        marginTop: 9,
+        marginBottom: 15,
+        fontSize: 10,
+        borderStyle: 'solid',
+        borderColor: '#EBDBF9',
+        borderBottomWidth: 5,
+
+        borderTopWidth: 5,
+        paddingVertical: 5,
+        // marginBottom: 12,
+    },
+    fontTitle: {
+        fontSize: 24,
+        color: '#FFFFFF',
+        fontWeight: '400',
+        fontFamily: 'Audiowide-Regular',
+    },
+    infoTextform: {
+        fontSize: 12,
+        fontWeight: '400',
+        color: '#C2ABD5',
+        lineHeight: 14
+    },
+
+    infoTextform1: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#8F8F8F',
+        lineHeight: 14,
+        marginBottom: 2,
+        marginTop: 5
+    },
+    infoTextform2: {
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#C2ABD5',
+        lineHeight: 14,
+        marginBottom: 2,
+        marginTop: 12
+    },
+});
+
+export default IzinDetail;

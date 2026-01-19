@@ -223,8 +223,8 @@ const Izin = () => {
                     <Text style={[Stylex.dateContent, { marginLeft: 1 }]}>Page {pageFirst} dari {pageLast}</Text>
                   </View>
                   <View style={Stylex.jumlahContainer}>
-                    <Text style={Stylex.dateContent}>Jumlah Tampil</Text>
-                    <Text style={Stylex.jumlahTampil}>10</Text>
+                    {/* <Text style={Stylex.dateContent}>Jumlah Tampil</Text>
+                    <Text style={Stylex.jumlahTampil}>10</Text> */}
                   </View>
                 </View>
                 <View style={Stylex.inputWrapper}>
@@ -277,7 +277,7 @@ const Izin = () => {
                 <Text style={Stylex.closeText}>✕</Text>
               </TouchableOpacity>
               <Text style={Stylex.popupTitle}>Settings</Text>
-              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setModalVisible(false); navigation.navigate("MainPage", { screen: "DaruratDetail", params: selectedItem }) }} >
+              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setModalVisible(false); navigation.navigate("MainPage", { screen: "IzinDetail", params: selectedItem }) }} >
                 <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
               </TouchableOpacity>
 

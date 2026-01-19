@@ -223,8 +223,8 @@ const Darurat = () => {
                     <Text style={[Stylex.dateContent, { marginLeft: 1 }]}>Page {pageFirst} dari {pageLast}</Text>
                   </View>
                   <View style={Stylex.jumlahContainer}>
-                    <Text style={Stylex.dateContent}>Jumlah Tampil</Text>
-                    <Text style={Stylex.jumlahTampil}>10</Text>
+                    {/* <Text style={Stylex.dateContent}>Jumlah Tampil</Text>
+                    <Text style={Stylex.jumlahTampil}>10</Text> */}
                   </View>
                 </View>
                 <View style={Stylex.inputWrapper}>
