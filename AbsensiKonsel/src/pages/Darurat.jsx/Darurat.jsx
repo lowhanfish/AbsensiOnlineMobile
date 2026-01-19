@@ -11,6 +11,7 @@ import LoadingImage from "../../components/LoadingImage";
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
 import { tglConvert, namaLengkap } from "../../lib/kiken";
 import { useAuthGuard } from "../../hooks/useAuthGuard";
+import DaruratItem from "./components/DaruratItem";
 const { height, width } = Dimensions.get('window');
 
 
@@ -243,16 +244,22 @@ const Darurat = () => {
                     <View>
 
                       {listData.map((item) => (
-                        <TouchableOpacity key={item.id} onPress={() => { openPopup(item) }} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
-                          <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
-                          <View style={Stylex.textContent}>
-                            <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
-                            <Text style={[Stylex.dateContent]}>{tglConvert(item.TglMulai)} - {tglConvert(item.TglSelesai)}</Text>
-                            <Text style={Stylex.nameContent}>{namaLengkap(item.biodata_gelar_depan, item.biodata_nama, item.biodata_gelar_belakang)}</Text>
-                          </View>
+                        <DaruratItem item={item} />
+                        // <TouchableOpacity key={item.id} onPress={() => { openPopup(item) }} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
+                        //   <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
+                        //   <View style={Stylex.textContent}>
+                        //     <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
+                        //     <Text style={[Stylex.dateContent]}>{tglConvert(item.TglMulai)} - {tglConvert(item.TglSelesai)}</Text>
+                        //     <Text style={Stylex.nameContent}>{namaLengkap(item.biodata_gelar_depan, item.biodata_nama, item.biodata_gelar_belakang)}</Text>
+                        //   </View>
 
-                          <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
-                        </TouchableOpacity>
+                        //   <ImageLib style={{ width: 20, top: -5 }} urix={getStatusImage(item.status)} />
+                        // </TouchableOpacity>
+
+
+
+
+
                       ))}
 
                     </View>
