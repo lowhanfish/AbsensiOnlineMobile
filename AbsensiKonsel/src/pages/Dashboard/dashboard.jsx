@@ -17,11 +17,15 @@ import { CheckWaktuAbsen, JamRealtime, cekWaktu } from '../../lib/kiken';
 import { useDispatch, useSelector } from 'react-redux'
 import { setWaktuData } from '../../redux/actions';
 import ModalComponentNotActivated from '../../components/ModalComponentNotActivated';
+import { useAuthGuard } from '../../hooks/useAuthGuard';
 const { height, width } = Dimensions.get('window');
 
 
 
 const Dashboard = () => {
+    useAuthGuard();
+    // console.log("DASHBOARD RENDER");
+
     const navigation = useNavigation();
 
     const profileState = useSelector(state => state.PROFILE);
@@ -116,8 +120,10 @@ const Dashboard = () => {
 
 
     useEffect(() => {
+
         console.log(typeof (profileState.profile));
         setProfile(profileState.profile);
+
     }, [])
 
 

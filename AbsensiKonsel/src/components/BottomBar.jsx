@@ -1,15 +1,24 @@
 //import liraries
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Stylex } from '../assets/styles/main';
 import ImageLib from './ImageLib';
+import { useSelector } from 'react-redux';
 
 
 
 // create a component
 const BottomBar = ({ navigation }) => {
 
+    var token = useSelector(state => state.TOKEN);
+    var URL = useSelector(state => state.URL);
 
+
+
+
+    useEffect(() => {
+
+    }, [])
 
 
     return (

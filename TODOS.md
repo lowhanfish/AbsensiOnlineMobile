@@ -22,9 +22,9 @@
 
 [✅] Copy file Darurat ke izin
 [✅] List Izin
-[❌] Add FormIzin
-[❌] Sesuaikan parameter yang di kirim
-[❌] Sesuaikan jedah waktu limit mengajukan
+[✅] Add FormIzin
+[✅] Sesuaikan parameter yang di kirim
+[✅] Sesuaikan jedah waktu limit mengajukan
 
 #### Absen Offline
 
@@ -34,6 +34,11 @@
 
 #### Sistem
 
-[❌] Pastikan tester token valid aktif
-[❌] Jika tidak valid kembalikan ke menu login
+[✅] Pastikan tester token valid aktif
+[✅] Jika tidak valid kembalikan ke menu login
 [✅] Buat Modal terkait component yang belum aktif
+
+#### Dashboard
+
+[❌] Last Darurat
+[❌] Last Izin

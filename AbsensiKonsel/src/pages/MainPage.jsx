@@ -81,16 +81,22 @@ const ContentAll = () => {
 const MainPage = () => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
-    const token = useSelector(state => state.TOKEN);
+
+    var token = useSelector(state => state.TOKEN);
+    var URL = useSelector(state => state.URL);
+
+    // console.log("TOKEN DI MAINPAGE:", token)
 
     useEffect(() => {
         // Cegah tombol back di Android keluar dari aplikasi
+
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
         return () => backHandler.remove();
     }, []);
 
     // ✅ Proteksi jika token kosong (misalnya AsyncStorage terhapus)
     useEffect(() => {
+        // checkValidate();
         if (!token || token === '') {
             navigation.replace('Login');
         }

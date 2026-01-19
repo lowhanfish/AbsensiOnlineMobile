@@ -10,13 +10,14 @@ import { useSelector } from "react-redux";
 import LoadingImage from "../../components/LoadingImage";
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
 import { tglConvert, namaLengkap } from "../../lib/kiken";
+import { useAuthGuard } from "../../hooks/useAuthGuard";
 const { height, width } = Dimensions.get('window');
 
 
 
 const Izin = () => {
 
-
+  useAuthGuard();
   const navigation = useNavigation();
 
   const URL = useSelector(state => state.URL);
@@ -83,7 +84,7 @@ const Izin = () => {
       setPageLast(result.data.jml_data)
     }).catch(error => {
       setLoading(true);
-      // console.log("errornya : ", error);
+      console.log("errornya : ", error);
     })
     console.log(URL.URL_AbsenHarian + 'viewListDarurat')
 
