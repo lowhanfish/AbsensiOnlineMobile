@@ -1,5 +1,5 @@
 //import liraries
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Stylex } from '../../../assets/styles/main';
 import ImageLib from '../../../components/ImageLib';
@@ -36,12 +36,16 @@ interface DaruratItemProps {
     jeniskategori_uraian: string;
 }
 
+type DaruratItem = {
+    item: DaruratItemProps,
+    onPress: (item: DaruratItemProps) => void,
+}
+
 // create a component
-const DaruratItem = ({ item }: { item: DaruratItemProps }) => {
+const DaruratItem = ({ item, onPress }: DaruratItem) => {
     console.log("DaruratItem received item:", item);
 
-    const [selectedItem, setSelectedItem] = useState<DaruratItemProps | null>(null);
-    const [modalVisible, setModalVisible] = useState(false);
+
 
     const getBackgroundColor = (status: number) => {
         const statusStr = String(status);
@@ -60,33 +64,24 @@ const DaruratItem = ({ item }: { item: DaruratItemProps }) => {
         const statusStr = String(status);
         console.log("getStatusImage called with status:", statusStr);
         if (statusStr === '0') {
-            return require('../../assets/images/icon/process.png');
+            return require('../../../assets/images/icon/process.png');
         } else if (statusStr === '1') {
-            return require('../../assets/images/icon/true.png');
+            return require('../../../assets/images/icon/true.png');
         } else if (statusStr === '2') {
-            return require('../../assets/images/icon/false.png');
+            return require('../../../assets/images/icon/false.png');
         }
-        return require('../../assets/images/icon/process.png'); // default
+        return require('../../../assets/images/icon/process.png'); // default
     };
 
 
-    const openPopup = (item: DaruratItemProps) => {
-        console.log("openPopup called with item:", item);
-        setSelectedItem((prev) => ({
-            ...prev,
-            ...item
-        }));
-        setModalVisible(true);
-    };
-
-    const closePopup = () => {
-        setModalVisible(false);
-        setSelectedItem(null);
+    const handlePress = () => {
+        console.log("handlePress called with item:", item);
+        onPress(item);
     };
 
     return (
-        <TouchableOpacity key={item.id} onPress={() => { openPopup(item) }} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
-            <ImageLib customWidth={50} style={{ margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
+        <TouchableOpacity key={item.id} onPress={handlePress} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
+            <ImageLib customWidth={50} style={{ margin: 8, alignSelf: 'center' }} urix={require('../../../assets/images/icon/absenDarurat.png')} />
             <View style={Stylex.textContent}>
                 <Text style={Stylex.titleContent}>{item.jeniskategori_uraian}</Text>
                 <Text style={[Stylex.dateContent]}>{tglConvert(item.TglMulai)} - {tglConvert(item.TglSelesai)}</Text>

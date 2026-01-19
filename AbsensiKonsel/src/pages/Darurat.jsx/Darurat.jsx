@@ -12,6 +12,7 @@ import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures'
 import { tglConvert, namaLengkap } from "../../lib/kiken";
 import { useAuthGuard } from "../../hooks/useAuthGuard";
 import DaruratItem from "./components/DaruratItem";
+import DaruratSettings from "./components/DaruratSettings";
 const { height, width } = Dimensions.get('window');
 
 
@@ -37,9 +38,6 @@ const Darurat = () => {
 
 
   const [gestureName, setGestureName] = useState('none');
-
-
-
   const [modalVisible, setModalVisible] = useState(false);
 
   // Fungsi yang dipanggil saat swipe terdeteksi
@@ -151,13 +149,27 @@ const Darurat = () => {
 
 
 
-  const openPopup = (item) => {
-    // console.log(item)
-    setSelectedItem((prev) => ({
-      ...prev,
-      ...item
-    }));
-    setModalVisible(true);
+  const handleItemPress = (item) => {
+    console.log('=== handleItemPress START ===');
+    console.log('item.id:', item.id);
+    console.log('modalVisible BEFORE click:', modalVisible);
+
+    // Jika modal sedang terbuka, tutup dulu
+    if (modalVisible) {
+      console.log('Modal is open, closing first...');
+      setModalVisible(false);
+      setTimeout(() => {
+        console.log('Timeout callback - opening modal with item.id:', item.id);
+        setSelectedItem(item);
+        setModalVisible(true);
+      }, 200);
+    } else {
+      // Modal closed, langsung buka
+      console.log('Modal is closed, opening directly...');
+      setSelectedItem(item);
+      setModalVisible(true);
+    }
+    console.log('=== handleItemPress END ===');
   };
 
   const closePopup = () => {
@@ -196,6 +208,14 @@ const Darurat = () => {
   useEffect(() => {
     viewData();
   }, [pageFirst, cariValue])
+
+  useEffect(() => {
+    console.log("Darurat modalVisible state updated:", modalVisible);
+  }, [modalVisible]);
+
+  useEffect(() => {
+    console.log("Darurat selectedItem updated:", selectedItem);
+  }, [selectedItem]);
 
   return (
 
@@ -244,7 +264,11 @@ const Darurat = () => {
                     <View>
 
                       {listData.map((item) => (
-                        <DaruratItem item={item} />
+                        <DaruratItem
+                          key={item.id}
+                          item={item}
+                          onPress={handleItemPress}
+                        />
                         // <TouchableOpacity key={item.id} onPress={() => { openPopup(item) }} style={[Stylex.daruratContent, { backgroundColor: getBackgroundColor(item.status), marginBottom: 10, marginHorizontal: 25 }]}>
                         //   <ImageLib style={{ width: 50, margin: 8, alignSelf: 'center' }} urix={require('../../assets/images/icon/absenDarurat.png')} />
                         //   <View style={Stylex.textContent}>
@@ -266,8 +290,6 @@ const Darurat = () => {
                   )
                 }
 
-
-
               </ImageBackground>
             </View>
           </View>
@@ -278,45 +300,14 @@ const Darurat = () => {
         </TouchableOpacity>
 
         {/* ================= MODAL SETTING =================*/}
-        <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closePopup} >
-          <View style={Stylex.overlay}>
-            <View style={Stylex.popup}>
-              <TouchableOpacity style={Stylex.closeButton} onPress={closePopup}>
-                <Text style={Stylex.closeText}>✕</Text>
-              </TouchableOpacity>
-              <Text style={Stylex.popupTitle}>Settings</Text>
-              <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#9ABFFA' }]} onPress={() => { setModalVisible(false); navigation.navigate("MainPage", { screen: "DaruratDetail", params: selectedItem }) }} >
-                <Text style={[Stylex.popupButtonText, { color: '#9ABFFA' }]}>Detail</Text>
-              </TouchableOpacity>
+        <DaruratSettings
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          closePopup={closePopup}
+          selectedItem={selectedItem}
+          viewData={viewData}
 
-
-              {/* <Text>{selectedItem.status}</Text> */}
-              {
-
-                selectedItem &&
-
-                (selectedItem.status == 2 || selectedItem.status == 0) && (
-                  <>
-                    {/* Uncommented and fixed the Update button */}
-                    {/* <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C4C080' }]} onPress={() => handleAction('Update')} >
-                      <Text style={[Stylex.popupButtonText, { color: '#C4C080' }]}>Update</Text>
-                    </TouchableOpacity> */}
-
-                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { removeData(); }} >
-                      <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
-                    </TouchableOpacity>
-                  </>
-
-                )
-
-              }
-
-              <TouchableOpacity style={[Stylex.popupButton, { backgroundColor: '#C66963', borderColor: '#C66963' }]} onPress={closePopup} >
-                <Text style={[Stylex.popupButtonText, { color: '#FFFFFF' }]}>Batal</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+        />
         {/* ================= MODAL SETTING =================*/}
 
 
