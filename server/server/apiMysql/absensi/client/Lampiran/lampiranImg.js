@@ -19,7 +19,9 @@ router.get('/', (req, res) => {
 
 
 router.post('/viewOne', (req, res) => {
-    // console.log(req.body)
+    console.log("Lampiran ditemukan")
+    console.log("Lampiran ditemukan")
+    console.log(req.body)
     var query = `
         SELECT * FROM lampiran
         WHERE fileRef = '`+req.body.fileRef+`'

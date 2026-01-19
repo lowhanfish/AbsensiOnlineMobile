@@ -127,7 +127,8 @@ export const Stylex = StyleSheet.create({
         // backgroundColor:'red',
         width:100,
         height:30,
-        alignItems:'center'
+        alignItems:'center',
+        marginTop :12
     },
     iconBack: {
         width: 14,

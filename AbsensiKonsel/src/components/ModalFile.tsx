@@ -18,6 +18,9 @@ const ModalFile = ({ modalVisible, closePopup, pdfUrl }: any) => {
 
     const URL = useSelector((state: { URL: any }) => state.URL)
 
+    console.log("MODAL FILE =======")
+    console.log(pdfUrl);
+    console.log("MODAL FILE =======")
 
     const [urlData, SetUrlData] = useState('');
     const [typeData, setTypeData] = useState('pdf');
@@ -27,6 +30,7 @@ const ModalFile = ({ modalVisible, closePopup, pdfUrl }: any) => {
 
             const data = pdfUrl.split('.');
             if (data[1] == 'pdf') {
+                console.log("PDFFFFFF")
                 setTypeData('pdf');
                 SetUrlData(`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(URL.URL_APP + "uploads/" + pdfUrl)}` || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf");
             } else {
@@ -39,7 +43,7 @@ const ModalFile = ({ modalVisible, closePopup, pdfUrl }: any) => {
 
     useEffect(() => {
         checkFileExisting();
-    }, [])
+    }, [pdfUrl])
 
 
     return (

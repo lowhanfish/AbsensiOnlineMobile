@@ -14,8 +14,6 @@ const { height, width } = Dimensions.get('window');
 
 
 
-
-
 const Darurat = () => {
 
 
@@ -92,7 +90,6 @@ const Darurat = () => {
   }
 
   const removeData = () => {
-
     // console.log("remove data")
     setModalVisible(false);
 
@@ -290,13 +287,12 @@ const Darurat = () => {
 
                 selectedItem &&
 
-
                 (selectedItem.status == 2 || selectedItem.status == 0) && (
                   <>
                     {/* Uncommented and fixed the Update button */}
-                    <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C4C080' }]} onPress={() => handleAction('Update')} >
+                    {/* <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C4C080' }]} onPress={() => handleAction('Update')} >
                       <Text style={[Stylex.popupButtonText, { color: '#C4C080' }]}>Update</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
                     <TouchableOpacity style={[Stylex.popupButton, { borderColor: '#C66963' }]} onPress={() => { removeData(); }} >
                       <Text style={[Stylex.popupButtonText, { color: '#C66963' }]}>Delete</Text>
@@ -314,8 +310,6 @@ const Darurat = () => {
           </View>
         </Modal>
         {/* ================= MODAL SETTING =================*/}
-
-
 
 
 

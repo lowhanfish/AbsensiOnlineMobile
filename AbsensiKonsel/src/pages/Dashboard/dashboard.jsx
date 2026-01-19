@@ -208,7 +208,7 @@ const Dashboard = () => {
                                     <TouchableOpacity style={styles.navButtonImageNoticeContainer}>
                                         <Text style={styles.navButtonTextNotice}>0</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.navButtonSubContainer}>
+                                    <TouchableOpacity onPress={() => routex('Izin')} style={styles.navButtonSubContainer}>
                                         <View>
                                             <ImageLib urix={require('../../assets/images/icon/izin.png')} style={styles.navButtonImage1} />
                                         </View>

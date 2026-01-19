@@ -15,12 +15,12 @@
 [❌] Aktifasi fungsi edit usulan
 [✅] Aktifasi fungsi Remove usulan
 [✅] Lock jika status usulan = 1
-[❌] Detail Usulan
-[❌] periksa semua variabel yang di kirim ke endpoint
+[✅] Detail Usulan
+[✅] periksa semua variabel yang di kirim ke endpoint
 
 #### Izin
 
-[❌] Copy file Darurat ke izin
+[✅] Copy file Darurat ke izin
 [❌] Sesuaikan parameter yang di kirim
 [❌] Sesuaikan jedah waktu limit mengajukan
 

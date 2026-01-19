@@ -7,23 +7,40 @@ import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
 import ModalFile from '../../components/ModalFile';
 import { namaLengkap, tglConvert } from '../../lib/kiken';
+import { useSelector } from 'react-redux';
 const { height } = Dimensions.get('window');
 
 
 
 
-
+type fileProps = {
+    id: number,
+    file: string,
+    createdBy: string,
+    fileRef: string,
+}
 
 
 const DaruratDetail = ({ route }: any) => {
     const [form, setForm] = useState<Record<string, any> | null>(null);
 
-    if (route) {
-        console.log(route.params)
-    }
+    const URL = useSelector((state: { URL: any }) => state.URL);
+    const token = useSelector((state: { TOKEN: string }) => state.TOKEN);
+    const [fileLampiran, setFileLampiran] = useState([]);
+
+    const [fileObj, setFileObj] = useState({
+        id: 0,
+        file: "",
+        createdBy: "",
+        fileRef: "",
+    });
+
+    console.log("ASSSUUUU")
 
     const [modalVisible, setModalVisible] = useState(false);
+
     const openPopup = () => {
+        // console.log(item)
         setModalVisible(true);
     };
 
@@ -31,15 +48,48 @@ const DaruratDetail = ({ route }: any) => {
         setModalVisible(false);
     };
 
+
+    const selectData = (item: fileProps) => {
+        setFileObj(prev => ({
+            ...prev,
+            ...item
+        }))
+    }
+
     const loadAyncData = async () => {
 
     }
 
+    const getFile = () => {
+
+        fetch(URL.URL_lampiranImg + "viewOne", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `kikensbatara ${token}`
+            },
+            body: JSON.stringify({ fileRef: route.params.fileRef })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("error saat melakukan koneksi ke server")
+            }
+            return response.json();
+        }).then(result => {
+            console.log(result);
+            setFileLampiran(result);
+        }).catch(err => {
+            console.log(err);
+        })
+    }
+
     useEffect(() => {
         loadAyncData();
+        console.log("===================")
 
         if (route.params) {
-            setForm(route.params)
+            setForm(route.params);
+            getFile();
+
         }
 
     }, [])
@@ -104,24 +154,16 @@ const DaruratDetail = ({ route }: any) => {
                             </View>
 
                             <View style={{ flex: 1, flexDirection: 'row', gap: 15, flexWrap: 'wrap', paddingTop: 11 }}>
-                                <TouchableOpacity onPress={() => { openPopup() }}>
-                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/pdf.png')} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/jpg.png')} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/pdf.png')} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/jpg.png')} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/pdf.png')} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/jpg.png')} />
-                                </TouchableOpacity>
+
+                                {
+                                    fileLampiran.map((item, index) => (
+
+                                        <TouchableOpacity key={index} onPress={() => { selectData(item); openPopup() }}>
+                                            <Image style={{ width: 50, height: 50 }} source={require('../../assets/images/icon/izin.png')} />
+                                        </TouchableOpacity>
+                                    ))
+                                }
+
                             </View>
                         </View>
                     </ImageBackground>
@@ -130,7 +172,7 @@ const DaruratDetail = ({ route }: any) => {
                 <ModalFile
                     modalVisible={modalVisible}
                     closePopup={closePopup}
-                    pdfUrl="https://serversumaku.konaweselatankab.go.id/uploads/1765767493631.pdf"
+                    pdfUrl={fileObj.file}
                 />
 
 
