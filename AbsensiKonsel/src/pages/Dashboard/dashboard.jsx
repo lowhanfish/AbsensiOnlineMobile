@@ -332,15 +332,12 @@ const Dashboard = () => {
 
                             <View style={{ marginHorizontal: -30 }}>
 
-                                {listData.map((item, index) => (
-                                    <>
-                                        {/* <Text>{item.jenisizin_uraian}</Text> */}
-                                        <DaruratItem
-                                            key={item.id}
-                                            item={item}
-                                            onPress={handleItemPress}
-                                        />
-                                    </>
+                                {listData.map((item) => (
+                                    <DaruratItem
+                                        key={item.id}
+                                        item={item}
+                                        onPress={handleItemPress}
+                                    />
                                 ))}
                             </View>
                         </View>

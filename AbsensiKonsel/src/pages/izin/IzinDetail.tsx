@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     View, Text, StyleSheet, Dimensions, ImageBackground, Image,
-    TouchableOpacity, Modal,
+    TouchableOpacity, Modal, ScrollView
 } from 'react-native';
 import { Stylex } from '../../assets/styles/main';
 import ButtonBack from "../../components/ButtonBack";
@@ -105,7 +105,7 @@ const IzinDetail = ({ route }: any) => {
                 routex="Izin"
             />
 
-            <View style={{ flex: 1 }}>
+            <ScrollView style={{ flex: 1 }}>
                 <View style={Stylex.titleContainer}>
                     <Text style={[styles.fontTitle, Stylex.shaddowText]}>Detail Izin</Text>
                 </View>
@@ -179,7 +179,7 @@ const IzinDetail = ({ route }: any) => {
                 />
 
 
-            </View>
+            </ScrollView>
         </View>
 
     );

@@ -29,9 +29,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 // Import Custom Hooks
-import { usePassiveCapture, uploadPhotoToServer, cleanupPhoto } from '../../hooks';
+import { usePassiveCapture, cleanupPhoto } from '../../hooks';
 
 // ============ COMPONENT ============
 const AbsensiFaceRecognation = () => {
@@ -134,6 +135,30 @@ const AbsensiFaceRecognation = () => {
         }
     };
 
+    // ============ COMPRESS IMAGE ============
+    const compressImage = async (originalPath: string): Promise<string | null> => {
+        try {
+            const uri = originalPath.startsWith('file://') ? originalPath : `file://${originalPath}`;
+
+            // Resize ke 480x480, JPEG, quality 80%
+            const resized = await ImageResizer.createResizedImage(
+                uri,      // path
+                480,      // maxWidth
+                480,      // maxHeight
+                'JPEG',   // compressFormat
+                80,       // quality (0-100)
+                0,        // rotation
+                undefined // outputPath
+            );
+
+            console.log('✅ Gambar terkompres:', resized.uri, 'size:', resized.size);
+            return resized.uri;
+        } catch (err) {
+            console.error('❌ Compress error:', err);
+            return originalPath; // Fallback ke gambar asli
+        }
+    };
+
     // ============ SEND TO SERVER ============
     const handleSendToServer = async () => {
         if (!capturedPhoto || !PROFILE?.profile?.NIP) {
@@ -148,28 +173,52 @@ const AbsensiFaceRecognation = () => {
         const apiUrl = `${URL.URL_AbsenHarian}Add_v2`;
 
         try {
-            // Prepare data for server (tanpa embedding, hanya NIP + metadata)
-            const absenData = {
-                NIP: nip,
-                lat: PROFILE?.profile?.lokasi_absen?.[0]?.lat || 0,
-                lng: PROFILE?.profile?.lokasi_absen?.[0]?.lng || 0,
-                JenisStatus: WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG',
-                VERSI_APP: VERSI_APP,
-                isUseEmulator: 'false',
-                // Note: Foto sudah di-upload via uploadPhotoToServer
-                // Server akan melakukan face detection & embedding
-            };
+            console.log('📤 Mengkompres dan mengupload foto...');
+            console.log('📁 Foto asli:', capturedPhoto.imagePath);
 
-            // Kirim data absensi
-            console.log('📤 Mengirim data absensi:', absenData);
+            // KOMPRESI: Resize gambar ke 480x480, JPEG 80%
+            const compressedPath = await compressImage(capturedPhoto.imagePath);
 
-            const response = await fetch(`${apiUrl}`, {
+            if (!compressedPath) {
+                Alert.alert('Error', 'Gagal mengkompres gambar');
+                setIsSending(false);
+                return;
+            }
+
+            console.log('📁 Foto terkompres:', compressedPath);
+
+            // Prepare FormData untuk upload foto + data
+            const formData = new FormData();
+
+            // Append foto dengan field name 'file'
+            const cleanPath = compressedPath.startsWith('file://')
+                ? compressedPath
+                : `file://${compressedPath}`;
+            const filename = `absensi_${nip}_${Date.now()}.jpg`;
+
+            // @ts-ignore
+            formData.append('file', {
+                uri: cleanPath,
+                name: filename,
+                type: 'image/jpeg',
+            });
+
+            // Append data
+            formData.append('NIP', nip);
+            formData.append('lat', PROFILE?.profile?.lokasi_absen?.[0]?.lat?.toString() || '0');
+            formData.append('lng', PROFILE?.profile?.lokasi_absen?.[0]?.lng?.toString() || '0');
+            formData.append('JenisStatus', WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG');
+            formData.append('VERSI_APP', VERSI_APP || '');
+            formData.append('isUseEmulator', 'false');
+
+            // Upload via fetch
+            const response = await fetch(apiUrl, {
                 method: 'POST',
+                body: formData,
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `kikensbatara ${TOKEN}`,
+                    'Content-Type': 'multipart/form-data',
                 },
-                body: JSON.stringify(absenData),
             });
 
             const result = await response.json();

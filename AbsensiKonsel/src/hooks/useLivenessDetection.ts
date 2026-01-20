@@ -388,7 +388,7 @@ export const uploadPhotoToServer = async (
         
         const formData = new FormData();
         // @ts-ignore
-        formData.append('photo', {
+        formData.append('file', {
             uri: cleanPath,
             name: filename,
             type: 'image/jpeg',

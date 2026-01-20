@@ -21,8 +21,8 @@ const URL_SIMPEG = 'https://server-egov.konaweselatankab.go.id';
 // const URLKU = 'https://serverabsensi.konaweselatankab.go.id';
 // const URLKU = 'http://192.168.1.24:5040';
 // const URLKU = 'http://192.168.1.3:5040';
-const URLKU = 'http://192.168.44.194:5040';
-// const URLKU = 'http://10.91.178.4:5040';
+// const URLKU = 'http://192.168.44.194:5040';
+const URLKU = 'http://10.5.63.245:5040';
 
 // const URLKU = 'http://10.216.143.96:5040';
 

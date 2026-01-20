@@ -27,6 +27,8 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
+import RNFS from 'react-native-fs';
 
 // Import Custom Hooks
 import { usePassiveCapture } from '../../../hooks';
@@ -119,6 +121,42 @@ const VerifikasiWajah = () => {
         }
     };
 
+    // ============ COMPRESS IMAGE ============
+    const compressImage = async (originalPath: string): Promise<string | null> => {
+        try {
+            const uri = originalPath.startsWith('file://') ? originalPath : `file://${originalPath}`;
+
+            // Dapatkan ukuran file asli
+            const originalStat = await RNFS.stat(originalPath.replace('file://', ''));
+            const originalSizeKB = (originalStat.size / 1024).toFixed(1);
+            console.log('📁 File asli:', originalPath, 'size:', originalSizeKB, 'KB');
+
+            // Resize ke 480x480, JPEG, quality 80%
+            const resized = await ImageResizer.createResizedImage(
+                uri,      // path
+                480,      // maxWidth
+                480,      // maxHeight
+                'JPEG',   // compressFormat
+                80,       // quality (0-100)
+                0,        // rotation
+                undefined // outputPath
+            );
+
+            // Dapatkan ukuran file terkompres
+            const compressedStat = await RNFS.stat(resized.uri.replace('file://', ''));
+            const compressedSizeKB = (compressedStat.size / 1024).toFixed(1);
+            const savings = ((1 - compressedStat.size / originalStat.size) * 100).toFixed(0);
+
+            console.log('✅ Gambar terkompres:', resized.uri, 'size:', compressedSizeKB, 'KB');
+            console.log('💾 Penghematan:', savings, '%');
+
+            return resized.uri;
+        } catch (err) {
+            console.error('❌ Compress error:', err);
+            return originalPath; // Fallback ke gambar asli
+        }
+    };
+
     // ============ SAVE TO DATABASE ============
     const handleSaveToDatabase = async () => {
         if (!capturedPhoto) {
@@ -129,12 +167,25 @@ const VerifikasiWajah = () => {
         setIsSaving(true);
 
         try {
+            console.log('📤 Mengkompres gambar sebelum disimpan...');
+
+            // KOMPRESI: Resize gambar ke 480x480, JPEG 80%
+            const compressedPath = await compressImage(capturedPhoto.imagePath);
+
+            if (!compressedPath) {
+                Alert.alert('Error', 'Gagal mengkompres gambar');
+                setIsSaving(false);
+                return;
+            }
+
+            console.log('📁 Foto terkompres:', compressedPath);
+
             const insertId = await saveAbsensiOffline({
                 nip: lokasi?.nip || 'UNKNOWN',
                 latitude: lokasi?.latitude || 0,
                 longitude: lokasi?.longitude || 0,
                 timestamp: new Date().toISOString(),
-                image_path: capturedPhoto.imagePath,
+                image_path: compressedPath, // Simpan path gambar terkompres
                 // Note: vektor tidak lagi disimpan di client
                 // Server akan membuat embedding saat sync
                 vektor: '[]', // String kosong, akan diisi saat sync ke server

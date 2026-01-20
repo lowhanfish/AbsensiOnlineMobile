@@ -40,5 +40,11 @@
 
 #### Dashboard
 
-[❌] Last Darurat
-[❌] Last Izin
+[✅] Last Darurat
+[✅] Last Izin
+
+#### Sampel dan Absenso
+
+[✅] Kompress foto sampel
+[✅] Kompress foto Absen
+[❌] Kompress foto Absen Offline

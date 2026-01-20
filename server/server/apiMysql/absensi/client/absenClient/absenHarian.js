@@ -28,7 +28,7 @@ router.get('/cappo', (req, res)=>{
 
 
 // INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
-router.post('/Add_v2', async (req, res) => {
+router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
 
     var jam = lib.Timex().jam;
@@ -39,6 +39,7 @@ router.post('/Add_v2', async (req, res) => {
     console.log("Body:", req.body);
     console.log("User:", req.user?._id);
     console.log("Jam:", jam);
+    console.log(req.file)
     console.log("===========================================");
 
 
