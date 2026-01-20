@@ -12,6 +12,8 @@ const router = express.Router();
 
 // SAMPLE
 router.post('/viewData', (req, res) => {
+    console.log(req.body.is_private);
+    
     var data_batas = 10;
     var data_star = (req.body.data_ke - 1) * data_batas;
     var cari = req.body.cari_value;
@@ -39,9 +41,20 @@ router.post('/viewData', (req, res) => {
         ON biodata.unit_kerja = unit_kerja.id
 
         WHERE
-        biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND
-        biodata.nama LIKE '%`+cari+`%' AND
-        fotosample.private = '`+req.body.is_private+`'
+        biodata.unit_kerja = '`+req.body.unit_kerja_id+`'
+        AND biodata.nama LIKE '%`+cari+`%'
+        AND
+            (
+            '`+req.body.is_private+`' = ''
+            OR (
+                '`+req.body.is_private+`' = '0'
+                AND (fotosample.private = 0 OR fotosample.private IS NULL)
+            )
+            OR (
+                '`+req.body.is_private+`' = '1'
+                AND fotosample.private = 1
+            )
+        )
 
     `
 
@@ -74,9 +87,20 @@ router.post('/viewData', (req, res) => {
         ON fotosample.verificationBy = biodata_verifikator.nip
 
         WHERE
-        biodata.unit_kerja = '`+req.body.unit_kerja_id+`' AND
-        biodata.nama LIKE '%`+cari+`%' AND
-        fotosample.private = '`+req.body.is_private+`'
+        biodata.unit_kerja = '`+req.body.unit_kerja_id+`'
+        AND biodata.nama LIKE '%`+cari+`%'
+        AND
+            (
+            '`+req.body.is_private+`' = ''
+            OR (
+                '`+req.body.is_private+`' = '0'
+                AND (fotosample.private = 0 OR fotosample.private IS NULL)
+            )
+            OR (
+                '`+req.body.is_private+`' = '1'
+                AND fotosample.private = 1
+            )
+        )
 
         LIMIT `+ data_star + `,` + data_batas + `
     `

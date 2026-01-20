@@ -103,17 +103,12 @@
               <td class="text-center">
                 <q-badge
                   class="bg-blue-7"
-                  style="height: 20px; min-width: 100px; align-items: center; justify-content: center;"
-                  v-if="data.private === 0 || data.private === '0'"
-                >
+                  style="height: 20px; min-width: 100px; align-items: center; justify-content: center;" v-if="data.private === 0 || data.private === '0' || data.private === null">
                   Non Private
                 </q-badge>
 
                 <q-badge
-                  class="bg-red-7"
-                  style="height: 20px; min-width: 80px; align-items: center; justify-content: center;"
-                  v-else-if="data.private === 1 || data.private === '1'"
-                >
+                  class="bg-red-7" style="height: 20px; min-width: 80px; align-items: center; justify-content: center;" v-else>
                   Private
                 </q-badge>
               </td>
