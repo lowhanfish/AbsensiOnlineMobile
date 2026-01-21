@@ -139,7 +139,7 @@ const SettingSampleImage = () => {
     };
 
     // Upload foto ke server (endpoint sesuai backend)
-    const handleUpload = async () => {
+    const handleUpload = () => {
         if (!imagePath || !nip) {
             Alert.alert('Data incomplete', 'Pastikan foto dan NIP tersedia sebelum upload.');
             return;
@@ -147,56 +147,59 @@ const SettingSampleImage = () => {
         setUploadLoading(true);
         setUploadStatus(null);
 
-        try {
-            // Resize dan crop gambar terlebih dahulu
-            const processedImagePath = await resizeAndCropImage(imagePath);
-
-            if (!processedImagePath) {
-                setUploadStatus('Gagal memproses gambar');
-                setUploadLoading(false);
-                return;
-            }
-
-            const uploadUrl = URL.URL_presensi_settingProfile + 'addData';
-            const form = new FormData();
-            const uri = processedImagePath.startsWith('file://') ? processedImagePath : 'file://' + processedImagePath;
-            const filename = uri.split('/').pop() || 'photo.jpg';
-            // @ts-ignore
-            form.append('file', { uri, name: filename, type: 'image/jpeg' });
-            form.append('nip', nip);
-            // Note: Vektor akan diekstrak di server-side
-
-            setUploadStatus('Mengupload gambar...');
-            const response = await fetch(uploadUrl, {
-                method: 'POST',
-                body: form,
-                headers: {
-                    'Authorization': `kikensbarara ${token}`,
-                    'Accept': 'application/json'
-                },
-            });
-
-            const json = await response.json().catch(() => null);
-
-            if (response.ok) {
-                setUploadStatus('Upload berhasil');
-                Alert.alert('Upload berhasil', JSON.stringify(json || { status: 'ok' }));
-                // Hapus file asli jika berbeda dari yang di-resize
-                if (processedImagePath !== imagePath) {
-                    try { await RNFS.unlink(imagePath); } catch (e) { /* ignore */ }
+        // Resize dan crop gambar terlebih dahulu
+        resizeAndCropImage(imagePath)
+            .then((processedImagePath) => {
+                if (!processedImagePath) {
+                    setUploadStatus('Gagal memproses gambar');
+                    setUploadLoading(false);
+                    return;
                 }
-                (navigation as any).navigate('Settings', { samplePhoto: processedImagePath });
-            } else {
-                setUploadStatus('Upload gagal');
-                Alert.alert('Upload gagal', json?.message || 'Terjadi kesalahan saat upload');
-            }
-        } catch (err: any) {
-            console.error('❌ Upload error:', err);
-            setUploadStatus('Upload error');
-            Alert.alert('Upload error', err?.message || 'Gagal menghubungi server');
-        } finally {
-            setUploadLoading(false);
-        }
+
+                const uploadUrl = URL.URL_presensi_settingProfile + 'addData';
+                const form = new FormData();
+                const uri = processedImagePath.startsWith('file://') ? processedImagePath : 'file://' + processedImagePath;
+                const filename = uri.split('/').pop() || 'photo.jpg';
+                // @ts-ignore
+                form.append('file', { uri, name: filename, type: 'image/jpeg' });
+                form.append('nip', nip);
+                // Note: Vektor akan diekstrak di server-side
+
+                setUploadStatus('Mengupload gambar...');
+
+                console.log(form);
+
+                return fetch(uploadUrl, {
+                    method: 'POST',
+                    body: form,
+                    headers: {
+                        'Authorization': `kikensbarara ${token}`,
+                    },
+                }).then((response) => {
+                    return response.json().catch(() => null).then((json) => {
+                        if (response.ok) {
+                            setUploadStatus('Upload berhasil');
+                            Alert.alert('Upload berhasil', JSON.stringify(json || { status: 'ok' }));
+                            // Hapus file asli jika berbeda dari yang di-resize
+                            if (processedImagePath !== imagePath) {
+                                RNFS.unlink(imagePath).catch(() => { });
+                            }
+                            (navigation as any).navigate('Settings', { samplePhoto: processedImagePath });
+                        } else {
+                            setUploadStatus('Upload gagal');
+                            Alert.alert('Upload gagal', json?.message || 'Terjadi kesalahan saat upload');
+                        }
+                    });
+                });
+            })
+            .catch((err: any) => {
+                console.error('❌ Upload error:', err);
+                setUploadStatus('Upload error');
+                Alert.alert('Upload error', err?.message || 'Gagal menghubungi server');
+            })
+            .finally(() => {
+                setUploadLoading(false);
+            });
     };
 
 

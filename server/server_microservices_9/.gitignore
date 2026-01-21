@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+
+# Virtual environment
+venv/
+ENV/
+.env/
+.venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Model & Data
+*.onnx
+*.pth
+*.h5
+*.ckpt
+*.tflite
+*.pb
+*.npz
+*.npy
+*.csv
+*.log
+logs/
+saved_models/
+
+# Uploads & temp
+uploads/
+*.tmp
+*.bak
+*.swp
+
+# Test & coverage
+htmlcov/
+.tox/
+.coverage
+.cache
+pytest_cache/
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore server outputs
+*.sqlite3
+*.db
+*.pid
+*.log
+
+# Ignore secrets
+.env
+.env.*
+secrets.json
