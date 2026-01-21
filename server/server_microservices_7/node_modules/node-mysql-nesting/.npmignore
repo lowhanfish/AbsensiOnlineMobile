@@ -1,5 +1,0 @@
-# Dependencies
-node_modules/*
-
-# MySQL Config
-mysql_config.js
