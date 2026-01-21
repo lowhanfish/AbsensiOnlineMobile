@@ -13,7 +13,7 @@ CORS(app)
 
 # Inference Blueprint
 inference_bp = Blueprint('inference_bp', __name__)
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "api", "saved_models", "AntiSpoofing_bin_1.5_128.onnx")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "saved_models", "AntiSpoofing_bin_1.5_128.onnx")
 ort_session = ort.InferenceSession(MODEL_PATH, providers=['CPUExecutionProvider'])
 input_name = ort_session.get_inputs()[0].name
 
