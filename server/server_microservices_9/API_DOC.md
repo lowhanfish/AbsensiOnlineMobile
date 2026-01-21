@@ -1,7 +1,21 @@
 # Dokumentasi API Absensi Online - Face Anti-Spoofing
 
+### Untuk aktifkan sementara
+source venv/bin/activate && python3 main.py
+deactivate
+============================================
+### untuk paten
 
-venv/bin/activate && python3 main.py
+#### source venv/bin/activate
+#### which python
+##### Result : /home/diskominfo-konsel/Documents/App/AbsensiOnlineMobile/server/server_microservices_9/venv/bin/python
+
+#### pm2 start main.py --name "microservices-9" --interpreter /home/diskominfo-konsel/Documents/App/AbsensiOnlineMobile/server/server_microservices_9/venv/bin/python
+
+#### pm2 save
+
+#### pm2 startup
+
 
 ## 1. Inference (Prediksi Gambar)
 
