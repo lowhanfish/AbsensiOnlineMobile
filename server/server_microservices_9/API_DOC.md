@@ -1,5 +1,8 @@
 # Dokumentasi API Absensi Online - Face Anti-Spoofing
 
+
+venv/bin/activate && python3 main.py
+
 ## 1. Inference (Prediksi Gambar)
 
 - **Endpoint:** `POST /api/v1/inference`

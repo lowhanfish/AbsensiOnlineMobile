@@ -14,17 +14,7 @@ CORS(app)
 # Inference Blueprint
 inference_bp = Blueprint('inference_bp', __name__)
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "saved_models", "AntiSpoofing_bin_1.5_128.onnx")
-
-# Load ONNX model with GPU support (with fallback to CPU)
-available_providers = ort.get_available_providers()
-if 'CUDAExecutionProvider' in available_providers:
-    ort_session = ort.InferenceSession(MODEL_PATH, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
-    print("Using GPU (CUDA)")
-else:
-    ort_session = ort.InferenceSession(MODEL_PATH, providers=['CPUExecutionProvider'])
-    print("Using CPU (CUDA not available)")
-
-print(f"Available providers: {available_providers}")
+ort_session = ort.InferenceSession(MODEL_PATH, providers=['CPUExecutionProvider'])
 input_name = ort_session.get_inputs()[0].name
 
 def preprocess_image(image):
