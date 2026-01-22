@@ -378,6 +378,7 @@ curl -X POST -F "image=@test_face.jpg" http://localhost:5009/api/v1/inference
 
 - **IT Development Team of Konawe Selatan Regency Government**
 - **Department of Communication and Informatics (Diskominfo) Konawe Selatan**
+- **Kiken S Batara**
 
 ---
 
@@ -404,5 +405,5 @@ This project is developed for the internal use of the **Konawe Selatan Regency G
 
 For issues and feature requests, please contact:
 
-- **Email:** it@konaselselatan.go.id
-- **Website:** https://diskominfo.konaselselatan.go.id
+- **Email:** diskominfo@konaweselatankab.go.id
+- **Website:** https://diskominfo.konaweselatankab.go.id
