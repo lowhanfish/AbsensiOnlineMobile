@@ -38,6 +38,7 @@ logs/
 
 # ML / AI models
 *.onnx
+server/server_microservices_9/saved_models/
 server/server_microservices_10/saved_models/
 
 # Uploads & temp
