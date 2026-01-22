@@ -109,6 +109,34 @@ deactivate
 
 ---
 
+## 6. Inference dari File Lokal
+
+- **Endpoint:** `POST /api/v1/uploads`
+- **Deskripsi:** Memprediksi apakah gambar wajah dari file lokal (server/server/uploads) adalah asli (real) atau palsu (fake).
+- **Request:**
+  - **Headers:** `Content-Type: application/json`
+  - **Body:** raw JSON
+    ```json
+    {
+      "filename": "1768754045524.jpg"
+    }
+    ```
+- **Response:**
+  - `prediction`: "real" atau "fake"
+  - `confidence`: Nilai kepercayaan prediksi (float)
+- **Contoh Response:**
+
+```json
+{
+  "prediction": "real",
+  "confidence": 0.98
+}
+```
+
+
+
+---
+
 **Catatan:**
 
 - Semua endpoint berjalan di port 5009 (default)

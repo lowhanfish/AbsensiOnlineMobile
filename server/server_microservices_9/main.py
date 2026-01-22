@@ -1,6 +1,6 @@
 
 
-from flask import Flask, request, jsonify, Blueprint
+from flask import Flask, request, jsonify, Blueprint, send_from_directory
 from flask_cors import CORS
 import os
 import onnxruntime as ort
@@ -14,6 +14,7 @@ CORS(app)
 # Inference Blueprint
 inference_bp = Blueprint('inference_bp', __name__)
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "saved_models", "AntiSpoofing_bin_1.5_128.onnx")
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "server", "uploads")
 
 # Load ONNX model with GPU support (with fallback to CPU)
 available_providers = ort.get_available_providers()
@@ -76,6 +77,31 @@ def inference_url():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@inference_bp.route('/uploads', methods=['POST'])
+def inference_from_uploads():
+    data = request.get_json()
+    filename = data.get('filename')
+    if not filename:
+        return jsonify({"error": "Filename is required"}), 400
+    
+    image_path = os.path.join(UPLOADS_DIR, filename)
+    if not os.path.exists(image_path):
+        return jsonify({"error": "File not found"}), 404
+    
+    image = cv2.imread(image_path)
+    if image is None:
+        return jsonify({"error": "Invalid image file"}), 400
+    
+    input_tensor = preprocess_image(image)
+    outputs = ort_session.run(None, {input_name: input_tensor})
+    prediction = int(np.argmax(outputs[0]))
+    confidence = float(np.max(outputs[0]))
+    
+    return jsonify({
+        "prediction": "real" if prediction == 0 else "fake",
+        "confidence": confidence
+    })
 
 # Fine-tune Blueprint
 from flask import current_app

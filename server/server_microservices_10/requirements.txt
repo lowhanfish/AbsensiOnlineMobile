@@ -1,0 +1,22 @@
+# Face Matching Microservice Dependencies
+# Untuk server_microservices_10 - ArcFace Face Recognition
+
+# Flask Web Framework
+flask>=2.0.0
+flask-cors>=3.0.0
+
+# ONNX Runtime dengan GPU support (untuk RTX 5090)
+onnxruntime-gpu>=1.16.0
+
+# Image Processing
+opencv-python>=4.8.0
+
+# Numerical Computing
+numpy>=1.24.0
+
+# HTTP Requests (untuk inference dari URL)
+requests>=2.28.0
+
+# Pillow untuk image handling tambahan
+Pillow>=9.0.0
+
