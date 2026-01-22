@@ -24,7 +24,6 @@ import numpy as np
 import cv2
 import math
 import requests
-from io import BytesIO
 
 app = Flask(__name__)
 CORS(app)
@@ -35,6 +34,9 @@ CORS(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "saved_models", "Arc.onnx")
 UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "server", "uploads")
+
+# SCRFD model path
+SCRFD_MODEL_PATH = os.path.expanduser("~/.insightface/models/det_10g.onnx")
 
 # ArcFace input size (biasanya 112x112)
 INPUT_SIZE = (112, 112)
@@ -71,30 +73,23 @@ else:
 
 arcface_input_name = arcface_session.get_inputs()[0].name
 
-# Load SCRFD face detector dari InsightFace
+# Load SCRFD face detector langsung dari ONNX
+SCRFD_AVAILABLE = False
+scrfd_session = None
+
 try:
-    import insightface
-    from insightface.utils import face_align
-    SCRFD_AVAILABLE = True
-    print("✓ InsightFace loaded successfully")
-    
-    # Load buffalo_l model yang包含 SCRFD detector dan landmark
-    scrfd_model = insightface.model_zoo.get_model('buffalo_l')
-    
-    # Check if model loaded successfully
-    if scrfd_model is None:
-        print("✗ SCRFD model (buffalo_l) failed to load - will use fallback")
-        SCRFD_AVAILABLE = False
+    if os.path.exists(SCRFD_MODEL_PATH):
+        scrfd_session = ort.InferenceSession(
+            SCRFD_MODEL_PATH,
+            providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
+        )
+        SCRFD_AVAILABLE = True
+        print(f"✓ SCRFD model loaded from: {SCRFD_MODEL_PATH}")
     else:
-        print("✓ SCRFD model loaded")
-        
-except ImportError as e:
-    SCRFD_AVAILABLE = False
-    print(f"✗ InsightFace not available: {e}")
-    print("  Falling back to simple face detection")
+        print(f"✗ SCRFD model not found: {SCRFD_MODEL_PATH}")
 except Exception as e:
-    SCRFD_AVAILABLE = False
     print(f"✗ SCRFD model error: {e}")
+    SCRFD_AVAILABLE = False
     print("  Falling back to simple face detection")
 
 # ============================================================================
@@ -147,15 +142,6 @@ def get_rotation_matrix(angle, center, scale=1.0):
 def crop_and_align_face(image, bbox, landmarks, target_size=(112, 112)):
     """
     Crop dan align wajah berdasarkan landmark.
-    
-    Args:
-        image: Input gambar (BGR format)
-        bbox: Bounding box [x1, y1, x2, y2]
-        landmarks: 5-point landmarks
-        target_size: Ukuran output (width, height)
-    
-    Returns:
-        aligned_face: Wajah yang sudah di-crop dan di-align
     """
     # Hitung sudut rotasi dari landmark mata
     angle = calculate_angle(landmarks)
@@ -180,7 +166,6 @@ def crop_and_align_face(image, bbox, landmarks, target_size=(112, 112)):
     M = get_rotation_matrix(angle, eye_center, scale)
     
     # Tambah translasi untuk center wajah
-    # Dapatkan koordinat bounding box yang sudah dirotasi
     h, w = image.shape[:2]
     M[0, 2] += target_size[0] / 2 - eye_center[0]
     M[1, 2] += target_size[1] / 2 - eye_center[1]
@@ -197,7 +182,6 @@ def crop_and_align_face(image, bbox, landmarks, target_size=(112, 112)):
 def simple_face_detection(image):
     """
     Fallback face detection menggunakan OpenCV (Haar Cascade).
-    Digunakan jika SCRFD tidak tersedia.
     """
     # Convert ke grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -232,12 +216,6 @@ def simple_face_detection(image):
 def preprocess_for_arcface(face_image):
     """
     Preprocess wajah untuk ArcFace inference.
-    
-    Args:
-        face_image: Wajah yang sudah di-crop dan di-align (BGR)
-    
-    Returns:
-        input_tensor: Tensor yang siap untuk ArcFace inference
     """
     # Convert BGR ke RGB
     face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
@@ -245,14 +223,11 @@ def preprocess_for_arcface(face_image):
     # Resize ke ArcFace input size
     face_image = cv2.resize(face_image, INPUT_SIZE)
     
-    # Normalize dengan mean dan std ArcFace style
+    # Normalize
     face_image = face_image.astype(np.float32)
-    
-    # ArcFace normalization (InsightFace style) - range [-1, 1]
     face_image = (face_image - 127.5) / 127.5
     
-    # HWC format untuk ONNX (Height, Width, Channel)
-    # Pastikan format sesuai yang diharapkan model: (1, 112, 112, 3)
+    # HWC format untuk ONNX
     input_tensor = np.expand_dims(face_image, axis=0)
     
     return input_tensor.astype(np.float32)
@@ -261,12 +236,6 @@ def preprocess_for_arcface(face_image):
 def extract_embedding(face_image):
     """
     Ekstrak embedding wajah menggunakan ArcFace.
-    
-    Args:
-        face_image: Gambar wajah (numpy array BGR)
-    
-    Returns:
-        embedding: 512-dimensional embedding vector
     """
     input_tensor = preprocess_for_arcface(face_image)
     
@@ -283,22 +252,13 @@ def extract_embedding(face_image):
 
 
 def cosine_similarity(emb1, emb2):
-    """
-    Hitung cosine similarity antara dua embedding.
-    """
+    """Hitung cosine similarity antara dua embedding."""
     return np.dot(emb1, emb2)
 
 
 def get_confidence_label(similarity, face_size):
     """
     Berikan label confidence berdasarkan similarity dan ukuran wajah.
-    
-    Args:
-        similarity: Cosine similarity score (0-1)
-        face_size: Ukuran wajah dalam piksel (max(bbox width, bbox height))
-    
-    Returns:
-        label: "High", "Medium", atau "Low"
     """
     if similarity >= SIMILARITY_HIGH and face_size >= FACE_SIZE_HIGH:
         return "High"
@@ -308,16 +268,99 @@ def get_confidence_label(similarity, face_size):
         return "Low"
 
 
+def detect_faces_scrfd(image, threshold=0.5):
+    """
+    Deteksi wajah menggunakan SCRFD ONNX model.
+    Returns: list of dict with 'bbox', 'landmarks', 'score'
+    """
+    h, w = image.shape[:2]
+    
+    # Preprocess: resize ke 640x640 dan normalize
+    img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    img_resized = cv2.resize(img_rgb, (640, 640))
+    
+    # Normalize [0, 255] -> [0, 1]
+    img_input = img_resized.astype(np.float32) / 255.0
+    
+    # HWC -> CHW
+    img_input = img_input.transpose(2, 0, 1)
+    img_input = np.expand_dims(img_input, axis=0)
+    
+    # Get input name
+    input_name = scrfd_session.get_inputs()[0].name
+    
+    # Run inference
+    outputs = scrfd_session.run(None, {input_name: img_input})
+    
+    # Parse outputs
+    # Outputs: scores (N, 1), boxes (N, 4), landmarks (N, 10) for 3 levels
+    
+    strides = [8, 16, 32]
+    grid_sizes = [80 * 80, 40 * 40, 20 * 20]  # 640 / stride ^ 2
+    
+    all_detections = []
+    
+    for level in range(3):
+        scores = outputs[level]
+        boxes = outputs[level + 3]
+        landmarks = outputs[level + 6]
+        
+        # Squeeze batch dimension if present
+        if scores.ndim == 2 and scores.shape[0] == 1:
+            scores = scores.squeeze(0)
+        if boxes.ndim == 2 and boxes.shape[0] == 1:
+            boxes = boxes.squeeze(0)
+        if landmarks.ndim == 2 and landmarks.shape[0] == 1:
+            landmarks = landmarks.squeeze(0)
+        
+        grid_len = grid_sizes[level]
+        
+        # Loop melalui semua locations
+        for i in range(min(grid_len, len(scores))):
+            try:
+                score = float(scores[i])
+                if score >= threshold:
+                    # Get box - box format: [x1, y1, x2, y2]
+                    box = boxes[i]
+                    lm = landmarks[i]
+                    
+                    # Scale ke gambar asli
+                    scale_x = w / 640.0
+                    scale_y = h / 640.0
+                    
+                    x1 = int(max(0, box[0] * scale_x))
+                    y1 = int(max(0, box[1] * scale_y))
+                    x2 = int(min(w, box[2] * scale_x))
+                    y2 = int(min(h, box[3] * scale_y))
+                    
+                    # Get landmarks (5 points)
+                    landmark = np.array([
+                        [lm[0] * scale_x, lm[1] * scale_y],
+                        [lm[2] * scale_x, lm[3] * scale_y],
+                        [lm[4] * scale_x, lm[5] * scale_y],
+                        [lm[6] * scale_x, lm[7] * scale_y],
+                        [lm[8] * scale_x, lm[9] * scale_y],
+                    ])
+                    
+                    all_detections.append({
+                        'bbox': [int(x1), int(y1), int(x2), int(y2)],
+                        'landmarks': landmark,
+                        'score': score
+                    })
+            except (IndexError, TypeError) as e:
+                continue
+    
+    return all_detections
+
+
 def process_image(image_source):
     """
     Proses satu gambar: deteksi wajah → alignment → embedding.
-    
-    Args:
-        image_source: Bisa berupa numpy array atau URL string
-    
-    Returns:
-        dict dengan keys: face_detected, bbox, landmarks, embedding, error
+    Optimized for GPU performance.
     """
+    import time
+    start_time = time.time()
+
     # Load gambar jika URL
     if isinstance(image_source, str):
         try:
@@ -331,66 +374,81 @@ def process_image(image_source):
         image = image_source.copy()
     else:
         return {'face_detected': False, 'error': "Invalid image source"}
-    
+
     if image is None:
         return {'face_detected': False, 'error': "Invalid image data"}
-    
+
     # Face detection
     if SCRFD_AVAILABLE:
         try:
             # SCRFD detection
-            bboxes, landmarks = scrfd_model.detect(image, threshold=0.5, max_num=1)
-            
-            if len(bboxes) == 0:
-                return {'face_detected': False, 'error': "No face detected"}
-            
-            # Ambil wajah dengan confidence tertinggi
-            best_idx = np.argmax(bboxes[:, 4])
-            bbox = bboxes[best_idx][:4].astype(int)
-            landmark = landmarks[best_idx]
-            
+            detections = detect_faces_scrfd(image, threshold=0.5)
+
+            if len(detections) == 0:
+                # Fallback ke OpenCV
+                faces = simple_face_detection(image)
+
+                if len(faces) == 0:
+                    return {'face_detected': False, 'error': "No face detected"}
+
+                # Ambil wajah dengan confidence tertinggi
+                face = max(faces, key=lambda x: x['score'])
+                bbox = face['bbox']
+                landmark = face['landmarks']
+            else:
+                # Ambil wajah dengan confidence tertinggi
+                best_detection = max(detections, key=lambda x: x['score'])
+                bbox = best_detection['bbox']
+                landmark = best_detection['landmarks']
+
         except Exception as e:
-            return {'face_detected': False, 'error': f"Detection failed: {str(e)}"}
+            # Fallback ke OpenCV
+            faces = simple_face_detection(image)
+
+            if len(faces) == 0:
+                return {'face_detected': False, 'error': f"Detection failed: {str(e)}"}
+
+            # Ambil wajah dengan confidence tertinggi
+            face = max(faces, key=lambda x: x['score'])
+            bbox = face['bbox']
+            landmark = face['landmarks']
     else:
         # Fallback ke OpenCV
         faces = simple_face_detection(image)
-        
+
         if len(faces) == 0:
             return {'face_detected': False, 'error': "No face detected"}
-        
+
         # Ambil wajah dengan confidence tertinggi
         face = max(faces, key=lambda x: x['score'])
         bbox = face['bbox']
         landmark = face['landmarks']
-    
+
     # Hitung ukuran wajah
     face_size = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
-    
+
     # Crop dan align wajah
     try:
         aligned_face = crop_and_align_face(image, bbox, landmark, INPUT_SIZE)
     except Exception as e:
         return {'face_detected': False, 'error': f"Alignment failed: {str(e)}"}
-    
+
     # Ekstrak embedding
     try:
         embedding = extract_embedding(aligned_face)
     except Exception as e:
         return {'face_detected': False, 'error': f"Embedding extraction failed: {str(e)}"}
-    
-    # Convert bbox ke list jika berupa numpy array
-    if hasattr(bbox, 'tolist'):
-        bbox_list = bbox.tolist()
-    else:
-        bbox_list = list(bbox)
-    
+
+    processing_time = time.time() - start_time
+
     return {
         'face_detected': True,
-        'bbox': bbox_list,
+        'bbox': bbox,
         'face_size': int(face_size),
         'landmarks': landmark.tolist() if hasattr(landmark, 'tolist') else list(landmark),
         'embedding': embedding.tolist(),
-        'image_shape': image.shape[:2]
+        'image_shape': image.shape[:2],
+        'processing_time_ms': round(processing_time * 1000, 2)
     }
 
 
@@ -404,16 +462,6 @@ face_match_bp = Blueprint('face_match_bp', __name__)
 def verify():
     """
     Verifikasi wajah dari 3 gambar.
-    
-    Request (multipart/form-data):
-        - reference: Gambar referensi (wajah 1)
-        - probe1: Gambar pertama untuk dicocokkan (wajah 2)
-        - probe2: Gambar kedua untuk dicocokkan (wajah 3)
-    
-    Response:
-        - reference_info: Info wajah referensi
-        - probe_results: Hasil pencocokan untuk setiap probe
-        - overall_result: Hasil keseluruhan
     """
     # Validasi input
     if 'reference' not in request.files:
@@ -452,10 +500,15 @@ def verify():
             "bbox": reference_result['bbox'],
             "face_size": reference_result['face_size'],
             "embedding_dim": len(ref_embedding),
-            "image_shape": reference_result['image_shape']
+            "image_shape": reference_result['image_shape'],
+            "processing_time_ms": reference_result.get('processing_time_ms', 0)
         },
         "probe_results": [],
-        "overall_result": {}
+        "overall_result": {},
+        "performance": {
+            "total_processing_time_ms": 0,
+            "gpu_accelerated": 'CUDAExecutionProvider' in available_providers
+        }
     }
     
     # Process probe images
@@ -515,12 +568,19 @@ def verify():
             "face_size": probe_result['face_size'],
             "similarity": round(float(similarity), 4),
             "confidence": confidence,
-            "match": is_match
+            "match": is_match,
+            "processing_time_ms": probe_result.get('processing_time_ms', 0)
         })
     
     # Overall result
     avg_similarity = np.mean(similarities) if similarities else 0.0
-    
+
+    # Calculate total processing time
+    total_time = reference_result.get('processing_time_ms', 0)
+    for probe_result in response["probe_results"]:
+        if "processing_time_ms" in probe_result:
+            total_time += probe_result["processing_time_ms"]
+
     response["overall_result"] = {
         "status": "match" if all_passed else "no_match",
         "average_similarity": round(float(avg_similarity), 4),
@@ -528,7 +588,9 @@ def verify():
         "total_probes": len(probe_files),
         "matched_probes": len([s for s in similarities if s >= SIMILARITY_MEDIUM])
     }
-    
+
+    response["performance"]["total_processing_time_ms"] = round(total_time, 2)
+
     return jsonify(response)
 
 
@@ -536,18 +598,6 @@ def verify():
 def verify_uploads():
     """
     Verifikasi wajah dari file di folder uploads.
-    
-    Request (JSON):
-        {
-            "reference": "nama_file_reference.jpg",
-            "probe1": "nama_file_probe1.jpg", (opsional)
-            "probe2": "nama_file_probe2.jpg" (opsional)
-        }
-    
-    Response:
-        - reference_info: Info wajah referensi
-        - probe_results: Hasil pencocokan untuk setiap probe
-        - overall_result: Hasil keseluruhan
     """
     data = request.get_json()
     
@@ -561,7 +611,7 @@ def verify_uploads():
     if not probe1_filename and not probe2_filename:
         return jsonify({"error": "At least one probe filename is required"}), 400
     
-    # Load reference image dari uploads folder
+    # Load reference image
     reference_path = os.path.join(UPLOADS_DIR, reference_filename)
     if not os.path.exists(reference_path):
         return jsonify({"error": f"Reference file not found: {reference_filename}"}), 404
@@ -570,7 +620,6 @@ def verify_uploads():
     if reference_image is None:
         return jsonify({"error": "Invalid reference image file"}), 400
     
-    # Process reference face
     reference_result = process_image(reference_image)
     
     if not reference_result.get('face_detected'):
@@ -579,10 +628,8 @@ def verify_uploads():
             "details": reference_result.get('error', 'Unknown error')
         }), 400
     
-    # Reference embedding
     ref_embedding = np.array(reference_result['embedding'])
     
-    # Prepare response
     response = {
         "reference": {
             "filename": reference_filename,
@@ -596,7 +643,6 @@ def verify_uploads():
         "overall_result": {}
     }
     
-    # Process probe filenames
     probe_files = []
     if probe1_filename:
         probe_files.append(('probe1', probe1_filename))
@@ -607,7 +653,6 @@ def verify_uploads():
     similarities = []
     
     for probe_name, probe_filename in probe_files:
-        # Load probe image dari uploads folder
         probe_path = os.path.join(UPLOADS_DIR, probe_filename)
         if not os.path.exists(probe_path):
             response["probe_results"].append({
@@ -628,7 +673,6 @@ def verify_uploads():
             all_passed = False
             continue
         
-        # Process probe face
         probe_result = process_image(probe_image)
         
         if not probe_result.get('face_detected'):
@@ -640,15 +684,11 @@ def verify_uploads():
             all_passed = False
             continue
         
-        # Calculate similarity
         probe_embedding = np.array(probe_result['embedding'])
         similarity = cosine_similarity(ref_embedding, probe_embedding)
         similarities.append(similarity)
         
-        # Get confidence label
         confidence = get_confidence_label(similarity, probe_result['face_size'])
-        
-        # Determine if match
         is_match = bool(similarity >= SIMILARITY_MEDIUM)
         
         if not is_match:
@@ -664,7 +704,6 @@ def verify_uploads():
             "match": is_match
         })
     
-    # Overall result
     avg_similarity = np.mean(similarities) if similarities else 0.0
     
     response["overall_result"] = {
@@ -680,16 +719,7 @@ def verify_uploads():
 
 @face_match_bp.route('/verify-url', methods=['POST'])
 def verify_url():
-    """
-    Verifikasi wajah dari URL gambar.
-    
-    Request (JSON):
-        {
-            "reference_url": "https://...",
-            "probe1_url": "https://...",
-            "probe2_url": "https://..."
-        }
-    """
+    """Verifikasi wajah dari URL gambar."""
     data = request.get_json()
     
     if not data or 'reference_url' not in data:
@@ -702,7 +732,6 @@ def verify_url():
     if not probe1_url and not probe2_url:
         return jsonify({"error": "At least one probe URL is required"}), 400
     
-    # Process reference
     reference_result = process_image(reference_url)
     
     if not reference_result.get('face_detected'):
@@ -777,16 +806,7 @@ def verify_url():
 
 @face_match_bp.route('/extract-embedding', methods=['POST'])
 def extract_embedding_endpoint():
-    """
-    Ekstrak embedding dari satu gambar wajah.
-    Berguna untuk membuat database embedding.
-    
-    Request:
-        - image: File gambar wajah
-    
-    Response:
-        - embedding: Vector embedding wajah
-    """
+    """Ekstrak embedding dari satu gambar wajah."""
     if 'image' not in request.files:
         return jsonify({"error": "Image file is required"}), 400
     
@@ -816,15 +836,7 @@ def extract_embedding_endpoint():
 
 @face_match_bp.route('/compare', methods=['POST'])
 def compare():
-    """
-    Bandingkan dua embedding secara langsung.
-    
-    Request (JSON):
-        {
-            "embedding1": [...],
-            "embedding2": [...]
-        }
-    """
+    """Bandingkan dua embedding secara langsung."""
     data = request.get_json()
     
     if not data or 'embedding1' not in data or 'embedding2' not in data:
@@ -834,8 +846,6 @@ def compare():
     emb2 = np.array(data['embedding2'])
     
     similarity = cosine_similarity(emb1, emb2)
-    
-    # Hitung confidence (dummy face size)
     confidence = get_confidence_label(similarity, 100)
     
     return jsonify({
@@ -867,14 +877,22 @@ app.register_blueprint(face_match_bp, url_prefix='/api/v1')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5010))
+    workers = int(os.environ.get('WORKERS', 1))
     print(f"\n{'='*60}")
     print(f"Face Matching Microservice - ArcFace")
     print(f"{'='*60}")
     print(f"Port: {port}")
+    print(f"Workers: {workers}")
     print(f"ArcFace Model: {MODEL_PATH}")
     print(f"SCRFD: {'Enabled' if SCRFD_AVAILABLE else 'Disabled (using Haar Cascade)'}")
     print(f"GPU: {'Yes' if 'CUDAExecutionProvider' in available_providers else 'No'}")
     print(f"{'='*60}\n")
-    
-    app.run(host='0.0.0.0', port=port, debug=True)
+
+    if workers > 1:
+        # Production mode with multiple workers
+        from gunicorn.app.wsgiapp import WSGIApplication
+        WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]").run()
+    else:
+        # Development mode
+        app.run(host='0.0.0.0', port=port, debug=True)
 
