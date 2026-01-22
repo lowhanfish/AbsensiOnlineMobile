@@ -37,6 +37,7 @@ saved_models/
 
 # Uploads & temp
 uploads/
+server/server/uploads/
 *.tmp
 *.bak
 *.swp
