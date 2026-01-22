@@ -35,6 +35,11 @@ ENV/
 logs/
 # saved_models/
 
+
+# ML / AI models
+*.onnx
+server/server_microservices_10/saved_models/
+
 # Uploads & temp
 uploads/
 server/server/uploads/
