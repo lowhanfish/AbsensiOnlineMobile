@@ -34,6 +34,7 @@ CORS(app)
 # ============================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "saved_models", "Arc.onnx")
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "server", "uploads")
 
 # ArcFace input size (biasanya 112x112)
 INPUT_SIZE = (112, 112)
@@ -509,6 +510,152 @@ def verify():
         
         response["probe_results"].append({
             "filename": probe_file.filename,
+            "face_detected": True,
+            "bbox": probe_result['bbox'],
+            "face_size": probe_result['face_size'],
+            "similarity": round(float(similarity), 4),
+            "confidence": confidence,
+            "match": is_match
+        })
+    
+    # Overall result
+    avg_similarity = np.mean(similarities) if similarities else 0.0
+    
+    response["overall_result"] = {
+        "status": "match" if all_passed else "no_match",
+        "average_similarity": round(float(avg_similarity), 4),
+        "all_passed": all_passed,
+        "total_probes": len(probe_files),
+        "matched_probes": len([s for s in similarities if s >= SIMILARITY_MEDIUM])
+    }
+    
+    return jsonify(response)
+
+
+@face_match_bp.route('/verify-uploads', methods=['POST'])
+def verify_uploads():
+    """
+    Verifikasi wajah dari file di folder uploads.
+    
+    Request (JSON):
+        {
+            "reference": "nama_file_reference.jpg",
+            "probe1": "nama_file_probe1.jpg", (opsional)
+            "probe2": "nama_file_probe2.jpg" (opsional)
+        }
+    
+    Response:
+        - reference_info: Info wajah referensi
+        - probe_results: Hasil pencocokan untuk setiap probe
+        - overall_result: Hasil keseluruhan
+    """
+    data = request.get_json()
+    
+    if not data or 'reference' not in data:
+        return jsonify({"error": "Reference filename is required"}), 400
+    
+    reference_filename = data['reference']
+    probe1_filename = data.get('probe1')
+    probe2_filename = data.get('probe2')
+    
+    if not probe1_filename and not probe2_filename:
+        return jsonify({"error": "At least one probe filename is required"}), 400
+    
+    # Load reference image dari uploads folder
+    reference_path = os.path.join(UPLOADS_DIR, reference_filename)
+    if not os.path.exists(reference_path):
+        return jsonify({"error": f"Reference file not found: {reference_filename}"}), 404
+    
+    reference_image = cv2.imread(reference_path)
+    if reference_image is None:
+        return jsonify({"error": "Invalid reference image file"}), 400
+    
+    # Process reference face
+    reference_result = process_image(reference_image)
+    
+    if not reference_result.get('face_detected'):
+        return jsonify({
+            "error": "No face detected in reference image",
+            "details": reference_result.get('error', 'Unknown error')
+        }), 400
+    
+    # Reference embedding
+    ref_embedding = np.array(reference_result['embedding'])
+    
+    # Prepare response
+    response = {
+        "reference": {
+            "filename": reference_filename,
+            "face_detected": True,
+            "bbox": reference_result['bbox'],
+            "face_size": reference_result['face_size'],
+            "embedding_dim": len(ref_embedding),
+            "image_shape": reference_result['image_shape']
+        },
+        "probe_results": [],
+        "overall_result": {}
+    }
+    
+    # Process probe filenames
+    probe_files = []
+    if probe1_filename:
+        probe_files.append(('probe1', probe1_filename))
+    if probe2_filename:
+        probe_files.append(('probe2', probe2_filename))
+    
+    all_passed = True
+    similarities = []
+    
+    for probe_name, probe_filename in probe_files:
+        # Load probe image dari uploads folder
+        probe_path = os.path.join(UPLOADS_DIR, probe_filename)
+        if not os.path.exists(probe_path):
+            response["probe_results"].append({
+                "filename": probe_filename,
+                "face_detected": False,
+                "error": "File not found"
+            })
+            all_passed = False
+            continue
+        
+        probe_image = cv2.imread(probe_path)
+        if probe_image is None:
+            response["probe_results"].append({
+                "filename": probe_filename,
+                "face_detected": False,
+                "error": "Invalid image file"
+            })
+            all_passed = False
+            continue
+        
+        # Process probe face
+        probe_result = process_image(probe_image)
+        
+        if not probe_result.get('face_detected'):
+            response["probe_results"].append({
+                "filename": probe_filename,
+                "face_detected": False,
+                "error": probe_result.get('error', 'Face detection failed')
+            })
+            all_passed = False
+            continue
+        
+        # Calculate similarity
+        probe_embedding = np.array(probe_result['embedding'])
+        similarity = cosine_similarity(ref_embedding, probe_embedding)
+        similarities.append(similarity)
+        
+        # Get confidence label
+        confidence = get_confidence_label(similarity, probe_result['face_size'])
+        
+        # Determine if match
+        is_match = bool(similarity >= SIMILARITY_MEDIUM)
+        
+        if not is_match:
+            all_passed = False
+        
+        response["probe_results"].append({
+            "filename": probe_filename,
             "face_detected": True,
             "bbox": probe_result['bbox'],
             "face_size": probe_result['face_size'],
