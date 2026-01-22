@@ -24,7 +24,7 @@ ENV/
 .DS_Store
 
 # Model & Data
-*.onnx
+# *.onnx
 *.pth
 *.h5
 *.ckpt
@@ -35,7 +35,7 @@ ENV/
 *.csv
 *.log
 logs/
-saved_models/
+# saved_models/
 
 # Uploads & temp
 uploads/
