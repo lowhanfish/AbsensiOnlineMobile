@@ -6,10 +6,10 @@ import os
 import onnxruntime as ort
 import numpy as np
 import cv2
+import requests
 
 app = Flask(__name__)
 CORS(app)
-
 
 # Inference Blueprint
 inference_bp = Blueprint('inference_bp', __name__)
@@ -52,6 +52,31 @@ def inference():
         "confidence": confidence
     })
 
+# Endpoint baru: inference dari URL gambar
+@inference_bp.route('/inference-url', methods=['POST'])
+def inference_url():
+    data = request.get_json()
+    if not data or 'url' not in data:
+        return jsonify({"error": "No URL provided"}), 400
+    image_url = data['url']
+    try:
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        image_bytes = np.frombuffer(response.content, np.uint8)
+        image = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+        if image is None:
+            return jsonify({"error": "Invalid image from URL"}), 400
+        input_tensor = preprocess_image(image)
+        outputs = ort_session.run(None, {input_name: input_tensor})
+        prediction = int(np.argmax(outputs[0]))
+        confidence = float(np.max(outputs[0]))
+        return jsonify({
+            "prediction": "real" if prediction == 0 else "fake",
+            "confidence": confidence
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # Fine-tune Blueprint
 from flask import current_app
 import subprocess
@@ -81,7 +106,6 @@ def finetune():
 
 app.register_blueprint(inference_bp, url_prefix='/api/v1')
 app.register_blueprint(finetune_bp, url_prefix='/api/v1')
-
 
 @app.route('/')
 def home():
