@@ -1,5 +1,58 @@
+const configurasi = require('./configurasi');
 
-const DEFAULT_THRESHOLD = 0.5;
+
+// =================== INI YANG KITA GUNAKAN UNTUK CEK SPOOFING DI V2 =================
+const cekSpoofing = async (body) => {
+    try {
+        const response = await fetch(configurasi.url_micro_9 + '/api/v1/uploads', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.log("Error: " + response.status + " - " + errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        // console.log("============================ xx")
+        // console.log(result);
+        // console.log("============================ xx")
+        return result.prediction;
+    } catch (err) {
+        console.log("Error: " + err);
+        throw err;
+    }
+};
+const pencocokkanWajah = async (body) => {
+    try {
+        const response = await fetch(configurasi.url_micro_10 + "api/v1/verify-uploads", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.log("Error: " + response.status + " - " + errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log(result);
+        return result;
+    } catch (err) {
+        console.log("Error: " + err);
+        throw err;
+    }
+};
+
 
 const pencocokan_wajah = (vektor_sampel, vektor_absensi) => {
     // Jika input berupa string, ubah ke array
@@ -28,8 +81,6 @@ const pencocokan_wajah = (vektor_sampel, vektor_absensi) => {
         match: similarity >= DEFAULT_THRESHOLD // true jika cocok, false jika tidak
     };
 }
-
-
 
 const getVectorFromDB = (db, nip) => {
 
@@ -61,6 +112,8 @@ const getVectorFromDB = (db, nip) => {
 
 module.exports = {
     pencocokan_wajah : pencocokan_wajah,
-    getVectorFromDB : getVectorFromDB
+    getVectorFromDB : getVectorFromDB,
+    cekSpoofing : cekSpoofing,
+    pencocokkanWajah : pencocokkanWajah,
 
 }

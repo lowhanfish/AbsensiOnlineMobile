@@ -33,7 +33,28 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
     var jam = lib.Timex().jam;
     var nip = req.body.NIP;
-    
+
+    var STATUS = ""
+    var KET = ""
+
+    const body = {
+        "filename": "1768913420754.jpeg"
+    }
+
+    console.log("=========== SPOOFING ===========")
+    const cekspoofing = await faceEmbedding.cekSpoofing(body)
+    console.log(cekspoofing);
+    if (cekspoofing === "fake") {
+        res.status(500).json({
+            status: 'ABSEN GAGAL',
+            ket: 'Sayangnya, foto yang anda kirimkan terdeteksi "fake" silahkan ulangi kembali. absen hari ini pada jam : ',
+            jam: jam
+        });
+        return false
+    }
+    console.log("=========== SPOOFING ===========")
+
+
     console.log("===========================================");
     console.log("ABSEN HARIAN V2 (FACE RECOGNATION) DI PANGGIL");
     console.log("Body:", req.body);
@@ -336,8 +357,6 @@ router.post('/viewListDaruratLimit_v2', (req, res) => {
         }
     })
 });
-
-
 
 // DI GUNAKAN PADA ABSENSI VERSI LAMA (TANPA FACE ID)
 router.post('/viewListDarurat', (req, res) => {

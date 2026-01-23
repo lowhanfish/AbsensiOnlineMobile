@@ -53,8 +53,6 @@ const Timex = () =>{
     }
 }
 
-
-
 const loopingTgl = (datax) =>{
     var list_tgl = [];
 
@@ -83,8 +81,6 @@ const loopingTgl = (datax) =>{
     return list_tgl
 }
 
-
-
 const checkHariSabtuMinggu = (tgl) =>{
     var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     var d = new Date(tgl);
@@ -97,7 +93,6 @@ const checkHariSabtuMinggu = (tgl) =>{
         return true
     }
 }
-
 
 const checkHariSabtuMingguUtkApprove = (tgl, jenisAbsen) =>{
 
@@ -129,7 +124,6 @@ const checkHariSabtuMingguUtkApprove = (tgl, jenisAbsen) =>{
 
 }
 
-
 const checkHariKerja = (tgl, metode) =>{
     var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     var d = new Date(tgl);
@@ -155,8 +149,6 @@ const checkHariKerja = (tgl, metode) =>{
 
     // console.log(dayName)
 }
-
-
 
 async function getTglLibur(db, dateFirt, dateLast, res){
 
@@ -185,7 +177,6 @@ async function getTglLibur(db, dateFirt, dateLast, res){
 
     })
 }
-
 
 const hitungTanggalMerah = async (db, dateFirt, dateLast, res) =>{
 
@@ -243,7 +234,6 @@ const hitungTanggalMerah = async (db, dateFirt, dateLast, res) =>{
     })
 }
 
-
 const hitungJarak = (lat1, lon1, lat2, lon2) => {
     var R = 6371; // km
     var dLat = toRad(lat2 - lat1);
@@ -261,8 +251,6 @@ const hitungJarak = (lat1, lon1, lat2, lon2) => {
 const toRad = (Value) => {
     return Value * Math.PI / 180;
 }
-
-
 
 const addIsMockLocation = (req, res, db, jenisAbsenyangdicurangi) =>{
     var query = `
@@ -283,8 +271,6 @@ const addIsMockLocation = (req, res, db, jenisAbsenyangdicurangi) =>{
    })
 }
 
-
-
 const restrukturListTgl  = async (dateFirt, dateLast) =>{
 
 
@@ -302,10 +288,6 @@ const restrukturListTgl  = async (dateFirt, dateLast) =>{
         resolve (listTgl)
     })
 }
-
-
-
-
 
 const cariHariLibur  = async (tanggalLibur, listTanggal, metode) =>{
     return new Promise (resolve => {
@@ -329,15 +311,6 @@ const cariHariLibur  = async (tanggalLibur, listTanggal, metode) =>{
     })
 
 }
-
-
-
-
-
-
-
-
-
 
 module.exports = {
     getBiodataByNIP : getBiodataByNIP,

@@ -32,6 +32,8 @@ const url_micro_7 = process.env.HOST_MICROSERVICES+':50287'
 //const url_micro_8 = 'http://10.91.178.4:50288'
 //const url_micro_8 = 'http://10.91.178.2:50288'
 const url_micro_8 = process.env.HOST_MICROSERVICES+':50288'
+const url_micro_9 = process.env.HOST_MICROSERVICES+':5009'
+const url_micro_10 = process.env.HOST_MICROSERVICES+':5010'
 
 
 
@@ -53,5 +55,7 @@ module.exports = {
     url_micro_6 : url_micro_6,
     url_micro_7 : url_micro_7,
     url_micro_8 : url_micro_8,	
+    url_micro_9 : url_micro_9,	
+    url_micro_10 : url_micro_10,	
 	
 }
