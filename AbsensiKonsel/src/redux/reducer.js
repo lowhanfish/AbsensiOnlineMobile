@@ -7,10 +7,10 @@
 // Mengimpor semua Tipe Aksi dari file actions.js
 // Ini menghilangkan kebutuhan untuk mendefinisikan konstanta secara lokal di sini.
 import {
-    LOGIN_SUCCESS,
-    LOGOUT,
-    SET_WAKTU_DATA 
-} from './actions'; 
+  LOGIN_SUCCESS,
+  LOGOUT,
+  SET_WAKTU_DATA
+} from './actions';
 
 // =============================
 // KONFIGURASI URL SERVER
@@ -18,11 +18,11 @@ import {
 
 // Gunakan const agar tidak bisa diubah sembarangan
 const URL_SIMPEG = 'https://server-egov.konaweselatankab.go.id';
-// const URLKU = 'https://serverabsensiv2.konaweselatankab.go.id';
+const URLKU = 'https://serverabsensiv2.konaweselatankab.go.id';
 // const URLKU = 'http://192.168.1.24:5040';
 // const URLKU = 'http://192.168.1.3:5040';
 // const URLKU = 'http://192.168.44.221:5040';
-const URLKU = 'http://192.168.44.176:5040';
+// const URLKU = 'http://192.168.44.176:5040';
 
 // const URLKU = 'http://10.216.143.96:5040';
 
@@ -45,7 +45,7 @@ const initialState = {
     LOGIN_URL: `${URLKU}/auth/login`,
     URL_UpdateToken: `${URLKU}/api/v1/client_updateToken/`,
 
-    URL_SIMPEG : URL_SIMPEG + '/',
+    URL_SIMPEG: URL_SIMPEG + '/',
     URL_APP: URLKU + '/',
     LOGIN_URL: URLKU + "/auth/login",
     URL_UpdateToken: URLKU + '/api/v1/client_updateToken/',
@@ -65,10 +65,10 @@ const initialState = {
     URL_kinerja_token: URLKU + '/api/v1/kinerja_token/',
     URL_kinerja_worksheet: URLKU + '/api/v1/kinerja_worksheet/',
     URL_Pengumuman: URLKU + '/api/v1/client_pengumuman/',
-    URL_apelPelaksanaan : URLKU+'/api/v1/apelPelaksanaan/',
-    URL_biodata : URLKU+'/api/v1/dm_biodata/',
-    URL_test_connections : URLKU+'/api/v1/test_connections/',
-    URL_presensi_settingProfile : URLKU+'/api/v1/presensi_settingProfile/',
+    URL_apelPelaksanaan: URLKU + '/api/v1/apelPelaksanaan/',
+    URL_biodata: URLKU + '/api/v1/dm_biodata/',
+    URL_test_connections: URLKU + '/api/v1/test_connections/',
+    URL_presensi_settingProfile: URLKU + '/api/v1/presensi_settingProfile/',
 
 
   },

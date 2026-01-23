@@ -2,7 +2,7 @@ const express = require('express');
 var db = require('../../../../db/MySql/absensi');
 const fs = require('fs');
 
-var multer=require("multer");
+var multer = require("multer");
 var upload = require('../../../../db/multer/pdf');
 
 var uniqid = require('uniqid');
@@ -21,7 +21,7 @@ const url_micro_4 = configurasi.url_micro_4
 
 const fcm = require('../../../library/fcm');
 
-router.get('/cappo', (req, res)=>{
+router.get('/cappo', (req, res) => {
     fcm.pushNotification('Nableee', 'telasooooo ');
     res.json('wataaaooo')
 })
@@ -64,7 +64,7 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     console.log("===========================================");
 
 
-    
+
 
 
 
@@ -80,20 +80,20 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 router.post('/Add', async (req, res) => {
 
     // console.log(url_micro_4+'/micro_4/Add_Absen/Add');
-  
+
     const body = req.body;
     var profile_login = req.user.profile
     body.lokasi_absen_unit = profile_login.lokasi_absen
     body._id = req.user._id
 
-     console.log("ABSEN HARIAN DI PANGGIL");
-     console.log(body);
+    console.log("ABSEN HARIAN DI PANGGIL");
+    console.log(body);
 
     try {
-        const response = await fetch(url_micro_4+'/micro_4/Add_Absen/Add', {
+        const response = await fetch(url_micro_4 + '/micro_4/Add_Absen/Add', {
             method: 'post',
             body: JSON.stringify(body),
-            headers: {'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
         // console.log(data);
@@ -126,9 +126,9 @@ router.post('/AddIzin', upload.array('file', 12), (req, res) => {
 router.post('/viewListIzin', (req, res) => {
     // console.log(req.body)
     var data_batas = 5;
-    var data_star = (req.body.data_ke - 1)* data_batas;
+    var data_star = (req.body.data_ke - 1) * data_batas;
     var cari = req.body.cari_value;
-    var halaman = 1; 
+    var halaman = 1;
 
 
     let jml_data = `
@@ -153,9 +153,9 @@ router.post('/viewListIzin', (req, res) => {
 
         WHERE 
         usulanizin.jenisizin <> 0 AND
-        (jenisizin.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        (jenisizin.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        OR unit_kerja.unit_kerja LIKE '%`+ cari + `%') 
 
     `
 
@@ -181,32 +181,32 @@ router.post('/viewListIzin', (req, res) => {
 
         WHERE 
         usulanizin.jenisizin <> 0 AND
-        (jenisizin.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        (jenisizin.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        OR unit_kerja.unit_kerja LIKE '%`+ cari + `%') 
         
-        AND usulanizin.createdBy = '`+req.user._id+`'
+        AND usulanizin.createdBy = '`+ req.user._id + `'
         ORDER BY usulanizin.createdAt DESC
     `
-    db.query(jml_data, (err, row)=>{
+    db.query(jml_data, (err, row) => {
         if (err) {
             // console.log(err)
             res.json(err)
-        }else{
-            halaman = Math.ceil(row.length/data_batas);
-            if(halaman<1){halaman = 1}
+        } else {
+            halaman = Math.ceil(row.length / data_batas);
+            if (halaman < 1) { halaman = 1 }
             // ========================
-            db.query(view, (err2, result)=>{
+            db.query(view, (err2, result) => {
                 if (err2) {
                     // console.log(err2)
                     res.json(err2)
                 }
-                else{
-                    halaman = Math.ceil(row.length/data_batas);
-                    if(halaman<1){halaman = 1}
+                else {
+                    halaman = Math.ceil(row.length / data_batas);
+                    if (halaman < 1) { halaman = 1 }
                     res.json({
-                        data : result,
-                        jml_data : halaman
+                        data: result,
+                        jml_data: halaman
                     })
                 }
             })
@@ -219,9 +219,9 @@ router.post('/viewListIzin', (req, res) => {
 router.post('/viewListIzin_v2', (req, res) => {
     // console.log(req.body)
     var data_batas = 5;
-    var data_star = (req.body.data_ke - 1)* data_batas;
+    var data_star = (req.body.data_ke - 1) * data_batas;
     var cari = req.body.cari_value;
-    var halaman = 1; 
+    var halaman = 1;
 
 
     let jml_data = `
@@ -242,9 +242,9 @@ router.post('/viewListIzin_v2', (req, res) => {
 
         WHERE 
         usulanizin.jenisizin <> 0 AND
-        (jenisizin.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        (jenisizin.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        OR unit_kerja.unit_kerja LIKE '%`+ cari + `%') 
         
         AND (usulanizin.createdBy = '${req.user._id}' 
         AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
@@ -274,31 +274,31 @@ router.post('/viewListIzin_v2', (req, res) => {
 
         WHERE 
         usulanizin.jenisizin <> 0 AND
-        (jenisizin.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        OR unit_kerja.unit_kerja LIKE '%`+cari+`%') 
+        (jenisizin.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        OR unit_kerja.unit_kerja LIKE '%`+ cari + `%') 
         
         AND (usulanizin.createdBy = '${req.user._id}' 
         AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
         ORDER BY usulanizin.createdAt DESC
     `
-    db.query(jml_data, (err, row)=>{
+    db.query(jml_data, (err, row) => {
         if (err) {
             console.log(err)
             res.json(err)
-        }else{
+        } else {
 
-            db.query(view, (err2, result)=>{
+            db.query(view, (err2, result) => {
                 if (err2) {
                     console.log(err2)
                     res.json(err2)
                 }
-                else{
-                    halaman = Math.ceil(row[0].jumlah/data_batas);
-                    if(halaman<1){halaman = 1}
+                else {
+                    halaman = Math.ceil(row[0].jumlah / data_batas);
+                    if (halaman < 1) { halaman = 1 }
                     res.json({
-                        data : result,
-                        jml_data : halaman
+                        data: result,
+                        jml_data: halaman
                     })
                 }
             })
@@ -347,7 +347,7 @@ router.post('/viewListDaruratLimit_v2', (req, res) => {
 
         LIMIT 8
     `
-    
+
     db.query(query, [createdBy], (err, row) => {
         if (err) {
             console.log(err);
@@ -363,9 +363,9 @@ router.post('/viewListDarurat', (req, res) => {
     console.log("LIST DARURAT DI PANGGIL")
     console.log(req.body)
     var data_batas = 5;
-    var data_star = (req.body.data_ke - 1)* data_batas;
+    var data_star = (req.body.data_ke - 1) * data_batas;
     var cari = req.body.cari_value;
-    var halaman = 1; 
+    var halaman = 1;
 
 
     let jml_data = `
@@ -387,9 +387,9 @@ router.post('/viewListDarurat', (req, res) => {
 
         WHERE 
         usulanizin.jenisKategori <> 0 AND
-        (jeniskategori.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%'
+        (jeniskategori.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        #OR unit_kerja.unit_kerja LIKE '%`+ cari + `%'
         ) 
 
     `
@@ -420,35 +420,35 @@ router.post('/viewListDarurat', (req, res) => {
 
         WHERE 
         usulanizin.jenisKategori <> 0 AND
-        (jeniskategori.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        #OR unit_kerja.unit_kerja LIKE '%`+cari+`%''
+        (jeniskategori.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        #OR unit_kerja.unit_kerja LIKE '%`+ cari + `%''
         ) 
-        AND usulanizin.createdBy = '`+req.user._id+`'
+        AND usulanizin.createdBy = '`+ req.user._id + `'
 
         
         ORDER BY usulanizin.createdAt DESC
         LIMIT 10
     `
-    db.query(jml_data, (err, row)=>{
+    db.query(jml_data, (err, row) => {
         if (err) {
             console.log(err)
             res.json(err)
-        }else{
-            halaman = Math.ceil(row.length/data_batas);
-            if(halaman<1){halaman = 1}
+        } else {
+            halaman = Math.ceil(row.length / data_batas);
+            if (halaman < 1) { halaman = 1 }
             // ========================
-            db.query(view, (err2, result)=>{
+            db.query(view, (err2, result) => {
                 if (err2) {
                     console.log(err2)
                     res.json(err2)
                 }
-                else{
-                    halaman = Math.ceil(row[0].jumlah/data_batas);
-                    if(halaman<1){halaman = 1}
+                else {
+                    halaman = Math.ceil(row[0].jumlah / data_batas);
+                    if (halaman < 1) { halaman = 1 }
                     res.json({
-                        data : result,
-                        jml_data : halaman
+                        data: result,
+                        jml_data: halaman
                     })
                 }
             })
@@ -465,14 +465,14 @@ router.post('/viewListDarurat_v2', (req, res) => {
     console.log(req.user._id);
     console.log(req.body)
     var data_batas = req.body.pageLimit;
-    var data_star = (req.body.pageFirst - 1)* data_batas;
+    var data_star = (req.body.pageFirst - 1) * data_batas;
     var cari = req.body.cari_value;
-    var halaman = 10; 
+    var halaman = 10;
 
 
-    var data_star = (req.body.data_ke - 1)* data_batas;
+    var data_star = (req.body.data_ke - 1) * data_batas;
     var cari = req.body.cari_value;
-    var halaman = 10; 
+    var halaman = 10;
 
 
     let jml_data = `
@@ -494,9 +494,9 @@ router.post('/viewListDarurat_v2', (req, res) => {
 
         WHERE 
         usulanizin.jenisKategori <> 0 AND
-        (jeniskategori.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        OR usulanizin.keterangan LIKE '%`+cari+`%'
+        (jeniskategori.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        OR usulanizin.keterangan LIKE '%`+ cari + `%'
         ) 
         AND (usulanizin.createdBy = '${req.user._id}' 
         AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
@@ -531,37 +531,37 @@ router.post('/viewListDarurat_v2', (req, res) => {
 
         WHERE 
         usulanizin.jenisKategori <> 0 AND
-        (jeniskategori.uraian LIKE '%`+cari+`%' 
-        OR biodata.nama LIKE '%`+cari+`%'
-        OR usulanizin.keterangan LIKE '%`+cari+`%'
+        (jeniskategori.uraian LIKE '%`+ cari + `%' 
+        OR biodata.nama LIKE '%`+ cari + `%'
+        OR usulanizin.keterangan LIKE '%`+ cari + `%'
         ) 
         AND (usulanizin.createdBy = '${req.user._id}' 
         AND (usulanizin.NIP IS NOT NULL AND usulanizin.NIP != ''))
         ORDER BY usulanizin.createdAt DESC
         
-        LIMIT `+data_star+`,`+data_batas+`
+        LIMIT `+ data_star + `,` + data_batas + `
     `
 
     // console.log(view)
 
 
-    db.query(jml_data, (err, row)=>{
+    db.query(jml_data, (err, row) => {
         if (err) {
             console.log(err)
             res.json(err)
-        }else{
+        } else {
 
-            db.query(view, (err2, result)=>{
+            db.query(view, (err2, result) => {
                 if (err2) {
                     console.log(err2)
                     res.json(err2)
                 }
-                else{
-                    halaman = Math.ceil(row[0].jumlah/data_batas);
-                    if(halaman<1){halaman = 1}
+                else {
+                    halaman = Math.ceil(row[0].jumlah / data_batas);
+                    if (halaman < 1) { halaman = 1 }
                     res.json({
-                        data : result,
-                        jml_data : halaman
+                        data: result,
+                        jml_data: halaman
                     })
                 }
             })
@@ -571,7 +571,7 @@ router.post('/viewListDarurat_v2', (req, res) => {
     })
 });
 
-router.post('/removeDarurat_v2', (req, res)=>{
+router.post('/removeDarurat_v2', (req, res) => {
 
     console.log(req.body);
     // res.send("OK");
@@ -583,11 +583,11 @@ router.post('/removeDarurat_v2', (req, res)=>{
     `
     const values = [req.body.id];
 
-    db.query(query, values, async (err, rows)=> {
-        if(err){
+    db.query(query, values, async (err, rows) => {
+        if (err) {
             console.log(err);
             res.status(500).send(err)
-        }else{
+        } else {
             await removeLampiran(req.body.id)
             res.status(200).send(rows)
 
@@ -600,30 +600,30 @@ router.post('/removeDarurat_v2', (req, res)=>{
 router.post('/AddMockLocation', (req, res) => {
     var query = `
        INSERT INTO fakegpsuser (nip, absen, createdAt) VALUE 
-       ('`+req.body.nip+`', '`+"ABSEN HARIAN"+`', NOW())
+       ('`+ req.body.nip + `', '` + "ABSEN HARIAN" + `', NOW())
    `
-   db.query(query, (err, rows)=>{
+    db.query(query, (err, rows) => {
         if (err) {
             // console.log(err);
             res.send(err);
         } else {
             res.json({
-                status : 'Ups',
-                ket : 'Anda terindikasi menggunakan lokasi palsu dan tercatat pada jam : ',
-                jam : lib.Timex().jam
+                status: 'Ups',
+                ket: 'Anda terindikasi menggunakan lokasi palsu dan tercatat pada jam : ',
+                jam: lib.Timex().jam
             })
         }
-   })
+    })
 });
 
 router.post('/statistik', async (req, res) => {
     // console.log(req.body);
     const body = req.body;
     try {
-        const response = await fetch(url_micro_1+'/api/v1/client_absenHarian/statistik', {
+        const response = await fetch(url_micro_1 + '/api/v1/client_absenHarian/statistik', {
             method: 'post',
             body: JSON.stringify(body),
-            headers: {'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
         console.log(data);
@@ -637,17 +637,17 @@ router.post('/statistik', async (req, res) => {
 
 });
 
-async function getJadwalAbsen(){
+async function getJadwalAbsen() {
     return new Promise((resolve, reject) => {
         var query = `
             SELECT * FROM waktu; 
         `;
 
-        db.query(query, (err, row)=>{
-            if(err){
+        db.query(query, (err, row) => {
+            if (err) {
                 // console.log(err);
                 res.send(err);
-            }else{
+            } else {
                 resolve(row[0])
             }
         });
@@ -658,8 +658,8 @@ const Conversi00 = (params) => {
     return ('0' + params).slice(-2)
 }
 
-async function cekWaktu(){
-    
+async function cekWaktu() {
+
     var data = await getJadwalAbsen()
 
     var hours = new Date().getHours(); //Current Hours
@@ -667,26 +667,26 @@ async function cekWaktu(){
     var sec = new Date().getSeconds(); //To get the Current Seconds
 
     var timeNow = Conversi00(hours) + ':' + Conversi00(min)
-    
+
     var startDatang = data.startDatang;
     var finishDatang = data.finishDatang;
 
     var startPulang = data.startPulang;
     var finishPulang = data.finishPulang;
-    
+
     return new Promise((resolve, reject) => {
-        
-        if ((timeNow >= startDatang) && (timeNow <= finishDatang)){
-          resolve('ABSEN DATANG');
+
+        if ((timeNow >= startDatang) && (timeNow <= finishDatang)) {
+            resolve('ABSEN DATANG');
         }
-        else if ((timeNow >= startPulang) && (timeNow <= finishPulang)){
-          resolve('ABSEN PULANG');
-        } else{
-          resolve('ABSEN TERKUNCI');
+        else if ((timeNow >= startPulang) && (timeNow <= finishPulang)) {
+            resolve('ABSEN PULANG');
+        } else {
+            resolve('ABSEN TERKUNCI');
         }
     })
-    
-    
+
+
 }
 
 
@@ -698,7 +698,7 @@ const removeLampiran = async (idreff) => {
         `;
         const values = [idreff]
 
-        db.query(query, values, (err, rows)=> {
+        db.query(query, values, (err, rows) => {
             if (err) {
                 reject(err)
             } else {
