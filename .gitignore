@@ -6,11 +6,22 @@ __pycache__/
 *.pyc
 *.so
 
-# Virtual environment
-venv/
+
+# Ignore all environment folders and files globally
+env/
 ENV/
+venv/
 .env/
+.env*/
 .venv/
+
+# Ignore env in any subdirectory (including server and microservices)
+**/env/
+**/ENV/
+**/venv/
+**/.env/
+**/.env*/
+**/.venv/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
@@ -66,9 +77,13 @@ dist/
 *.pid
 *.log
 
+
 # Ignore secrets
 .env
 .env.*
+**/.env
+**/.env.*
+server/server/.env
 secrets.json
 
 # Node.js
