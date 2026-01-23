@@ -37,11 +37,14 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     var STATUS = ""
     var KET = ""
 
+
+
     const body = {
-        "filename": "1768913420754.jpeg"
+        "filename": req.file.filename
     }
 
     console.log("=========== SPOOFING ===========")
+    console.log(req.file.filename)
     const cekspoofing = await faceEmbedding.cekSpoofing(body)
     console.log(cekspoofing);
     if (cekspoofing === "fake") {
