@@ -2,12 +2,46 @@
 import React, { useEffect, useState, } from 'react';
 import { View, Text, StyleSheet, Switch, TextInput } from 'react-native';
 import { Stylex } from '../../../assets/styles/main';
+import { useSelector } from 'react-redux';
+
+
 
 // create a component
 const SettingNotifikasi = () => {
     const [isNotifEnabled, setIsNotifEnabled] = useState(true);
     const [email, setEmail] = useState('kikensbatara@gmail.com');
     const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
+    // const profilex = useSelector((state: { PROFILE: any }) => state.PROFILE);
+    // console.log(profilex);
+
+    const getProfile = async () => {
+
+        try {
+            const response = await fetch(URL, {
+                headers: {
+                    "Content-Type": 'application/json',
+                    "Authorization": `kikensbatara ${token}`,
+                },
+                body: {
+                    NIP: NIP
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(`error ${response.status} : ${errorData.message} ` || "Gagal mengirim ke server");
+            }
+
+            const result = await response.json();
+            console.log("sukses mengambil data profile");
+        } catch (err) {
+            console.log(`Terjadi error : ${err}`)
+        }
+
+    }
+
+
+
 
     return (
         <View style={Stylex.sectionx}>

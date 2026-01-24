@@ -28,6 +28,8 @@ const cekSpoofing = async (body) => {
         throw err;
     }
 };
+
+
 const pencocokkanWajah = async (body) => {
     try {
         const response = await fetch(configurasi.url_micro_10 + "api/v1/verify-uploads", {
