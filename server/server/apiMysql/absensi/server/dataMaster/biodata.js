@@ -6,11 +6,105 @@ const router = express.Router();
 router.get("/getOne", (req, res) => {
 
     var user = req.user.profile;
+    var nip = user.NIP
 
 
-    res.status(200).json({
-        message: user,
+    const query = `
+        SELECT 
+        biodata.id,
+        biodata.nama,
+        biodata.nip,
+        biodata.tempat_lahir,
+        biodata.ttl,
+        biodata.file,
+        biodata.metode_absen,
+        biodata.gelar_depan,
+        biodata.gelar_belakang,
+
+        IFNULL (biodata.email, "") as email,
+
+
+
+        unit_kerja.unit_kerja as nm_unit_kerja,
+        instansi.id as instansi_id,
+        instansi.instansi,
+        jabatan.jabatan as nm_jabatan,
+        agama.uraian as agama_uraian,
+        jns_status_keluarga.status as status_keluarga_uraian,
+
+        riwayat_kepangkatan.jns_golongan_id,
+        riwayat_kepangkatan.tmt_gol,
+        CONCAT(jns_golongan.pangkat,", ", jns_golongan.gol,"/",jns_golongan.ruang) as gol_uraian,
+        pendidikan_formal.strata_ijazah_id,
+        pendidikan_formal.nm_sekolah as nm_sekolah,
+        strata_ijazah.strata_ijazah as pendidikan_ahir_uraian,
+        pendidikan_formal.thn_lulus as pendidikan_formal_thn_lulus
+
+        FROM biodata
+        
+        LEFT JOIN unit_kerja
+        ON biodata.unit_kerja = unit_kerja.id
+
+        LEFT JOIN instansi
+        ON unit_kerja.instansi = instansi.id
+
+        LEFT JOIN jabatan
+        ON biodata.jabatan = jabatan._id
+
+        LEFT JOIN agama
+        ON biodata.agama = agama.agama_id
+
+        LEFT JOIN jns_status_keluarga
+        ON biodata.status_keluarga = jns_status_keluarga.jns_status_keluarga_id
+
+
+        LEFT JOIN riwayat_kepangkatan
+        ON biodata.id = riwayat_kepangkatan.biodata_id 
+        AND
+        riwayat_kepangkatan.jns_golongan_id = (
+            SELECT MAX(jns_golongan_id) 
+            FROM riwayat_kepangkatan 
+            WHERE biodata_id = biodata.id
+        )
+
+        LEFT JOIN jns_golongan
+        ON jns_golongan.jns_golongan_id = riwayat_kepangkatan.jns_golongan_id
+
+
+        LEFT JOIN pendidikan_formal
+        ON biodata.id = pendidikan_formal.biodata_id 
+        AND
+        pendidikan_formal.strata_ijazah_id = (
+            SELECT MIN(strata_ijazah_id) 
+            FROM pendidikan_formal 
+            WHERE biodata_id = biodata.id
+        )
+
+        LEFT JOIN strata_ijazah
+        ON pendidikan_formal.strata_ijazah_id = strata_ijazah.strata_ijazah_id
+
+        WHERE 
+        biodata.nip = ?
+    `
+
+    const values = [nip]
+
+
+    db.query(query, values, (err, rows)=>{
+        if (err) {
+            res.status(500).send("Terjadi kesalahan dalam query database");
+        } else {
+            res.status(200).json(rows[0]);
+        }
+
+
+
     })
+
+
+    // res.status(200).json({
+    //     message: nip,
+    // })
 
 })
 
