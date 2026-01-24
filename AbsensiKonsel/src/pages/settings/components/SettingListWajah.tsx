@@ -65,7 +65,7 @@ const SettingListWajah = () => {
                 "Authorization": `Bearer ${token}`
             }
         }).then(result => {
-            console.log(result.data);
+            // console.log(result.data);
             setListPhoto(result.data);
 
         }).catch(error => {

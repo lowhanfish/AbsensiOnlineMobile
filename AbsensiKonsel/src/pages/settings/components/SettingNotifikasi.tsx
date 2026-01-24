@@ -18,8 +18,10 @@ const SettingNotifikasi = () => {
 
     const getProfile = async () => {
 
+        console.log(URL.URL_presensi_settingProfile + "getOne")
+
         try {
-            const response = await fetch(URL.URL_presensi_settingProfile, {
+            const response = await fetch(URL.URL_biodata + "getOne", {
                 method: "GET",
                 headers: {
                     "Content-Type": 'application/json',
@@ -40,6 +42,11 @@ const SettingNotifikasi = () => {
         }
 
     }
+
+
+    useEffect(() => {
+        getProfile();
+    }, [])
 
 
 
