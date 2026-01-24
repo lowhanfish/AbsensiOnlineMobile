@@ -13,17 +13,17 @@ const SettingNotifikasi = () => {
     const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
     // const profilex = useSelector((state: { PROFILE: any }) => state.PROFILE);
     // console.log(profilex);
+    const URL = useSelector((state: { URL: any }) => state.URL)
+    const token = useSelector((state: { TOKEN: string }) => state.TOKEN)
 
     const getProfile = async () => {
 
         try {
-            const response = await fetch(URL, {
+            const response = await fetch(URL.URL_presensi_settingProfile, {
+                method: "GET",
                 headers: {
                     "Content-Type": 'application/json',
                     "Authorization": `kikensbatara ${token}`,
-                },
-                body: {
-                    NIP: NIP
                 }
             });
 
@@ -34,6 +34,7 @@ const SettingNotifikasi = () => {
 
             const result = await response.json();
             console.log("sukses mengambil data profile");
+            console.log(result);
         } catch (err) {
             console.log(`Terjadi error : ${err}`)
         }
