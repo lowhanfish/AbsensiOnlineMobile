@@ -39,23 +39,6 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
 
 
-    const body = {
-        "filename": req.file.filename
-    }
-
-    console.log("=========== SPOOFING ===========")
-    console.log(req.file.filename)
-    const cekspoofing = await faceEmbedding.cekSpoofing(body)
-    console.log(cekspoofing);
-    if (cekspoofing === "fake") {
-        res.status(500).json({
-            status: 'ABSEN GAGAL',
-            ket: 'Sayangnya, foto yang anda kirimkan terdeteksi "fake" silahkan ulangi kembali. absen hari ini pada jam : ',
-            jam: jam
-        });
-        return false
-    }
-    console.log("=========== SPOOFING ===========")
 
 
     console.log("===========================================");
@@ -68,14 +51,61 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
 
 
+    const body = {
+        "filename": req.file.filename
+    }
+
+    console.log("=========== SPOOFING ===========")
+    console.log(req.file.filename)
+    const cekspoofing = await faceEmbedding.cekSpoofing(body)
+    console.log(cekspoofing);
+    console.log("=========== SPOOFING ===========")
+    if (cekspoofing === "fake") {
+
+        hapus_file(req.file.filename);
+
+        res.status(500).json({
+            status: 'ABSEN GAGAL',
+            ket: 'Sayangnya, foto yang anda kirimkan terdeteksi "fake" silahkan ulangi kembali. absen hari ini pada jam : ',
+            jam: jam
+        });
+        return false
+    } else {
+        console.log("real");
+
+        console.log("=========== DATA WAJAH ===========");
+
+        var listWajah = await faceEmbedding.getDataWajah(db, req.body.NIP)
+        console.log(listWajah);
+
+        console.log("Jumlah wajah :" + listWajah.length)
+
+        if (listWajah.length < 1) {
+            res.status(500).json({
+                status: 'ABSEN GAGAL',
+                ket: 'Sayangnya, anda belum memiliki foto sampel yang telah di verifikasi, mohon hubungi admin pada nomor : 082290069105 (Hasbar Jaya). absen hari ini pada jam : ',
+                jam: jam
+            });
+        } else {
+
+        }
+
+
+        console.log("=========== DATA WAJAH ===========");
 
 
 
-    res.status(200).json({
-        status: 'ABSEN SUKSES',
-        ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
-        jam: jam
-    });
+        res.status(200).json({
+            status: 'ABSEN SUKSES',
+            ket: 'Mohon bersabar, Pelan saja om/tante, Absensi face-matching berlaku mulai tanggal 1 februari 2026, anda melakukan absen hari ini pada jam : ',
+            jam: jam
+            // status: 'ABSEN SUKSES',
+            // ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
+            // jam: jam
+        });
+
+    }
+
 });
 // INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
 
@@ -713,6 +743,17 @@ const removeLampiran = async (idreff) => {
 
 
 
+function hapus_file(file) {
+    const path = 'uploads/' + file;
+
+    fs.unlink(path, (err) => {
+        if (err) {
+            console.error(err)
+            return
+        }
+    })
+
+}
 
 
 

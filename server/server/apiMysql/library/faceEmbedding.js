@@ -1,7 +1,7 @@
 const configurasi = require('./configurasi');
+var db = require('../../db/MySql/absensi');
 
-
-// =================== INI YANG KITA GUNAKAN UNTUK CEK SPOOFING DI V2 =================
+// =================== INI YANG KITA GUNAKAN UNTUK CEK WAJAH DI V2 =================
 const cekSpoofing = async (body) => {
     try {
         const response = await fetch(configurasi.url_micro_9 + '/api/v1/uploads', {
@@ -54,6 +54,31 @@ const pencocokkanWajah = async (body) => {
 };
 
 
+const getDataWajah = (db, nip) => {
+
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT file
+            FROM fotosample
+            WHERE nip = ? AND status = 1
+        `
+        const values = [nip]
+
+        db.query(query, values, (err, rows) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(rows)
+            }
+        })
+    })
+}
+
+
+
+
+// =================== INI YANG KITA GUNAKAN UNTUK CEK WAJAH DI V2 =================
+
 const pencocokan_wajah = (vektor_sampel, vektor_absensi) => {
     // Jika input berupa string, ubah ke array
     if (typeof vektor_sampel === 'string') {
@@ -85,15 +110,15 @@ const pencocokan_wajah = (vektor_sampel, vektor_absensi) => {
 const getVectorFromDB = (db, nip) => {
 
     return new Promise((resolve, reject) => {
-        
+
         const query = `
             SELECT vectors
             FROM fotosample
             WHERE nip = ? AND status = 1
         `
         const values = [nip]
-    
-        db.query(query, values, (err, rows)=>{
+
+        db.query(query, values, (err, rows) => {
             if (err) {
                 reject(err)
             } else {
@@ -101,19 +126,16 @@ const getVectorFromDB = (db, nip) => {
             }
         })
     })
-
-
-
-
-
 }
 
 
 
+
 module.exports = {
-    pencocokan_wajah : pencocokan_wajah,
-    getVectorFromDB : getVectorFromDB,
-    cekSpoofing : cekSpoofing,
-    pencocokkanWajah : pencocokkanWajah,
+    pencocokan_wajah: pencocokan_wajah,
+    getVectorFromDB: getVectorFromDB,
+    cekSpoofing: cekSpoofing,
+    pencocokkanWajah: pencocokkanWajah,
+    getDataWajah: getDataWajah,
 
 }

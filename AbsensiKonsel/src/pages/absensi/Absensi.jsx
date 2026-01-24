@@ -97,7 +97,8 @@ const Absensi = () => {
     /** Tombol cek lokasi */
     const tombolCekLokasi = async () => {
         await getLocation();
-        Alert.alert('Lokasi Anda', `Latitude: ${lokasi.latitude}\nLongitude: ${lokasi.longitude}`);
+        // Alert.alert('Lokasi Anda', `Latitude: ${lokasi.latitude}\nLongitude: ${lokasi.longitude}`);
+        CekJarakAbsen();
     };
 
     /** Ambil lokasi */
@@ -170,8 +171,12 @@ const Absensi = () => {
 
         AbsenLoc.forEach((element) => {
             const jarakSaatIni = hitungJarak(lokasix.latitude, lokasix.longitude, element.lat, element.lng);
-            if (jarakSaatIni < minJarak) minJarak = jarakSaatIni;
-            if (jarakSaatIni < element.rad) isInsideRadius = true;
+            if (jarakSaatIni < minJarak) {
+                minJarak = jarakSaatIni
+            };
+            if (jarakSaatIni < element.rad) {
+                isInsideRadius = true
+            };
         });
 
         setJarakMinimal(minJarak);
