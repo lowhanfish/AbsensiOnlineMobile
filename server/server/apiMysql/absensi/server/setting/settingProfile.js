@@ -2,7 +2,7 @@ const express = require('express');
 var db = require('../../../../db/MySql/absensi');
 const fs = require('fs');
 
-var multer=require("multer");
+var multer = require("multer");
 var upload = require('../../../../db/multer/pdf');
 
 var uniqid = require('uniqid');
@@ -13,7 +13,7 @@ const router = express.Router();
 // SAMPLE
 router.post('/viewData', (req, res) => {
     console.log(req.body.is_private);
-    
+
     var data_batas = 10;
     var data_star = (req.body.data_ke - 1) * data_batas;
     var cari = req.body.cari_value;
@@ -41,17 +41,17 @@ router.post('/viewData', (req, res) => {
         ON biodata.unit_kerja = unit_kerja.id
 
         WHERE
-        biodata.unit_kerja = '`+req.body.unit_kerja_id+`'
-        AND biodata.nama LIKE '%`+cari+`%'
+        biodata.unit_kerja = '`+ req.body.unit_kerja_id + `'
+        AND biodata.nama LIKE '%`+ cari + `%'
         AND
             (
-            '`+req.body.is_private+`' = ''
+            '`+ req.body.is_private + `' = ''
             OR (
-                '`+req.body.is_private+`' = '0'
+                '`+ req.body.is_private + `' = '0'
                 AND (fotosample.private = 0 OR fotosample.private IS NULL)
             )
             OR (
-                '`+req.body.is_private+`' = '1'
+                '`+ req.body.is_private + `' = '1'
                 AND fotosample.private = 1
             )
         )
@@ -87,24 +87,24 @@ router.post('/viewData', (req, res) => {
         ON fotosample.verificationBy = biodata_verifikator.nip
 
         WHERE
-        biodata.unit_kerja = '`+req.body.unit_kerja_id+`'
-        AND biodata.nama LIKE '%`+cari+`%'
+        biodata.unit_kerja = '`+ req.body.unit_kerja_id + `'
+        AND biodata.nama LIKE '%`+ cari + `%'
         AND
             (
-            '`+req.body.is_private+`' = ''
+            '`+ req.body.is_private + `' = ''
             OR (
-                '`+req.body.is_private+`' = '0'
+                '`+ req.body.is_private + `' = '0'
                 AND (fotosample.private = 0 OR fotosample.private IS NULL)
             )
             OR (
-                '`+req.body.is_private+`' = '1'
+                '`+ req.body.is_private + `' = '1'
                 AND fotosample.private = 1
             )
         )
 
         LIMIT `+ data_star + `,` + data_batas + `
     `
-    
+
     db.query(jml_data, (err, rows) => {
         if (err) {
             console.log(err);
@@ -147,7 +147,7 @@ router.post('/changeData', (req, res) => {
     `
     const values = [req.body.status, req.body.keterangan, req.user.profile.NIP, req.body.id];
 
-    db.query(query, values, (err, rows)=>{
+    db.query(query, values, (err, rows) => {
         if (err) {
             console.log(err);
             res.status(500).send(rows)
@@ -157,12 +157,6 @@ router.post('/changeData', (req, res) => {
     })
 })
 
-
-
-
-
-
-
 router.get('/aa', (req, res) => {
 
     var data = req.user.profile
@@ -171,23 +165,22 @@ router.get('/aa', (req, res) => {
 
 });
 
-
 router.post('/view', (req, res) => {
 
     var data = req.user.profile
-    var NIP = data.NIP  
-    
+    var NIP = data.NIP
+
     var query = `
         SELECT fotosample.* FROM fotosample
-        WHERE fotosample.nip = '`+NIP+`'
+        WHERE fotosample.nip = '`+ NIP + `'
     
     `;
-  
-    db.query(query, (err, row)=>{
-        if(err) {
+
+    db.query(query, (err, row) => {
+        if (err) {
             console.log(err);
             res.send(err);
-        }else{
+        } else {
             res.send(row);
         }
     })
@@ -222,30 +215,29 @@ router.post('/addData', upload.single("file"), (req, res) => {
     });
 });
 
-router.post('/removeData', (req, res)=> {
+router.post('/removeData', (req, res) => {
     var file = req.body.fileOld
     hapus_file(file);
 
     var query = `
-        DELETE FROM fotosample WHERE id = '`+req.body.id+`'; 
+        DELETE FROM fotosample WHERE id = '`+ req.body.id + `'; 
     `;
-    db.query(query, (err, row)=>{
-        if(err){
+    db.query(query, (err, row) => {
+        if (err) {
             res.status(500).send(err);
-        }else{
+        } else {
             res.status(200).send(row);
         }
     });
 })
 
-
-function hapus_file(file){
-    const path = 'uploads/'+file;
+function hapus_file(file) {
+    const path = 'uploads/' + file;
 
     fs.unlink(path, (err) => {
         if (err) {
-          console.error(err)
-          return
+            console.error(err)
+            return
         }
     })
 
