@@ -5,11 +5,12 @@ const router = express.Router();
 
 router.get("/getOne", (req, res) => {
 
+    var user = req.user.profile;
+
+
     res.status(200).json({
-        message: "YEAAAH",
+        message: user,
     })
-
-
 
 })
 
