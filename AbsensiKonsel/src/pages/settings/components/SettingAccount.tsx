@@ -1,7 +1,10 @@
 //import liraries
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Stylex } from '../../../assets/styles/main';
+import ModalComponentNotActivated from '../../../components/ModalComponentNotActivated';
+
+
 
 // create a component
 const SettingAccount = () => {
@@ -9,19 +12,26 @@ const SettingAccount = () => {
     const [username, setUsername] = useState('administrator');
     const [password, setPassword] = useState('password123');
 
+    const [modalActivated, SetModalActivated] = useState(false);
+
     return (
         <View style={Stylex.sectionx}>
             <Text style={Stylex.sectionTitle}>AKUN PENGGUNA</Text>
-            <View style={styles.fieldRow}>
+            <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Username :</Text>
                 <Text style={Stylex.accountText}>{username}</Text>
                 <Text style={styles.editIcon}>✏️</Text>
-            </View>
-            <View style={styles.fieldRow}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Password :</Text>
                 <Text style={Stylex.accountText}>{"**************"}</Text>
                 <Text style={styles.editIcon}>✏️</Text>
-            </View>
+            </TouchableOpacity>
+
+            <ModalComponentNotActivated
+                openModal={modalActivated}
+                SetOpenModal={SetModalActivated}
+            />
         </View>
     );
 };

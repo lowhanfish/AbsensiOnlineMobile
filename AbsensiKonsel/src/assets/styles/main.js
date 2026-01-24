@@ -396,6 +396,26 @@ export const Stylex = StyleSheet.create({
         borderColor : 'black',
         padding :4
         // color : 'red'
-    }
+    },
+    profileImage :  { 
+        width : 100,
+        height :100,
+        borderRadius : 50,
+        borderWidth : 5,
+        // borderColor : 'pink',
+    },
+    imageContainer: {
+        // backgroundColor: '#EBDBF9',
+        // padding: 5,
+        // alignSelf: 'flex-start',
+        // margin : 5,
+        borderWidth : 6,
+        borderStyle : 'solid',
+        borderColor : '#EBDBF9',
+        borderRadius: "100%",
+
+    },
+    
+
 
 });

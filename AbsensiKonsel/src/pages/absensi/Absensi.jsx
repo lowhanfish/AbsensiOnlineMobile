@@ -232,6 +232,8 @@ const Absensi = () => {
                 <Text style={styles.absenTitle}>ABSENSI</Text>
                 <Text style={styles.absenSubtitle}>
                     Sebelum melakukan pengabsenan, pastikan anda berada di posisi yang tepat
+                </Text>
+                <Text style={{ marginTop: -15, color: '#555', fontFamily: 'Audiowide-Regular', }}>
                     {`\nStatus: ${statusx ? '✅ Diizinkan' : '❌ Ditolak'}`}
                     {jarakMinimal !== null && ` | Jarak: ${jarakMinimal.toFixed(2)}m`}
                 </Text>

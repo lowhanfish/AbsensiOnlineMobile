@@ -38,6 +38,8 @@ import VerifikasiWajah from './Auth/Offline/VerifikasiWajah';
 import Settings from './settings/Settings';
 import SettingSampleImage from './settings/SettingSampleImage';
 
+import Profile from './profile/Profile';
+
 
 import { Stylex } from '../assets/styles/main';
 import ImageLib from '../components/ImageLib';
@@ -67,6 +69,8 @@ const ContentAll = () => {
 
             <ContentStack.Screen name="Settings" component={Settings} />
             <ContentStack.Screen name="SettingSampleImage" component={SettingSampleImage} />
+
+            <ContentStack.Screen name="Profile" component={Profile} />
 
             {/* Offline Absensi */}
             <ContentStack.Screen name="AbsenOffline" component={AbsenOffline} />

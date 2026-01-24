@@ -1,25 +1,29 @@
 //import liraries
 import React, { useEffect, useState, } from 'react';
-import { View, Text, StyleSheet, Switch, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Switch, TextInput, TouchableOpacity } from 'react-native';
 import { Stylex } from '../../../assets/styles/main';
 import { useSelector } from 'react-redux';
+import ModalComponentNotActivated from '../../../components/ModalComponentNotActivated';
+
+
 
 
 
 // create a component
 const SettingNotifikasi = () => {
     const [isNotifEnabled, setIsNotifEnabled] = useState(true);
-    const [email, setEmail] = useState('kikensbatara@gmail.com');
+    const [email, setEmail] = useState('');
     const toggleSwitch = () => setIsNotifEnabled(prev => !prev);
     // const profilex = useSelector((state: { PROFILE: any }) => state.PROFILE);
     // console.log(profilex);
-    const URL = useSelector((state: { URL: any }) => state.URL)
-    const token = useSelector((state: { TOKEN: string }) => state.TOKEN)
+    const URL = useSelector((state: { URL: any }) => state.URL);
+    const token = useSelector((state: { TOKEN: string }) => state.TOKEN);
+
+    const [modalActivated, SetModalActivated] = useState(false);
+
 
     const getProfile = async () => {
-
         console.log(URL.URL_presensi_settingProfile + "getOne")
-
         try {
             const response = await fetch(URL.URL_biodata + "getOne", {
                 method: "GET",
@@ -36,20 +40,17 @@ const SettingNotifikasi = () => {
 
             const result = await response.json();
             console.log("sukses mengambil data profile");
-            console.log(result);
+            // console.log(result);
+            setEmail(result.email)
         } catch (err) {
             console.log(`Terjadi error : ${err}`)
         }
-
     }
 
 
     useEffect(() => {
         getProfile();
     }, [])
-
-
-
 
     return (
         <View style={Stylex.sectionx}>
@@ -67,11 +68,18 @@ const SettingNotifikasi = () => {
                     </Text>
                 </View>
             </View>
-            <View style={styles.fieldRow}>
+            <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Email :</Text>
                 <Text style={Stylex.accountText}>{email}</Text>
                 <Text style={styles.editIcon}>✏️</Text>
-            </View>
+            </TouchableOpacity>
+
+            <ModalComponentNotActivated
+                openModal={modalActivated}
+                SetOpenModal={SetModalActivated}
+            />
+
+
         </View>
     );
 };

@@ -4,6 +4,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Stylex } from '../assets/styles/main';
 import ImageLib from './ImageLib';
 import { useSelector } from 'react-redux';
+import ModalComponentNotActivated from './ModalComponentNotActivated';
+
 
 
 
@@ -13,6 +15,7 @@ const BottomBar = ({ navigation }) => {
     var token = useSelector(state => state.TOKEN);
     var URL = useSelector(state => state.URL);
 
+    const [modalActivated, SetModalActivated] = useState(false);
 
 
 
@@ -24,11 +27,12 @@ const BottomBar = ({ navigation }) => {
     return (
         <View style={[styles.bottomBarContainer]}>
             <View style={[styles.bottomBar]}>
-                <TouchableOpacity style={styles.bottomBarItem}>
+                {/* <TouchableOpacity onPress={() => navigation.navigate("MainPage", { screen: "Profile" })} style={styles.bottomBarItem}> */}
+                <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.bottomBarItem}>
                     <ImageLib style={{ width: 42 }} urix={require('../assets/images/icon/profile.png')} />
                     <Text style={styles.bottomBarText}>PROFILE</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.bottomBarItem}>
+                <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.bottomBarItem}>
                     <ImageLib style={{ width: 42 }} urix={require('../assets/images/icon/kinerja.png')} />
                     <Text style={styles.bottomBarText}>KINERJA</Text>
                 </TouchableOpacity>
@@ -36,7 +40,7 @@ const BottomBar = ({ navigation }) => {
                     <ImageLib style={{ width: 58 }} urix={require('../assets/images/icon/home.png')} />
                     <Text style={styles.bottomBarText}>HOME</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.bottomBarItem}>
+                <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.bottomBarItem}>
                     <ImageLib style={{ width: 42 }} urix={require('../assets/images/icon/pengumuman.png')} />
                     <Text style={styles.bottomBarText}>PENGUMUMAN</Text>
                 </TouchableOpacity>
@@ -46,6 +50,11 @@ const BottomBar = ({ navigation }) => {
                 </TouchableOpacity>
 
             </View>
+
+            <ModalComponentNotActivated
+                openModal={modalActivated}
+                SetOpenModal={SetModalActivated}
+            />
         </View>
     );
 };
