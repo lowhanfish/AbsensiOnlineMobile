@@ -23,9 +23,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { hitungJarak } from '../../lib/kiken';
 
-const { height, width } = Dimensions.get('window');
+const dimensions = Dimensions.get('window');
+const height = dimensions.height;
+const width = dimensions.width;
 
-const Absensi = () => {
+function Absensi() {
     const navigation = useNavigation();
     const AbsenLoc = useSelector(state => state.PROFILE.profile.lokasi_absen);
 
@@ -42,32 +44,32 @@ const Absensi = () => {
     const [isOnline, setIsOnline] = useState(true); // ✅ Tambahan
 
     /** 🔌 Cek status koneksi internet */
-    useEffect(() => {
-        const unsubscribe = NetInfo.addEventListener(state => {
+    useEffect(function () {
+        const unsubscribe = NetInfo.addEventListener(function (state) {
             const connected = !!state.isConnected;
             setIsOnline(connected);
-            console.log(`📶 Koneksi: ${connected ? 'Online' : 'Offline'}`);
+            console.log('📶 Koneksi: ' + (connected ? 'Online' : 'Offline'));
         });
 
-        return () => unsubscribe();
+        return function () { unsubscribe(); };
     }, []);
 
     /** 🔒 Verifikasi keamanan device & lokasi */
-    const verifyDeviceSecurity = async (position) => {
+    const verifyDeviceSecurity = async function (position) {
         try {
             const isEmulator = await DeviceInfo.isEmulator();
             if (isEmulator) return { trusted: false, reason: 'Perangkat emulator terdeteksi' };
-            if (JailMonkey.isJailBroken?.()) return { trusted: false, reason: 'Perangkat di-root / jailbreak' };
+            if (JailMonkey.isJailBroken && JailMonkey.isJailBroken()) return { trusted: false, reason: 'Perangkat di-root / jailbreak' };
 
             if (Platform.OS === 'android') {
-                if (JailMonkey.canMockLocation?.()) return { trusted: false, reason: 'Mock location diizinkan' };
-                if (position?.mocked) return { trusted: false, reason: 'Lokasi palsu terdeteksi' };
-                if (JailMonkey.isOnExternalStorage?.()) return { trusted: false, reason: 'Aplikasi di eksternal storage' };
-                if (JailMonkey.hookDetected?.()) return { trusted: false, reason: 'Hooking terdeteksi' };
+                if (JailMonkey.canMockLocation && JailMonkey.canMockLocation()) return { trusted: false, reason: 'Mock location diizinkan' };
+                if (position && position.mocked) return { trusted: false, reason: 'Lokasi palsu terdeteksi' };
+                if (JailMonkey.isOnExternalStorage && JailMonkey.isOnExternalStorage()) return { trusted: false, reason: 'Aplikasi di eksternal storage' };
+                if (JailMonkey.hookDetected && JailMonkey.hookDetected()) return { trusted: false, reason: 'Hooking terdeteksi' };
             }
 
-            if (JailMonkey.isDebugged?.()) return { trusted: false, reason: 'Aplikasi sedang di-debug' };
-            if (JailMonkey.trustFall?.()) return { trusted: false, reason: 'Pemeriksaan trustFall gagal' };
+            if (JailMonkey.isDebugged && JailMonkey.isDebugged()) return { trusted: false, reason: 'Aplikasi sedang di-debug' };
+            if (JailMonkey.trustFall && JailMonkey.trustFall()) return { trusted: false, reason: 'Pemeriksaan trustFall gagal' };
 
             return { trusted: true };
         } catch (err) {
@@ -120,31 +122,29 @@ const Absensi = () => {
             }
 
             Geolocation.getCurrentPosition(
-                async (position) => {
+                async function (position) {
                     console.log('Lokasi saat ini:', position.coords);
 
                     const security = await verifyDeviceSecurity(position);
                     if (!security.trusted) {
                         Alert.alert('Perangkat Tidak Aman', security.reason);
                         setStatusx(false);
-                        setLokasi({
-                            ...lokasi,
+                        setLokasi(Object.assign({}, lokasi, {
                             latitude: position.coords.latitude,
                             longitude: position.coords.longitude,
-                        });
+                        }));
                         return;
                     }
 
                     CekJarakAbsen(position.coords);
 
-                    setLokasi({
-                        ...lokasi,
+                    setLokasi(Object.assign({}, lokasi, {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
-                    });
+                    }));
                     setErrorMsg(null);
                 },
-                (error) => {
+                function (error) {
                     console.error('Gagal ambil lokasi:', error);
                     setErrorMsg(error.message);
                     setStatusx(false);
@@ -158,7 +158,7 @@ const Absensi = () => {
     };
 
     /** Hitung jarak terdekat */
-    const CekJarakAbsen = (lokasix) => {
+    const CekJarakAbsen = function (lokasix) {
         if (!AbsenLoc || AbsenLoc.length === 0) {
             console.warn('Data Lokasi Absen tidak ditemukan.');
             setStatusx(false);
@@ -169,23 +169,43 @@ const Absensi = () => {
         let isInsideRadius = false;
         let minJarak = Infinity;
 
-        AbsenLoc.forEach((element) => {
+        AbsenLoc.forEach(function (element) {
             const jarakSaatIni = hitungJarak(lokasix.latitude, lokasix.longitude, element.lat, element.lng);
             if (jarakSaatIni < minJarak) {
-                minJarak = jarakSaatIni
-            };
+                minJarak = jarakSaatIni;
+            }
             if (jarakSaatIni < element.rad) {
-                isInsideRadius = true
-            };
+                isInsideRadius = true;
+            }
         });
 
         setJarakMinimal(minJarak);
         setStatusx(isInsideRadius);
     };
 
-    useEffect(() => {
+    useEffect(function () {
         getLocation();
     }, []);
+
+    let statusText = '\nStatus: ';
+    if (statusx) {
+        statusText += '✅ Diizinkan';
+    } else {
+        statusText += '❌ Ditolak';
+    }
+    if (jarakMinimal !== null) {
+        statusText += ' | Jarak: ' + jarakMinimal.toFixed(2) + 'm';
+    }
+
+    let opacityValue = 0.5;
+    if (statusx) {
+        opacityValue = 1;
+    }
+
+    let isDisabled = true;
+    if (statusx) {
+        isDisabled = false;
+    }
 
     return (
         <View style={styles.wrappermap}>
@@ -195,17 +215,19 @@ const Absensi = () => {
                 region={lokasi}
                 showsUserLocation={true}
             >
-                {AbsenLoc.map((loc, index) => (
-                    <React.Fragment key={index}>
-                        <Circle
-                            center={{ latitude: loc.lat, longitude: loc.lng }}
-                            radius={loc.rad}
-                            strokeColor="rgba(0, 128, 0, 0.5)"
-                            fillColor="#67940933"
-                            strokeWidth={2}
-                        />
-                    </React.Fragment>
-                ))}
+                {AbsenLoc.map(function (loc, index) {
+                    return (
+                        <React.Fragment key={index}>
+                            <Circle
+                                center={{ latitude: loc.lat, longitude: loc.lng }}
+                                radius={loc.rad}
+                                strokeColor="rgba(0, 128, 0, 0.5)"
+                                fillColor="#67940933"
+                                strokeWidth={2}
+                            />
+                        </React.Fragment>
+                    );
+                })}
 
                 <Marker
                     coordinate={lokasi}
@@ -234,8 +256,7 @@ const Absensi = () => {
                     Sebelum melakukan pengabsenan, pastikan anda berada di posisi yang tepat
                 </Text>
                 <Text style={{ marginTop: -15, color: '#555', fontFamily: 'Audiowide-Regular', }}>
-                    {`\nStatus: ${statusx ? '✅ Diizinkan' : '❌ Ditolak'}`}
-                    {jarakMinimal !== null && ` | Jarak: ${jarakMinimal.toFixed(2)}m`}
+                    {statusText}
                 </Text>
             </View>
 
@@ -244,10 +265,10 @@ const Absensi = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-                style={[styles.fingerprintBtn, { opacity: statusx ? 1 : 0.5 }]}
+                style={[styles.fingerprintBtn, { opacity: opacityValue }]}
                 onPress={tombolAbsensi}
                 activeOpacity={0.8}
-                disabled={!statusx}
+                disabled={isDisabled}
             >
                 <ImageLib
                     urix={require('../../assets/images/icon/fingerprint3.png')}

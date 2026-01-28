@@ -161,16 +161,16 @@ const ArrToObj = (data) =>{
 
 
  const addZeroFirst = (number)=>{
-
-    
     let result = number.toString().padStart(2, '0')
     // console.log(result); // 00002
-
-
     return result
+ }
 
 
-
+ const checkZero = (data)=> {
+    if (data > 0) {
+        return "text-weight-bolder text-red"
+    }
  }
   
 
@@ -187,5 +187,6 @@ module.exports = {
     statusKehadiranKet : statusKehadiranKet,
     ArrToObj : ArrToObj,
     jadwalAbsen : jadwalAbsen,
-    addZeroFirst : addZeroFirst
+    addZeroFirst : addZeroFirst,
+    checkZero : checkZero
 }
