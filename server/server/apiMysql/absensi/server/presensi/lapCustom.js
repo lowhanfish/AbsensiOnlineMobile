@@ -164,9 +164,9 @@ async function loopingDate() {
 
 router.post('/view', async (req, res) => {
 
-    console.log("======== SERVER ========")
-    console.log(req.body);
-    console.log("======== SERVER ========")
+    // console.log("======== SERVER ========")
+    // console.log(req.body);
+    // console.log("======== SERVER ========")
     const body = req.body;
     try {
         const response = await fetch(url_micro_1 + '/api/v1/presensi_lapCustom/view', {

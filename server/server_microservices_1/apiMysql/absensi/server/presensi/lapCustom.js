@@ -181,7 +181,7 @@ async function loopingDate() {
 router.post('/view', async (req, res) => {
 
 
-    console.log(req.body);
+    // console.log(req.body);
 
     var waktuFirstX = req.body.waktuFirst
     var waktuLastX = req.body.waktuLast
@@ -200,16 +200,16 @@ router.post('/view', async (req, res) => {
 
     var tanggalLibur = await libUmum.getTglLibur(db, waktuFirst, waktuLast, res)
     var listTanggal = await libUmum.restrukturListTgl(waktuFirst, waktuLast)
+
     var jumlahHK = await libUmum.cariHariLibur(tanggalLibur, listTanggal, 2)
 
-    console.log("Ini dari microservices 1 yang dipanggil melalui lap custom")
+
 
     // console.log(jumlahHK);
     // console.log(listTanggal);
 
-    console.log("=============================")
-    console.log(req.body)
-    console.log("=============================")
+
+    // console.log(req.body)
     // console.log(waktuLast)
 
     let view = `
@@ -268,8 +268,22 @@ router.post('/view', async (req, res) => {
                 AND
                 CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
             )
+            
 
-        ) as izin
+        ) as izin,
+
+
+      `+ cekTL(waktuFirst, waktuLast, 60, 1800) + ` AS TL1,
+      `+ cekTL(waktuFirst, waktuLast, 1800, 3600) + ` AS TL2,
+      `+ cekTL(waktuFirst, waktuLast, 3600, 5400) + ` AS TL3,
+      `+ cekTL(waktuFirst, waktuLast, 5400, 61200) + ` AS TL4,
+      `+ cekPSW(waktuFirst, waktuLast, 60, 1800) + ` AS PSW1,
+      `+ cekPSW(waktuFirst, waktuLast, 1800, 3600) + ` AS PSW2,
+      `+ cekPSW(waktuFirst, waktuLast, 3600, 5400) + ` AS PSW3,
+      `+ cekPSW(waktuFirst, waktuLast, 5400, 61200) + ` AS PSW4
+
+
+       
 
 
 
@@ -282,8 +296,7 @@ router.post('/view', async (req, res) => {
         
         
         WHERE 
-        biodata.unit_kerja = '`+ req.body.unit_kerja_id + `' 
-        AND biodata.jenis_pegawai_id = '`+ req.body.jnsASN + `'
+        biodata.unit_kerja = '`+ req.body.unit_kerja_id + `'
         ORDER BY jabatan.level
 
     `
@@ -294,11 +307,15 @@ router.post('/view', async (req, res) => {
     //         absensi.mm = `+req.body.bulan+` AND
     //         absensi.yy = `+req.body.tahun+`
 
+    console.log(view)
+
     db.query(view, async (err, row) => {
         if (err) {
-            // console.log(err)
+            console.log(err)
             res.send('err')
         } else {
+
+            // console.log(row)
 
             var data = await start(row, tanggalLibur, listTanggal)
 
@@ -347,6 +364,55 @@ const start = async (row, tanggalLibur, listTanggal) => {
 
 
 
+}
+
+
+
+const cekTL = (waktuFirst, waktuLast, timeMin, timeMax) => {
+
+    return (
+        `(
+            SELECT
+            COUNT(absensi.id)
+            FROM absensi.absensi absensi
+            WHERE
+            absensi.NIP = biodata.nip
+            AND (absensi.jenispresensi = 1)
+            AND
+            absensi.status = 1
+            AND 
+            (
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
+                AND
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
+            )
+
+            AND (TIME_TO_SEC(absensi.jamDatang) - TIME_TO_SEC('`+ process.env.TETAPAN_DATANG + `') > ` + timeMin + ` AND TIME_TO_SEC(absensi.jamDatang) - TIME_TO_SEC('` + process.env.TETAPAN_DATANG + `') <= ` + timeMax + `)
+        )`
+    )
+}
+const cekPSW = (waktuFirst, waktuLast, timeMin, timeMax) => {
+
+    return (
+        `(
+            SELECT
+            COUNT(absensi.id)
+            FROM absensi.absensi absensi
+            WHERE
+            absensi.NIP = biodata.nip
+            AND (absensi.jenispresensi = 1)
+            AND
+            absensi.status = 1
+            AND 
+            (
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
+                AND
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
+            )
+
+            AND ( TIME_TO_SEC('`+ process.env.TETAPAN_PULANG + `') - TIME_TO_SEC(absensi.jamPulang) > ` + timeMin + ` AND TIME_TO_SEC('` + process.env.TETAPAN_PULANG + `') - TIME_TO_SEC(absensi.jamPulang) <= ` + timeMax + `)
+        )`
+    )
 }
 
 
@@ -412,6 +478,7 @@ function proses_query(view, res) {
             // console.log(err);
             res.send(err);
         } else {
+
             res.send('ok');
         }
     })
@@ -511,6 +578,8 @@ router.get('/WajibHapus', async (req, res) => {
         ORDER BY jabatan.level
 
     `
+
+    console.log(view)
 
     // absensi.dd = `+req.body.date+` AND
     //         absensi.mm = `+req.body.bulan+` AND
