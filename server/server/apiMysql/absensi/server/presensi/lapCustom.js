@@ -8,10 +8,6 @@ const configurasi = require('../../../library/configurasi');
 const url_micro_1 = configurasi.url_micro_1
 
 
-
-
-
-
 router.get('/aa', (req, res) => {
 
     // console.log(req.body)
