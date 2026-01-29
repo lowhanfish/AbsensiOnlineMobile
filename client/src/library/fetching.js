@@ -25,10 +25,6 @@ const postUnitKerjaAuto = (unit_kerja, unit_kerja_id) => {
         });
 }
 
-
-
-
-
 const postUnitKerjaId = async (unit_kerja, unit_kerja_id)=>{
   return new Promise(resolve=>{
     fetch(store.state.url.URL_m_unit_kerja + "autocomplete_unit_kerja_full", {
@@ -48,11 +44,6 @@ const postUnitKerjaId = async (unit_kerja, unit_kerja_id)=>{
       });
   })
 }
-
-
-
-
-
 
 const getMasterMenu = async ()=>{
     return new Promise(resolve=>{

@@ -9,7 +9,7 @@ Vue.use(Vuex)
 // var URL = 'http://localhost:5040/'
 // var URL = 'http://192.168.44.134:5040/'
 // var URL = 'http://10.216.143.96:5040/'
-var URL = 'https://serverabsensi.konaweselatankab.go.id/'
+var URL = 'https://serverabsensiv2.konaweselatankab.go.id/'
 
 export default new Vuex.Store({
   state: {
@@ -39,6 +39,7 @@ export default new Vuex.Store({
       URL_MasterLevel : URL+'api/v1/dataMastermasterLevel/',
       URL_MasterWaktuAbsen : URL+'api/v1/dataMasterwaktuAbsen/',
       URL_MasterWaktuLibur : URL+'api/v1/dataMasterwaktuLibur/',
+      URL_MasterjenisASN : URL+'api/v1/dataMasterjenisASN/',
 
       URL_UsulanLokasi : URL+'api/v1/usulanLokasi/',
       URL_VerifikasiLokasi : URL+'api/v1/verifikasiLokasi/',
@@ -80,6 +81,7 @@ export default new Vuex.Store({
 
     list_unit_kerja: [],
     list_instansi: [],
+    list_JnsASN: [],
 
 
     list_menu : null,

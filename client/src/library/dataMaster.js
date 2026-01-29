@@ -65,8 +65,6 @@ const getBiodata = (sub_unit_kerja) => {
   });
 }
 
-
-
 const getJenisJabatan = (unit_kerja) => {
   fetch(store.state.url.URL_simpeg_jenis_jabatan + "list", {
       method : 'GET',
@@ -140,6 +138,25 @@ const getGolongan = () => {
   }).then((res) => res.json()).then((res_data) => {
     store.state.golonganSelect = res_data
     // console.log(res_data)
+  })
+}
+
+const getJnsPegawai = () => {
+  console.log("JNS PEGAWAI DI PANGGIL")
+  fetch(store.state.url.URL_MasterjenisASN + "list", {
+      method : 'POST',
+      headers : {
+        "content-type": "application/json",
+        authorization: "kikensbatara " + localStorage.token
+      },
+      body : JSON.stringify({
+        unit_kerja : ''
+      })
+  }).then((res) => res.json()).then((res_data) => {
+    store.state.list_JnsASN = res_data
+
+    console.log("===========")
+    console.log(res_data)
   })
 }
 
@@ -292,6 +309,7 @@ module.exports = {
   getKelasJabatan : getKelasJabatan,
   getAtasanJabatan : getAtasanJabatan,
   getGolongan : getGolongan,
+  getJnsPegawai:getJnsPegawai,
   getJK : getJK,
   getStatusKeluarga : getStatusKeluarga,
   getAgama : getAgama,

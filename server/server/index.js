@@ -74,8 +74,12 @@ app.use('/uploads', express.static(path.join(__dirname, './uploads')))
 
       const dataMasterkategoriAbsen = require('./apiMysql/absensi/server/dataMaster/kategoriAbsen');
       app.use('/api/v1/dataMasterkategoriAbsen', middleware.isLoggedIn, middleware.sideMenuMidleware, dataMasterkategoriAbsen);
+
       const dataMasterkategoriLokasi = require('./apiMysql/absensi/server/dataMaster/kategoriLokasi');
       app.use('/api/v1/dataMasterkategoriLokasi', middleware.isLoggedIn, dataMasterkategoriLokasi);
+
+      const dataMasterjenisASN = require('./apiMysql/absensi/server/dataMaster/jenisASN');
+      app.use('/api/v1/dataMasterjenisASN', middleware.isLoggedIn, dataMasterjenisASN);
 
       const dataMasterjenisIzin = require('./apiMysql/absensi/server/dataMaster/jenisIzin');
       app.use('/api/v1/dataMasterjenisIzin', middleware.isLoggedIn, middleware.sideMenuMidleware, dataMasterjenisIzin);

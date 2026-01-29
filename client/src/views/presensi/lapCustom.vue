@@ -3,14 +3,24 @@
     <q-card bordered class="my-card">
       <q-card-section class="bg-primary text-white">
         <div class="row">
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-4">
             <div class="text-h6 h_titleHead">Laporan Harian-V2</div>
             <div class="text-subtitle2">
               Tanggal {{ filterku.date }}-{{ filterku.bulan }}-{{ filterku.tahun }}
             </div>
           </div>
-          <div class="col-12 col-md-2"></div>
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-4" style="padding: 0.5%">
+            <select @change="getView()" v-model="filterku.jnsASN" class="inputbs">
+              <option
+                v-for="data in $store.state.list_JnsASN"
+                :key="data.id"
+                :value="data.id"
+              >
+                [{{ data.id }}]. {{ data.uraian }}
+              </option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4" style="padding: 0.5%">
             <!-- <q-input outlined square :dense="true" class="bg-white">
               <template v-slot:after >
                 <q-btn @click="mdl_printing = true" dense flat icon="add" />
@@ -511,6 +521,7 @@
 <script>
 import UMUM from "../../library/umum";
 import FETCHING from "../../library/fetching";
+import DATA_MASTER from "../../library/dataMaster";
 
 export default {
   data() {
@@ -577,6 +588,7 @@ export default {
         waktuFirst: "",
         waktuLast: "",
         nip: "",
+        jnsASN: 1,
       },
 
       uraian: {
@@ -624,13 +636,14 @@ export default {
 
           waktuFirst: this.filterku.waktuFirst,
           waktuLast: this.filterku.waktuLast,
+          jnsASN: this.filterku.jnsASN,
         }),
       })
         .then((res) => res.json())
         .then((res_data) => {
           this.$store.commit("hideLoading");
           this.list_data = res_data;
-          console.log(res_data);
+          // console.log(res_data);
         });
     },
 
@@ -879,6 +892,8 @@ export default {
 
     this.filterku.unit_kerja_id = this.$store.state.unit_kerja;
     this.FETCHING.postUnitKerjaAuto("", this.filterku.unit_kerja_id);
+
+    DATA_MASTER.getJnsPegawai();
 
     this.showChannel(this.$store.state.unit_kerja);
 

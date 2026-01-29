@@ -200,10 +200,9 @@ router.post('/view', async (req, res) => {
 
     var tanggalLibur = await libUmum.getTglLibur(db, waktuFirst, waktuLast, res)
     var listTanggal = await libUmum.restrukturListTgl(waktuFirst, waktuLast)
-
     var jumlahHK = await libUmum.cariHariLibur(tanggalLibur, listTanggal, 2)
 
-
+    console.log("Ini dari microservices 1 yang dipanggil melalui lap custom")
 
     // console.log(jumlahHK);
     // console.log(listTanggal);
