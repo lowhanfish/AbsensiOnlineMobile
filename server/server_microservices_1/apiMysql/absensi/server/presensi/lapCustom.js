@@ -2,7 +2,7 @@ const express = require('express');
 var db = require('../../../../db/MySql/absensi');
 const fs = require('fs');
 
-var multer=require("multer");
+var multer = require("multer");
 var upload = require('../../../../db/multer/pdf');
 
 var uniqid = require('uniqid');
@@ -29,10 +29,10 @@ router.post('/Add', (req, res) => {
     var query = `
         INSERT INTO jenisizin (uraian, keterangan, createdBy, createdAt)
         VALUES
-        ('`+req.body.uraian+`', '`+req.body.keterangan+`', '`+req.user._id+`', NOW())
+        ('`+ req.body.uraian + `', '` + req.body.keterangan + `', '` + req.user._id + `', NOW())
     `
 
-    db.query(query, (err, row)=>{
+    db.query(query, (err, row) => {
         if (err) {
             console.log(err)
             res.send(err);
@@ -57,15 +57,15 @@ router.post('/viewBackup', async (req, res) => {
     var waktuFirst1 = waktuFirstX.replace("/", "-")
     var waktuFirst2 = waktuFirst1.replace("/", "-")
     var waktuFirst = waktuFirst2.replace("/", "-")
-    
+
     var waktuLast1 = waktuLastX.replace("/", "-")
     var waktuLast2 = waktuLast1.replace("/", "-")
     var waktuLast = waktuLast2.replace("/", "-")
 
     var jmlHariKerja = await libUmum.hitungTanggalMerah(db, waktuFirst, waktuLast, res)
 
-    
-    
+
+
     // console.log(req.body)
     // console.log(waktuLast)
 
@@ -92,7 +92,7 @@ router.post('/viewBackup', async (req, res) => {
 
         jabatan.jabatan as nm_jabatan,
 
-        @hariKerja := (`+jmlHariKerja+`) as jmlHariKerja,
+        @hariKerja := (`+ jmlHariKerja + `) as jmlHariKerja,
         
         @hadir := (SELECT 
             COUNT(absensi.id)
@@ -104,9 +104,9 @@ router.post('/viewBackup', async (req, res) => {
             (absensi.jenispresensi = 1 AND absensi.jamDatang != absensi.jamPulang)
             AND 
             (
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+waktuFirst+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
                 AND
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+waktuLast+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
             )
             
 
@@ -121,9 +121,9 @@ router.post('/viewBackup', async (req, res) => {
             AND absensi.jenispresensi = 3
             AND 
             (
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+waktuFirst+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
                 AND
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+waktuLast+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
             )
             
 
@@ -131,11 +131,11 @@ router.post('/viewBackup', async (req, res) => {
 
         # (@hariKerja + 1) as kamio
        
-        @tanpaKeterangan := (`+jmlHariKerja+` - @hadir - @izin) as tanpaKeterangan,
+        @tanpaKeterangan := (`+ jmlHariKerja + ` - @hadir - @izin) as tanpaKeterangan,
         
-        @persentaseHadir := ( @hadir * 100 / `+jmlHariKerja+`) as persentaseHadir,
-        @persentaseIzin := ( @izin * 100 / `+jmlHariKerja+`) as persentaseIzin,
-        @persentaseTanpaKeterangan := ( @tanpaKeterangan * 100 / `+jmlHariKerja+`) as persentaseTanpaKeterangan
+        @persentaseHadir := ( @hadir * 100 / `+ jmlHariKerja + `) as persentaseHadir,
+        @persentaseIzin := ( @izin * 100 / `+ jmlHariKerja + `) as persentaseIzin,
+        @persentaseTanpaKeterangan := ( @tanpaKeterangan * 100 / `+ jmlHariKerja + `) as persentaseTanpaKeterangan
 
 
         FROM simpeg.biodata biodata
@@ -147,31 +147,31 @@ router.post('/viewBackup', async (req, res) => {
         
         
         WHERE 
-        biodata.unit_kerja = '`+req.body.unit_kerja_id+`'
+        biodata.unit_kerja = '`+ req.body.unit_kerja_id + `'
         ORDER BY jabatan.level
 
     `
 
-   
+
 
     // absensi.dd = `+req.body.date+` AND
     //         absensi.mm = `+req.body.bulan+` AND
     //         absensi.yy = `+req.body.tahun+`
-    
-    db.query(view, (err, row)=>{
+
+    db.query(view, (err, row) => {
         if (err) {
             console.log(err)
             res.send('err')
         } else {
             res.send(row)
         }
-        
+
     })
 });
 
 
 
-async function loopingDate(){
+async function loopingDate() {
 
 
 }
@@ -189,7 +189,7 @@ router.post('/view', async (req, res) => {
     var waktuFirst1 = waktuFirstX.replace("/", "-")
     var waktuFirst2 = waktuFirst1.replace("/", "-")
     var waktuFirst = waktuFirst2.replace("/", "-")
-    
+
     var waktuLast1 = waktuLastX.replace("/", "-")
     var waktuLast2 = waktuLast1.replace("/", "-")
     var waktuLast = waktuLast2.replace("/", "-")
@@ -207,8 +207,9 @@ router.post('/view', async (req, res) => {
     // console.log(jumlahHK);
     // console.log(listTanggal);
 
-    
-    // console.log(req.body)
+    console.log("=============================")
+    console.log(req.body)
+    console.log("=============================")
     // console.log(waktuLast)
 
     let view = `
@@ -246,9 +247,9 @@ router.post('/view', async (req, res) => {
             (absensi.jenispresensi = 1 AND absensi.jamDatang != absensi.jamPulang)
             AND 
             (
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+waktuFirst+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
                 AND
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+waktuLast+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
             )
             
 
@@ -263,11 +264,10 @@ router.post('/view', async (req, res) => {
             AND absensi.jenispresensi = 3
             AND 
             (
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+waktuFirst+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
                 AND
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+waktuLast+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
             )
-            
 
         ) as izin
 
@@ -282,31 +282,32 @@ router.post('/view', async (req, res) => {
         
         
         WHERE 
-        biodata.unit_kerja = '`+req.body.unit_kerja_id+`'
+        biodata.unit_kerja = '`+ req.body.unit_kerja_id + `' 
+        AND biodata.jenis_pegawai_id = '`+ req.body.jnsASN + `'
         ORDER BY jabatan.level
 
     `
 
-   
+
 
     // absensi.dd = `+req.body.date+` AND
     //         absensi.mm = `+req.body.bulan+` AND
     //         absensi.yy = `+req.body.tahun+`
-    
-    db.query(view, async (err, row)=>{
+
+    db.query(view, async (err, row) => {
         if (err) {
             // console.log(err)
             res.send('err')
         } else {
 
             var data = await start(row, tanggalLibur, listTanggal)
-            
+
 
             // console.log(2);
             res.send(data)
-            
+
         }
-        
+
     })
 });
 
@@ -328,25 +329,25 @@ const start = async (row, tanggalLibur, listTanggal) => {
     var data = []
     await asyncForEach(row, async (num) => {
         // await waitFor(50);
-        num.jmlHariKerja = await libUmum.cariHariLibur(tanggalLibur, listTanggal, num.metode_absen )
+        num.jmlHariKerja = await libUmum.cariHariLibur(tanggalLibur, listTanggal, num.metode_absen)
         num.tanpaKeterangan = num.jmlHariKerja - num.hadir - num.izin;
         num.persentaseHadir = (num.hadir * 100) / num.jmlHariKerja
         num.persentaseIzin = (num.izin * 100) / num.jmlHariKerja
         num.persentaseTanpaKeterangan = (num.tanpaKeterangan * 100) / num.jmlHariKerja
 
         data.push(num)
-        
-        
+
+
     });
-    
+
 
     return new Promise((resolve, reject) => {
         resolve(data)
     })
 
 
-    
-  }
+
+}
 
 
 
@@ -383,34 +384,34 @@ const start = async (row, tanggalLibur, listTanggal) => {
 //         )
 
 
-router.post('/editData', (req, res)=>{
+router.post('/editData', (req, res) => {
     var query = `
         UPDATE jenisizin SET
-        uraian = '`+req.body.uraian+`',
-        keterangan = '`+req.body.keterangan+`',
-        editedBy = '`+req.user._id+`'
+        uraian = '`+ req.body.uraian + `',
+        keterangan = '`+ req.body.keterangan + `',
+        editedBy = '`+ req.user._id + `'
         
-        WHERE id = `+req.body.id+`
+        WHERE id = `+ req.body.id + `
     `;
     proses_query(query, res);
 })
 
-router.post('/removeData', (req, res)=>{
+router.post('/removeData', (req, res) => {
     var query = `
         DELETE FROM jenisizin
-        WHERE id = `+req.body.id+`
+        WHERE id = `+ req.body.id + `
     `;
     proses_query(query, res);
 })
 
 
 
-function proses_query(view, res){
-    db.query(view, (err, row)=>{
-        if(err) {
+function proses_query(view, res) {
+    db.query(view, (err, row) => {
+        if (err) {
             // console.log(err);
             res.send(err);
-        }else{
+        } else {
             res.send('ok');
         }
     })
@@ -457,7 +458,7 @@ router.get('/WajibHapus', async (req, res) => {
 
         CONCAT(2022,'-',LPAD(1,2,'00'),'-',LPAD(7,2,'00')) as tanggalx,
 
-        @hariKerja := (`+jmlHariKerja+`) as jmlHariKerja,
+        @hariKerja := (`+ jmlHariKerja + `) as jmlHariKerja,
         
         @hadir := (SELECT 
             COUNT(absensi.id)
@@ -468,9 +469,9 @@ router.get('/WajibHapus', async (req, res) => {
             AND absensi.jenispresensi = 1
             AND 
             (
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+waktuFirst+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) >= '`+ waktuFirst + `'
                 AND
-                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+waktuLast+`'
+                CONCAT(absensi.yy,'-',LPAD(absensi.mm,2,'00'),'-',LPAD(absensi.dd,2,'00')) <= '`+ waktuLast + `'
             )
             
 
@@ -489,11 +490,11 @@ router.get('/WajibHapus', async (req, res) => {
 
         # (@hariKerja + 1) as kamio
 
-        @tanpaKeterangan := (`+jmlHariKerja+` - @hadir - @izin) as tanpaKeterangan,
+        @tanpaKeterangan := (`+ jmlHariKerja + ` - @hadir - @izin) as tanpaKeterangan,
         
-        @persentaseHadir := ( @hadir * 100 / `+jmlHariKerja+`) as persentaseHadir,
-        @persentaseIzin := ( @izin * 100 / `+jmlHariKerja+`) as persentaseIzin,
-        @persentaseTanpaKeterangan := ( @tanpaKeterangan * 100 / `+jmlHariKerja+`) as persentaseTanpaKeterangan
+        @persentaseHadir := ( @hadir * 100 / `+ jmlHariKerja + `) as persentaseHadir,
+        @persentaseIzin := ( @izin * 100 / `+ jmlHariKerja + `) as persentaseIzin,
+        @persentaseTanpaKeterangan := ( @tanpaKeterangan * 100 / `+ jmlHariKerja + `) as persentaseTanpaKeterangan
 
         FROM simpeg.biodata biodata
 
@@ -514,15 +515,15 @@ router.get('/WajibHapus', async (req, res) => {
     // absensi.dd = `+req.body.date+` AND
     //         absensi.mm = `+req.body.bulan+` AND
     //         absensi.yy = `+req.body.tahun+`
-    
-    db.query(view, (err, row)=>{
+
+    db.query(view, (err, row) => {
         if (err) {
             // console.log(err)
             res.send('err')
         } else {
             res.send(row)
         }
-        
+
     })
 });
 
