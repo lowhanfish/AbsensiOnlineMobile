@@ -179,9 +179,196 @@ async function loopingDate() {
 
 
 router.post('/view', async (req, res) => {
+    try {
+        /* ===================== PARSE TANGGAL ===================== */
+        const waktuFirst = req.body.waktuFirst.replaceAll("/", "-")
+        const waktuLast = req.body.waktuLast.replaceAll("/", "-")
+
+        const jnsASN = req.body.jnsASN
+        const unitKerja = req.body.unit_kerja_id
+
+        console.log(req.body)
+        console.log(waktuFirst, waktuLast)
+
+        /* ===================== QUERY SQL ===================== */
+        const view = `
+WITH RECURSIVE
+vars AS (
+  SELECT
+    DATE('${waktuFirst}') AS tgl_awal,
+    DATE('${waktuLast}')  AS tgl_akhir,
+    TIME('07:30:00') AS jam_datang,
+    TIME('15:30:00') AS pulang_m1,
+    TIME('13:30:00') AS pulang_m2
+),
+
+kalender AS (
+  SELECT tgl_awal AS tgl FROM vars
+  UNION ALL
+  SELECT tgl + INTERVAL 1 DAY
+  FROM kalender, vars
+  WHERE tgl < vars.tgl_akhir
+),
+
+hari_kerja AS (
+  SELECT
+    b.nip,
+    COUNT(*) AS jumlah_hari_kerja
+  FROM simpeg.biodata b
+  JOIN kalender k
+    ON (
+      (b.metode_absen = 1 AND DAYOFWEEK(k.tgl) NOT IN (1,7))
+      OR
+      (b.metode_absen = 2 AND DAYOFWEEK(k.tgl) <> 1)
+    )
+  GROUP BY b.nip
+),
+
+hari_libur AS (
+  SELECT
+    b.nip,
+    COUNT(DISTINCT k.tgl) AS jumlah_hari_libur
+  FROM simpeg.biodata b
+  JOIN kalender k
+  JOIN absensi.waktulibur wl
+    ON DATE(wl.tglFull) = k.tgl
+  WHERE
+    (
+      (b.metode_absen = 1 AND DAYOFWEEK(k.tgl) NOT IN (1,7))
+      OR
+      (b.metode_absen = 2 AND DAYOFWEEK(k.tgl) <> 1)
+    )
+  GROUP BY b.nip
+)
+
+SELECT
+  CONCAT(b.gelar_depan,' ',b.nama,' ',b.gelar_belakang) AS nama,
+  b.nip,
+  b.metode_absen,
+  j.jabatan AS nm_jabatan,
+  uk.unit_kerja,
+
+  /* ================= HADIR & IZIN ================= */
+  SUM(a.jenispresensi=1 AND a.jamDatang<>a.jamPulang AND wl.id IS NULL) AS hadir,
+  SUM(a.jenispresensi=3 AND wl.id IS NULL) AS izin,
+
+  /* ================= TL ================= */
+  SUM(a.jenispresensi=1 AND a.status=1
+      AND a.jamDatang > vars.jam_datang
+      AND a.jamDatang <= ADDTIME(vars.jam_datang,'00:30:00')
+      AND wl.id IS NULL) AS TL1,
+
+  SUM(a.jenispresensi=1 AND a.status=1
+      AND a.jamDatang > ADDTIME(vars.jam_datang,'00:30:00')
+      AND a.jamDatang <= ADDTIME(vars.jam_datang,'01:00:00')
+      AND wl.id IS NULL) AS TL2,
+
+  SUM(a.jenispresensi=1 AND a.status=1
+      AND a.jamDatang > ADDTIME(vars.jam_datang,'01:00:00')
+      AND a.jamDatang <= ADDTIME(vars.jam_datang,'01:30:00')
+      AND wl.id IS NULL) AS TL3,
+
+  SUM(a.jenispresensi=1 AND a.status=1
+      AND a.jamDatang > ADDTIME(vars.jam_datang,'01:30:00')
+      AND wl.id IS NULL) AS TL4,
+
+  /* ================= PSW ================= */
+  SUM(a.jenispresensi=1 AND a.status=1 AND wl.id IS NULL AND
+    (
+      (b.metode_absen=1 AND a.jamPulang < vars.pulang_m1 AND a.jamPulang >= ADDTIME(vars.pulang_m1,'-00:30:00'))
+      OR
+      (b.metode_absen=2 AND a.jamPulang < vars.pulang_m2 AND a.jamPulang >= ADDTIME(vars.pulang_m2,'-00:30:00'))
+    )) AS PSW1,
+
+  SUM(a.jenispresensi=1 AND a.status=1 AND wl.id IS NULL AND
+    (
+      (b.metode_absen=1 AND a.jamPulang < ADDTIME(vars.pulang_m1,'-00:30:00') AND a.jamPulang >= ADDTIME(vars.pulang_m1,'-01:00:00'))
+      OR
+      (b.metode_absen=2 AND a.jamPulang < ADDTIME(vars.pulang_m2,'-00:30:00') AND a.jamPulang >= ADDTIME(vars.pulang_m2,'-01:00:00'))
+    )) AS PSW2,
+
+  SUM(a.jenispresensi=1 AND a.status=1 AND wl.id IS NULL AND
+    (
+      (b.metode_absen=1 AND a.jamPulang < ADDTIME(vars.pulang_m1,'-01:00:00') AND a.jamPulang >= ADDTIME(vars.pulang_m1,'-01:30:00'))
+      OR
+      (b.metode_absen=2 AND a.jamPulang < ADDTIME(vars.pulang_m2,'-01:00:00') AND a.jamPulang >= ADDTIME(vars.pulang_m2,'-01:30:00'))
+    )) AS PSW3,
+
+  SUM(a.jenispresensi=1 AND a.status=1 AND wl.id IS NULL AND
+    (
+      (b.metode_absen=1 AND a.jamPulang < ADDTIME(vars.pulang_m1,'-01:30:00'))
+      OR
+      (b.metode_absen=2 AND a.jamPulang < ADDTIME(vars.pulang_m2,'-01:30:00'))
+    )) AS PSW4,
+
+  /* ================= HARI ================= */
+  hk.jumlah_hari_kerja,
+  COALESCE(hl.jumlah_hari_libur,0) AS jumlah_hari_libur,
+
+  /* ================= TK ================= */
+  (
+    hk.jumlah_hari_kerja
+    - COALESCE(hl.jumlah_hari_libur,0)
+    - SUM(a.jenispresensi=1 AND a.jamDatang<>a.jamPulang AND wl.id IS NULL)
+  ) AS TK
+
+FROM simpeg.biodata b
+CROSS JOIN vars
+LEFT JOIN absensi.absensi a
+  ON a.nip=b.nip
+ AND DATE(CONCAT(a.yy,'-',a.mm,'-',a.dd)) BETWEEN vars.tgl_awal AND vars.tgl_akhir
+LEFT JOIN absensi.waktulibur wl
+  ON wl.yy=a.yy AND wl.mm=a.mm AND wl.dd=a.dd
+LEFT JOIN hari_kerja hk ON hk.nip=b.nip
+LEFT JOIN hari_libur hl ON hl.nip=b.nip
+LEFT JOIN simpeg.jabatan j ON b.jabatan=j._id
+JOIN simpeg.unit_kerja uk ON uk.id=b.unit_kerja
+
+WHERE b.jenis_pegawai_id=${jnsASN}
+  AND b.unit_kerja='${unitKerja}'
+
+GROUP BY b.nip
+ORDER BY j.level;
+`
+
+        /* ===================== EXEC ===================== */
+        db.query(view, (err, row) => {
+            if (err) {
+                console.log(err)
+                res.status(500).send(err)
+            } else {
+                // res.send(row)
+
+                var data = []
+
+                row.forEach(element => {
+                    element.persentaseHadir = (element.hadir * 100) / element.jumlah_hari_kerja
+                    element.persentaseIzin = (element.izin * 100) / element.jumlah_hari_kerja
+                    element.persentaseTanpaKeterangan = (element.TK * 100) / element.jumlah_hari_kerja
+                    element.tanpaKeterangan = element.TK
+                    element.jmlHariKerja = element.jumlah_hari_kerja
 
 
-    // console.log(req.body);
+                    data.push(element);
+                });
+
+                res.send(data);
+
+
+            }
+        })
+
+    } catch (e) {
+        console.log(e)
+        res.status(500).send(e)
+    }
+})
+
+
+
+
+
+router.post('/view_backup', async (req, res) => {
 
     var waktuFirstX = req.body.waktuFirst
     var waktuLastX = req.body.waktuLast
@@ -413,6 +600,8 @@ const cekPSW = (waktuFirst, waktuLast, timeMin, timeMax) => {
             AND ( TIME_TO_SEC('`+ process.env.TETAPAN_PULANG + `') - TIME_TO_SEC(absensi.jamPulang) > ` + timeMin + ` AND TIME_TO_SEC('` + process.env.TETAPAN_PULANG + `') - TIME_TO_SEC(absensi.jamPulang) <= ` + timeMax + `)
         )`
     )
+
+
 }
 
 
