@@ -8,8 +8,6 @@ var fetch = require('node-fetch');
 const configurasi = require('../../../library/configurasi');
 const url_micro_8 = configurasi.url_micro_8
 
-
-
 router.post('/list', async (req, res) => {
     // console.log("VIEW LIST DETILE PERUBAHAN ABSEN DIPANGGING (lapCustom_v2)")
 
@@ -211,8 +209,6 @@ async function updateData(data, req, biodata) {
 
 }
 
-
-
 async function removeData(data) {
 
     return new Promise((resolve, reject) => {
@@ -245,7 +241,6 @@ async function removeData(data) {
 
 }
 
-
 async function getBioData(data) {
 
     return new Promise((resolve, reject) => {
@@ -276,7 +271,6 @@ async function getBioData(data) {
 
 }
 
-
 function proses_query(view, res) {
     db.query(view, (err, row) => {
         if (err) {
@@ -287,11 +281,5 @@ function proses_query(view, res) {
         }
     })
 }
-
-
-
-
-
-
 
 module.exports = router;

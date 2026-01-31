@@ -63,7 +63,6 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     if (cekspoofing === "fake") {
 
         hapus_file(req.file.filename);
-
         res.status(500).json({
             status: 'ABSEN GAGAL',
             ket: 'Sayangnya, foto yang anda kirimkan terdeteksi "fake" silahkan ulangi kembali. absen hari ini pada jam : ',
@@ -72,9 +71,7 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
         return false
     } else {
         console.log("real");
-
         console.log("=========== DATA WAJAH ===========");
-
         var listWajah = await faceEmbedding.getDataWajah(db, req.body.NIP)
         console.log(listWajah);
 
@@ -87,6 +84,8 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
                 jam: jam
             });
         } else {
+
+            const hasilFaceMatch = await faceEmbedding.pencocokkanWajah(body, listWajah)
 
         }
 
@@ -722,7 +721,6 @@ async function cekWaktu() {
 
 }
 
-
 const removeLampiran = async (idreff) => {
     return new Promise((resolve, reject) => {
         const query = `
@@ -740,8 +738,6 @@ const removeLampiran = async (idreff) => {
         })
     })
 }
-
-
 
 function hapus_file(file) {
     const path = 'uploads/' + file;
