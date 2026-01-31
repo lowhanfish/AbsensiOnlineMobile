@@ -41,6 +41,7 @@ const AbsensiFaceRecognation = () => {
     // Redux State
     const TOKEN = useSelector(state => state.TOKEN);
     const PROFILE = useSelector(state => state.PROFILE);
+    // const UNIT_KERJA = useSelector(state => state.UNIT_KERJA);
     const URL = useSelector(state => state.URL);
     const WAKTU = useSelector(state => state.WAKTU);
     const VERSI_APP = useSelector(state => state.VERSI_APP);
@@ -67,7 +68,7 @@ const AbsensiFaceRecognation = () => {
     const [serverResponse, setServerResponse] = useState(null);
     const [cameraError, setCameraError] = useState(null);
 
-    console.log('📍 Profile:', PROFILE?.profile?.NIP);
+    console.log('📍 Profile:', PROFILE.profile.unit_kerja);
     console.log('⏰ Waktu:', WAKTU);
 
     // ============ CAMERA PERMISSION ============
@@ -204,12 +205,15 @@ const AbsensiFaceRecognation = () => {
             });
 
             // Append data
-            formData.append('NIP', nip);
+            formData.append('VERSI_APP', VERSI_APP || '');
+            formData.append('JenisStatusId', WAKTU?.id || 0);
             formData.append('lat', PROFILE?.profile?.lokasi_absen?.[0]?.lat?.toString() || '0');
             formData.append('lng', PROFILE?.profile?.lokasi_absen?.[0]?.lng?.toString() || '0');
+            formData.append('NIP', nip);
+            formData.append('unit_kerja', PROFILE.profile.unit_kerja || '');
             formData.append('JenisStatus', WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG');
-            formData.append('VERSI_APP', VERSI_APP || '');
             formData.append('isUseEmulator', 'false');
+            formData.append('fcmToken', '');
 
             // Upload via fetch
             const response = await fetch(apiUrl, {

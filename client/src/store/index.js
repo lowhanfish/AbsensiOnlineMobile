@@ -7,10 +7,10 @@ import { Notify } from 'quasar'
 Vue.use(Vuex)
 
 // var URL = 'http://localhost:5040/'
-// var URL = 'http://192.168.44.134:5040/'
+// var URL = 'http://192.168.1.8:5040/'
 // var URL = 'http://10.216.143.96:5040/'
-var URL = 'https://serverabsensi.konaweselatankab.go.id/'
-// var URL = 'https://serverabsensiv2.konaweselatankab.go.id/'
+// var URL = 'https://serverabsensi.konaweselatankab.go.id/'
+var URL = 'https://serverabsensiv2.konaweselatankab.go.id/'
 
 export default new Vuex.Store({
   state: {

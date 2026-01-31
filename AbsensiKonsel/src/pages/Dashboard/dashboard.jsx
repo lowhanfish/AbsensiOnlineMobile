@@ -117,6 +117,7 @@ const Dashboard = () => {
     const getWaktuAbsen = async () => {
         try {
             const xxx = await CheckWaktuAbsen(url.URL_MasterWaktuAbsen + "viewOne", token);
+            console.log(xxx)
             dispatch(setWaktuData(xxx));
         } catch (error) {
             console.error("Gagal mengambil waktu absen dari API:", error);
