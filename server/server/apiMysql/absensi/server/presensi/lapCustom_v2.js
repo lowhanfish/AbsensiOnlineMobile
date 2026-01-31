@@ -44,10 +44,6 @@ router.post('/list', async (req, res) => {
     }
 
 })
-
-
-
-
 // ======= BUKA INI UNTUK PERBAIKAN =======
 
 router.post('/UpdateAll', async (req, res) => {
