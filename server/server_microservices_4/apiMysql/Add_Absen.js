@@ -70,7 +70,7 @@ router.post('/Add', async (req, res) => {
                 } else {
                     // ==================================
                     var query = `
-                            SELECT * FROM absensi
+                            SELECT id FROM absensi
                             WHERE 
                             dd = `+ dd + ` AND
                             mm = `+ mm + ` AND
