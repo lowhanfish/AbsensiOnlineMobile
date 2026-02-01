@@ -29,6 +29,21 @@ router.get('/cappo', (req, res) => {
 
 // INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
 router.post('/Add_v2', upload.single("file"), async (req, res) => {
+    // 082123731607 (Muh.Aldi YL)
+
+
+
+    if (req.body.VERSI_APP !== '2.0.0') {
+        res.status(500).json({
+            status: 'ABSEN GAGAL',
+            ket: 'Sayangnya, aplikasi yang anda gunakan (versi perekaman) tidak berlaku lagi. Silahkan hubungi Bapak Mangke +6285255535614 (WhatsApp) untuk mendapatkan pencerahan. absen hari ini pada jam : ',
+            jam: jam
+        });
+        return false
+
+    }
+
+
 
 
     var jam = lib.Timex().jam;
@@ -36,10 +51,6 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
     var STATUS = ""
     var KET = ""
-
-
-
-
 
     console.log("===========================================");
     console.log("ABSEN HARIAN V2 (FACE RECOGNATION) DI PANGGIL");
@@ -60,6 +71,8 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     const cekspoofing = await faceEmbedding.cekSpoofing(body)
     console.log(cekspoofing);
     console.log("=========== SPOOFING ===========")
+
+
     if (cekspoofing === "fake") {
 
         hapus_file(req.file.filename);
@@ -84,24 +97,60 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
                 jam: jam
             });
         } else {
+            var resultPencocokan = false;
 
-            const hasilFaceMatch = await faceEmbedding.pencocokkanWajah(body, listWajah)
+            for (let i = 0; i < listWajah.length; i++) {
+                const wajahCheck = {
+                    reference: req.file.filename,
+                    probe1: listWajah[i].file
+                }
+
+                const hasilFaceMatch = await faceEmbedding.pencocokkanWajah(wajahCheck)
+                console.log("================ HASIL PENCOCOKAN WAJAH ================")
+                resultPencocokan = hasilFaceMatch.probe_results[0].match
+                console.log(resultPencocokan)
+
+
+                if (resultPencocokan == 'false' || resultPencocokan === false) {
+
+
+
+                    res.status(500).json({
+                        status: 'ABSEN GAGAL',
+                        ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi. absen hari ini pada jam : ',
+                        jam: jam
+                    });
+
+
+
+
+                } else {
+
+                    res.status(200).json({
+                        status: 'ABSEN SUKSES',
+                        ket: 'Mohon bersabar, Pelan saja om/tante, Absensi face-matching berlaku mulai tanggal 1 februari 2026, anda melakukan absen hari ini pada jam : ',
+                        jam: jam
+                        // status: 'ABSEN SUKSES',
+                        // ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
+                        // jam: jam
+                    });
+                }
+
+                console.log("================ HASIL PENCOCOKAN WAJAH ================")
+
+            }
+
+
+            // console.log(listWajah)
+
+            console.log("=========== DATA WAJAH ===========");
+
+
+
 
         }
 
 
-        console.log("=========== DATA WAJAH ===========");
-
-
-
-        res.status(200).json({
-            status: 'ABSEN SUKSES',
-            ket: 'Mohon bersabar, Pelan saja om/tante, Absensi face-matching berlaku mulai tanggal 1 februari 2026, anda melakukan absen hari ini pada jam : ',
-            jam: jam
-            // status: 'ABSEN SUKSES',
-            // ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
-            // jam: jam
-        });
 
     }
 

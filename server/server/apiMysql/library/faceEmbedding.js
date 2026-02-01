@@ -32,7 +32,7 @@ const cekSpoofing = async (body) => {
 
 const pencocokkanWajah = async (body) => {
     try {
-        const response = await fetch(configurasi.url_micro_10 + "api/v1/verify-uploads", {
+        const response = await fetch(configurasi.url_micro_10 + "/api/v1/verify-uploads", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

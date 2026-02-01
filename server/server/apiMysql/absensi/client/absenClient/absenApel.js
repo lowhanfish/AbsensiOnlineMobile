@@ -2,7 +2,7 @@ const express = require('express');
 var db = require('../../../../db/MySql/absensi');
 const fs = require('fs');
 
-var multer=require("multer");
+var multer = require("multer");
 var upload = require('../../../../db/multer/pdf');
 
 var uniqid = require('uniqid');
@@ -25,12 +25,12 @@ const fcm = require('../../../library/fcm');
 
 
 
-router.get('/cappo', (req, res)=>{
+router.get('/cappo', (req, res) => {
     fcm.pushNotification('Nableee', 'telasooooo ');
     res.json('wataaaooo')
 })
 
-router.post('/Add', async(req, res) => {
+router.post('/Add', async (req, res) => {
     // var jam = lib.Timex().jam;
     // var dd = lib.Timex().dd;
     // var mm = lib.Timex().mm;
@@ -39,7 +39,7 @@ router.post('/Add', async(req, res) => {
     // var data = req.body
     // // console.log(data)
 
-    
+
     // if (checkTime(data.form)) {
 
     //     if (data.isUseEmulator == 'true') {
@@ -68,10 +68,10 @@ router.post('/Add', async(req, res) => {
     const body = req.body;
     body.user_id = req.user._id
     try {
-        const response = await fetch(url_micro_6+'/micro_6/absenApel/Add', {
+        const response = await fetch(url_micro_6 + '/micro_6/absenApel/Add', {
             method: 'post',
             body: JSON.stringify(body),
-            headers: {'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
         console.log(data);
@@ -89,10 +89,10 @@ router.post('/statistik', async (req, res) => {
     // console.log(req.body);
     const body = req.body;
     try {
-        const response = await fetch(url_micro_1+'/api/v1/client_absenApel/statistik', {
+        const response = await fetch(url_micro_1 + '/api/v1/client_absenApel/statistik', {
             method: 'post',
             body: JSON.stringify(body),
-            headers: {'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
         console.log(data);
@@ -106,33 +106,33 @@ router.post('/statistik', async (req, res) => {
 
 
 
-function AddAbsenApel(req, res, data){
+function AddAbsenApel(req, res, data) {
     var data1 = data.form;
     var jamx = lib.Timex().jam;
     const d = new Date();
     var thn = d.getFullYear();
-    var bln = d.getMonth()+1;
+    var bln = d.getMonth() + 1;
     var tgl = d.getDate();
 
     var jam = d.getHours()
     var mnt = d.getMinutes()
-    var waktu = Conversi00(jam)+":"+Conversi00(mnt)+':00';
+    var waktu = Conversi00(jam) + ":" + Conversi00(mnt) + ':00';
 
     // console.log(data)
 
 
-    var check =`
+    var check = `
         SELECT id FROM absensi_apel
-        WHERE NIP = '`+data.NIP+`' AND
+        WHERE NIP = '`+ data.NIP + `' AND
         (
-            dd = `+data1.dd+` AND
-            mm = `+data1.mm+` AND
-            yy = `+data1.yy+`
+            dd = `+ data1.dd + ` AND
+            mm = `+ data1.mm + ` AND
+            yy = `+ data1.yy + `
         )
     
     `
 
-    db.query(check, (err, rows)=>{
+    db.query(check, (err, rows) => {
         if (rows.length <= 0) {
 
 
@@ -150,55 +150,40 @@ function AddAbsenApel(req, res, data){
                     createdBy, 
                     createdAt 
                 ) VALUE (
-                    `+data1.lat+`,
-                    `+data1.lng+`,
-                    '`+waktu+`',
-                    `+data1.dd+`,
-                    `+data1.mm+`,
-                    `+data1.yy+`,
-                    '`+data.NIP+`',
-                    '`+data1.unit_kerja+`',
-                    '`+req.user._id+`',
+                    `+ data1.lat + `,
+                    `+ data1.lng + `,
+                    '`+ waktu + `',
+                    `+ data1.dd + `,
+                    `+ data1.mm + `,
+                    `+ data1.yy + `,
+                    '`+ data.NIP + `',
+                    '`+ data1.unit_kerja + `',
+                    '`+ req.user._id + `',
                     NOW()
                 )
             `
 
-            db.query(query, (err2, rows2)=>{
+            db.query(query, (err2, rows2) => {
                 if (err2) {
                     // console.log(err2);
                     res.json(err2);
                 } else {
                     res.send({
-                        status : 'SUKSES',
-                        ket : 'Sukses, anda berhasil absen apel hari ini pada jam : ',
-                        jam : jamx
+                        status: 'SUKSES',
+                        ket: 'Sukses, anda berhasil absen apel hari ini pada jam : ',
+                        jam: jamx
                     })
                 }
             })
 
 
-
-
-
-
-
-
-            
         } else {
 
-
-
-
             res.send({
-                status : 'GAGAL',
-                ket : 'Gagal, anda sebelumnya sudah absen apel hari ini pada jam : ',
-                jam : jam
+                status: 'GAGAL',
+                ket: 'Gagal, anda sebelumnya sudah absen apel hari ini pada jam : ',
+                jam: jam
             })
-
-
-
-
-            
         }
     })
 
@@ -209,7 +194,7 @@ function AddAbsenApel(req, res, data){
 
 
 
-    
+
 
 
 
@@ -217,10 +202,10 @@ function AddAbsenApel(req, res, data){
 
 
 
-const checkTime = (data) =>{
+const checkTime = (data) => {
     const d = new Date();
     var thn = d.getFullYear();
-    var bln = d.getMonth()+1;
+    var bln = d.getMonth() + 1;
     var tgl = d.getDate();
 
 
@@ -228,13 +213,13 @@ const checkTime = (data) =>{
     var jam = d.getHours()
     var mnt = d.getMinutes()
 
-    var waktu = Conversi00(jam)+":"+Conversi00(mnt)+':00';
-    
+    var waktu = Conversi00(jam) + ":" + Conversi00(mnt) + ':00';
+
     if (data) {
         // console.log(waktu)
         // console.log(data.startAbsen)
-        if (parseInt(tgl) == parseInt(data.dd) && parseInt(bln) == parseInt(data.mm) && parseInt(thn) == parseInt(data.yy) ) {
-            if ((waktu >= data.startAbsen) && (waktu <= data.batasAbsen) ) {
+        if (parseInt(tgl) == parseInt(data.dd) && parseInt(bln) == parseInt(data.mm) && parseInt(thn) == parseInt(data.yy)) {
+            if ((waktu >= data.startAbsen) && (waktu <= data.batasAbsen)) {
                 // if ((data.startAbsen > waktu) && (data.batasAbsen < waktu)) {
                 // console.log('Suksesssss')
                 return true
@@ -242,12 +227,12 @@ const checkTime = (data) =>{
                 // console.log('Gagaaaaaal')
                 return false
             }
-        } else{
+        } else {
             // console.log("GAGALLLLLLL")
             return false
         }
 
-    } 
+    }
 
 }
 
