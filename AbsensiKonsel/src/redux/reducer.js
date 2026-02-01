@@ -18,9 +18,8 @@ import {
 
 // Gunakan const agar tidak bisa diubah sembarangan
 const URL_SIMPEG = 'https://server-egov.konaweselatankab.go.id';
-// const URLKU = 'https://serverabsensiv2.konaweselatankab.go.id';
-const URLKU = 'http://192.168.1.8:5040';
-
+const URLKU = 'https://serverabsensiv2.konaweselatankab.go.id';
+// const URLKU = 'http://192.168.1.8:5040';
 
 // =============================
 // INITIAL STATE

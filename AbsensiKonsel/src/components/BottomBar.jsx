@@ -37,7 +37,7 @@ const BottomBar = ({ navigation }) => {
                     <Text style={styles.bottomBarText}>KINERJA</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate("MainPage", { screen: "Dashboard" })} style={styles.bottomBarItemMain}>
-                    <ImageLib style={{ width: 58 }} urix={require('../assets/images/icon/home.png')} />
+                    <ImageLib style={{ width: 45 }} urix={require('../assets/images/icon/home.png')} />
                     <Text style={styles.bottomBarText}>HOME</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { SetModalActivated(!modalActivated) }} style={styles.bottomBarItem}>
@@ -91,12 +91,12 @@ const styles = StyleSheet.create({
     },
     bottomBarItemMain: {
         backgroundColor: '#D9D9D9',
-        height: 95,
-        width: 96,
+        height: 80,
+        width: 80,
         // flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: -30,
+        marginTop: -15,
         borderRadius: 50,
         borderColor: 'white',
         borderWidth: 5,
