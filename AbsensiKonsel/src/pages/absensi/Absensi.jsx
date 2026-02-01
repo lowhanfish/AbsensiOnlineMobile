@@ -20,7 +20,7 @@ import JailMonkey from 'jail-monkey';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { hitungJarak } from '../../lib/kiken';
-import { CheckWaktuAbsen } from '../../lib/kiken';
+import { CheckWaktuAbsen, JamRealtime, cekWaktu } from '../../lib/kiken';
 import { setWaktuData } from '../../redux/actions';
 import { Stylex } from '../../assets/styles/main';
 import ImageLib from '../../components/ImageLib';
@@ -211,6 +211,19 @@ function Absensi() {
         getLocation();
         getWaktuAbsen();
     }, []);
+
+    // Timer untuk update waktu absen setiap detik
+    useEffect(() => {
+        const secTimer = setInterval(() => {
+            const newTime = JamRealtime();
+            const datatampil = cekWaktu(newTime, tetapanWaktuAbsen);
+            dispatch(setWaktuData(datatampil));
+        }, 1000);
+
+        return () => {
+            clearInterval(secTimer);
+        };
+    }, [dispatch, tetapanWaktuAbsen]);
 
     let statusText = '\nStatus: ';
     if (statusx && tetapanWaktuAbsen.status) {

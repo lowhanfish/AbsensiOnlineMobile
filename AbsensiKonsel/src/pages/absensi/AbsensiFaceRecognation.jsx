@@ -211,7 +211,7 @@ const AbsensiFaceRecognation = () => {
             formData.append('lng', PROFILE?.profile?.lokasi_absen?.[0]?.lng?.toString() || '0');
             formData.append('NIP', nip);
             formData.append('unit_kerja', PROFILE.profile.unit_kerja || '');
-            formData.append('JenisStatus', WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG');
+            formData.append('JenisStatus', WAKTU?.keterangan || 'ABSEN DATANG');
             formData.append('isUseEmulator', 'false');
             formData.append('fcmToken', '');
 
@@ -323,7 +323,7 @@ const AbsensiFaceRecognation = () => {
                     capturedPhoto={capturedPhoto}
                     isSending={isSending}
                     serverResponse={serverResponse}
-                    waktuStatus={WAKTU?.status ? 'ABSEN DATANG' : 'ABSEN PULANG'}
+                    waktuStatus={WAKTU?.keterangan || 'ABSEN DATANG'}
                     onRetake={handleRetake}
                     onSend={handleSendToServer}
                 />
