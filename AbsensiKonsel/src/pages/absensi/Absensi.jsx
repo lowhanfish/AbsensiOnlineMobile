@@ -17,19 +17,28 @@ import NetInfo from '@react-native-community/netinfo'; // ✅ Tambahan
 import DeviceInfo from 'react-native-device-info';
 import JailMonkey from 'jail-monkey';
 
+import { useNavigation } from '@react-navigation/native';
+import { useSelector, useDispatch } from 'react-redux';
+import { hitungJarak } from '../../lib/kiken';
+import { CheckWaktuAbsen } from '../../lib/kiken';
+import { setWaktuData } from '../../redux/actions';
 import { Stylex } from '../../assets/styles/main';
 import ImageLib from '../../components/ImageLib';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import { hitungJarak } from '../../lib/kiken';
 
 const dimensions = Dimensions.get('window');
 const height = dimensions.height;
 const width = dimensions.width;
 
+
+
+
 function Absensi() {
     const navigation = useNavigation();
+    const dispatch = useDispatch();
     const AbsenLoc = useSelector(state => state.PROFILE.profile.lokasi_absen);
+    const tetapanWaktuAbsen = useSelector(state => state.WAKTU);
+    const url = useSelector(state => state.URL);
+    const token = useSelector(state => state.TOKEN);
 
     const [lokasi, setLokasi] = useState({
         latitude: -4.3324188,
@@ -42,6 +51,16 @@ function Absensi() {
     const [statusx, setStatusx] = useState(false);
     const [jarakMinimal, setJarakMinimal] = useState(null);
     const [isOnline, setIsOnline] = useState(true); // ✅ Tambahan
+
+    const getWaktuAbsen = async () => {
+        try {
+            const xxx = await CheckWaktuAbsen(url.URL_MasterWaktuAbsen + "viewOne", token);
+            console.log(xxx);
+            dispatch(setWaktuData(xxx));
+        } catch (error) {
+            console.error("Gagal mengambil waktu absen dari API:", error);
+        }
+    };
 
     /** 🔌 Cek status koneksi internet */
     useEffect(function () {
@@ -82,6 +101,11 @@ function Absensi() {
     const tombolAbsensi = () => {
         if (!isOnline) {
             Alert.alert('Tidak Ada Koneksi', 'Harap aktifkan koneksi internet untuk melanjutkan absensi.');
+            return;
+        }
+
+        if (!tetapanWaktuAbsen.status) {
+            Alert.alert('Absen Terkunci', `${tetapanWaktuAbsen.keterangan}. Waktu absen belum dimulai atau sudah berakhir.`);
             return;
         }
 
@@ -185,10 +209,11 @@ function Absensi() {
 
     useEffect(function () {
         getLocation();
+        getWaktuAbsen();
     }, []);
 
     let statusText = '\nStatus: ';
-    if (statusx) {
+    if (statusx && tetapanWaktuAbsen.status) {
         statusText += '✅ Diizinkan';
     } else {
         statusText += '❌ Ditolak';
@@ -196,14 +221,15 @@ function Absensi() {
     if (jarakMinimal !== null) {
         statusText += ' | Jarak: ' + jarakMinimal.toFixed(2) + 'm';
     }
+    statusText += ` | Waktu: ${tetapanWaktuAbsen.keterangan}`;
 
     let opacityValue = 0.5;
-    if (statusx) {
+    if (statusx && tetapanWaktuAbsen.status) {
         opacityValue = 1;
     }
 
     let isDisabled = true;
-    if (statusx) {
+    if (statusx && tetapanWaktuAbsen.status) {
         isDisabled = false;
     }
 
@@ -255,7 +281,7 @@ function Absensi() {
                 <Text style={styles.absenSubtitle}>
                     Sebelum melakukan pengabsenan, pastikan anda berada di posisi yang tepat
                 </Text>
-                <Text style={{ marginTop: -15, color: '#555', fontFamily: 'Audiowide-Regular', }}>
+                <Text style={{ marginTop: -15, paddingRight: 10, color: '#555', fontFamily: 'Audiowide-Regular', }}>
                     {statusText}
                 </Text>
             </View>

@@ -26,7 +26,7 @@ const URLKU = 'https://serverabsensiv2.konaweselatankab.go.id';
 // =============================
 
 const initialState = {
-  VERSI_APP: '1.0.0',
+  VERSI_APP: '2.0.0',
   nama: 'koko toleee',
   TOKEN: '',
   PROFILE: '',
