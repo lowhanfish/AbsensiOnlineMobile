@@ -126,24 +126,28 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
                 } else {
 
-                    res.status(200).json({
-                        status: 'ABSEN SUKSES',
-                        ket: 'Mohon bersabar, Pelan saja om/tante, Absensi face-matching berlaku mulai tanggal 1 februari 2026, anda melakukan absen hari ini pada jam : ',
-                        jam: jam
-                        // status: 'ABSEN SUKSES',
-                        // ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
-                        // jam: jam
-                    });
+                    // res.status(200).json({
+                    //     // status: 'ABSEN SUKSES',
+                    //     // ket: 'Mohon bersabar, Pelan saja om/tante, Absensi face-matching berlaku mulai tanggal 1 februari 2026, anda melakukan absen hari ini pada jam : ',
+                    //     // jam: jam
+                    //     status: 'ABSEN SUKSES',
+                    //     ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
+                    //     jam: jam
+                    // });
+
+                    addAbsensiV2(req, res);
+                    break;
+
                 }
 
-                console.log("================ HASIL PENCOCOKAN WAJAH ================")
+                // console.log("================ HASIL PENCOCOKAN WAJAH ================")
 
             }
 
 
             // console.log(listWajah)
 
-            console.log("=========== DATA WAJAH ===========");
+            // console.log("=========== DATA WAJAH ===========");
 
 
 
@@ -155,6 +159,38 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     }
 
 });
+
+
+
+const addAbsensiV2 = async (req, res) => {
+
+    const body = req.body;
+    var profile_login = req.user.profile
+    body.lokasi_absen_unit = profile_login.lokasi_absen
+    body._id = req.user._id
+
+    console.log("ABSEN HARIAN DI PANGGIL");
+    console.log(body);
+
+    try {
+        const response = await fetch(url_micro_4 + '/micro_4/Add_Absen/Add', {
+            method: 'post',
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        // console.log(data);
+        // console.log("DATA DI DAPAT");
+        res.json(data)
+    } catch (error) {
+        console.log("Respon error dari absenharian client, utk server DCN");
+        res.json({})
+    }
+
+}
+
+
+
 // INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
 
 // INI UNTUK ABSENSI VERSI LAMA (TANPA FACE RECOGNATION)
