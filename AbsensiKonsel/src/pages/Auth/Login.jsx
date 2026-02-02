@@ -21,6 +21,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginSuccess } from '../../redux/actions'; // ✅ pakai action resmi
+import ModalComponentNotActivated from '../../components/ModalComponentNotActivated';
+
 
 // === Validasi Schema ===
 const loginSchema = Joi.object({
@@ -47,6 +49,9 @@ const loginSchema = Joi.object({
 });
 
 const Login = () => {
+
+    const [modalActivated, SetModalActivated] = useState(false);
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [ingat, setIngat] = useState(false);
@@ -225,7 +230,10 @@ const Login = () => {
                         </TouchableOpacity>
 
 
-                        <TouchableOpacity onPress={() => navigation.navigate("AbsenOffline")} style={styles.buttonOffline}>
+                        {/* <TouchableOpacity onPress={() => navigation.navigate("AbsenOffline")} style={styles.buttonOffline}>
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Absen Offline</Text>
+                        </TouchableOpacity> */}
+                        <TouchableOpacity onPress={() => SetModalActivated(true)} style={styles.buttonOffline}>
                             <Text style={{ color: 'white', fontWeight: 'bold' }}>Absen Offline</Text>
                         </TouchableOpacity>
                     </View>
@@ -244,6 +252,12 @@ const Login = () => {
                     <ImageLib style={{ width: 130 }} urix={require('../../assets/images/icon/konselLogin.png')} />
                 </View>
             </View>
+
+
+            <ModalComponentNotActivated
+                openModal={modalActivated}
+                SetOpenModal={SetModalActivated}
+            />
         </ImageBackground>
     );
 };
