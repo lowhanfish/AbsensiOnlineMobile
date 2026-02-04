@@ -103,7 +103,6 @@ router.post('/Add', async (req, res) => {
                                     libAbsen.EditAbsenHarian(req, res, db, jam, rows);
                                 }
                             }
-
                         }
                     })
 

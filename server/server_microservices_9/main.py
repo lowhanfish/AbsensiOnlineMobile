@@ -1,12 +1,13 @@
 
 
-from flask import Flask, request, jsonify, Blueprint, send_from_directory
+from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import os
 import onnxruntime as ort
 import numpy as np
 import cv2
 import requests
+import subprocess
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +16,14 @@ CORS(app)
 inference_bp = Blueprint('inference_bp', __name__)
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "saved_models", "AntiSpoofing_bin_1.5_128.onnx")
 UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "server", "uploads")
+
+# ============ THRESHOLD KONFIGURASI ============
+# Threshold untuk deteksi fake/real
+# Nilai lebih kecil = lebih mudah mendeteksi sebagai "fake" (kurang sensitif/strict)
+# Nilai lebih besar = lebih ketat mendeteksi "real"
+# Default: 0.45 (artinya: jika prob_fake >= 0.45, maka认定为 "fake")
+FAKE_THRESHOLD = 0.55
+# ===============================================
 
 # Load ONNX model with GPU support (with fallback to CPU)
 available_providers = ort.get_available_providers()
@@ -46,11 +55,21 @@ def inference():
         return jsonify({"error": "Invalid image file"}), 400
     input_tensor = preprocess_image(image)
     outputs = ort_session.run(None, {input_name: input_tensor})
-    prediction = int(np.argmax(outputs[0]))
-    confidence = float(np.max(outputs[0]))
+    
+    # Gunakan threshold untuk menentukan fake/real
+    prob_real = float(outputs[0][0][0])
+    prob_fake = float(outputs[0][0][1])
+    
+    # Jika prob_fake >= threshold, maka "fake"
+    prediction = "fake" if prob_fake >= FAKE_THRESHOLD else "real"
+    confidence = prob_fake if prediction == "fake" else prob_real
+    
     return jsonify({
-        "prediction": "real" if prediction == 0 else "fake",
-        "confidence": confidence
+        "prediction": prediction,
+        "confidence": confidence,
+        "prob_real": prob_real,
+        "prob_fake": prob_fake,
+        "threshold_used": FAKE_THRESHOLD
     })
 
 # Endpoint baru: inference dari URL gambar
@@ -69,11 +88,21 @@ def inference_url():
             return jsonify({"error": "Invalid image from URL"}), 400
         input_tensor = preprocess_image(image)
         outputs = ort_session.run(None, {input_name: input_tensor})
-        prediction = int(np.argmax(outputs[0]))
-        confidence = float(np.max(outputs[0]))
+        
+        # Gunakan threshold untuk menentukan fake/real
+        prob_real = float(outputs[0][0][0])
+        prob_fake = float(outputs[0][0][1])
+        
+        # Jika prob_fake >= threshold, maka "fake"
+        prediction = "fake" if prob_fake >= FAKE_THRESHOLD else "real"
+        confidence = prob_fake if prediction == "fake" else prob_real
+        
         return jsonify({
-            "prediction": "real" if prediction == 0 else "fake",
-            "confidence": confidence
+            "prediction": prediction,
+            "confidence": confidence,
+            "prob_real": prob_real,
+            "prob_fake": prob_fake,
+            "threshold_used": FAKE_THRESHOLD
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -95,17 +124,23 @@ def inference_from_uploads():
     
     input_tensor = preprocess_image(image)
     outputs = ort_session.run(None, {input_name: input_tensor})
-    prediction = int(np.argmax(outputs[0]))
-    confidence = float(np.max(outputs[0]))
+    
+    # Gunakan threshold untuk menentukan fake/real
+    prob_real = float(outputs[0][0][0])
+    prob_fake = float(outputs[0][0][1])
+    
+    # Jika prob_fake >= threshold, maka "fake"
+    prediction = "fake" if prob_fake >= FAKE_THRESHOLD else "real"
+    confidence = prob_fake if prediction == "fake" else prob_real
     
     return jsonify({
-        "prediction": "real" if prediction == 0 else "fake",
-        "confidence": confidence
+        "prediction": prediction,
+        "confidence": confidence,
+        "prob_real": prob_real,
+        "prob_fake": prob_fake,
+        "threshold_used": FAKE_THRESHOLD
     })
 
-# Fine-tune Blueprint
-from flask import current_app
-import subprocess
 finetune_bp = Blueprint('finetune_bp', __name__)
 
 @finetune_bp.route('/finetune', methods=['POST'])

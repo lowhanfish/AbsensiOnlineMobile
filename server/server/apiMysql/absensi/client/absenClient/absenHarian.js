@@ -13,7 +13,6 @@ const libAbsen = require('../../../library/absen');
 const libIzin = require('../../../library/izin');
 const faceEmbedding = require('../../../library/faceEmbedding');
 
-
 var fetch = require('node-fetch');
 const configurasi = require('../../../library/configurasi');
 const url_micro_1 = configurasi.url_micro_1
@@ -26,25 +25,17 @@ router.get('/cappo', (req, res) => {
     res.json('wataaaooo')
 })
 
-
 // INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
 router.post('/Add_v2', upload.single("file"), async (req, res) => {
     // 082123731607 (Muh.Aldi YL)
-
-
-
     if (req.body.VERSI_APP !== '2.0.0') {
         res.status(500).json({
             status: 'ABSEN GAGAL',
-            ket: 'Sayangnya, aplikasi yang anda gunakan (versi perekaman) tidak berlaku lagi. Silahkan hubungi Bapak Mangke +6285255535614 (WhatsApp) untuk mendapatkan pencerahan. absen hari ini pada jam : ',
+            ket: 'Sayangnya, aplikasi yang anda gunakan (versi perekaman) tidak berlaku lagi. Silahkan hubungi Admin Riko (BKPSDM) +62 823-2427-7546 (WhatsApp) untuk mendapatkan penjelasan teknis. absen hari ini pada jam : ',
             jam: jam
         });
         return false
-
     }
-
-
-
 
     var jam = lib.Timex().jam;
     var nip = req.body.NIP;
@@ -60,8 +51,6 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     console.log(req.file)
     console.log("===========================================");
 
-
-
     const body = {
         "filename": req.file.filename
     }
@@ -72,95 +61,60 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     console.log(cekspoofing);
     console.log("=========== SPOOFING ===========")
 
-
     if (cekspoofing === "fake") {
-
         hapus_file(req.file.filename);
         res.status(500).json({
             status: 'ABSEN GAGAL',
-            ket: 'Sayangnya, foto yang anda kirimkan terdeteksi "fake" silahkan ulangi kembali. absen hari ini pada jam : ',
+            ket: 'Sayangnya, foto yang anda kirimkan terdeteksi "fake/palsu" rekaman dan bukti tercatat dalam database disiplin. silahkan menghubungi admin Aldi-BKPSDM (0821-2373-1607). absen hari ini pada jam : ',
             jam: jam
         });
         return false
-    } else {
-        console.log("real");
-        console.log("=========== DATA WAJAH ===========");
-        var listWajah = await faceEmbedding.getDataWajah(db, req.body.NIP)
-        console.log(listWajah);
-
-        console.log("Jumlah wajah :" + listWajah.length)
-
-        if (listWajah.length < 1) {
-            res.status(500).json({
-                status: 'ABSEN GAGAL',
-                ket: 'Sayangnya, anda belum memiliki foto sampel yang telah di verifikasi, mohon hubungi admin pada nomor : 082290069105 (Hasbar Jaya). absen hari ini pada jam : ',
-                jam: jam
-            });
-        } else {
-            var resultPencocokan = false;
-
-            for (let i = 0; i < listWajah.length; i++) {
-                const wajahCheck = {
-                    reference: req.file.filename,
-                    probe1: listWajah[i].file
-                }
-
-                const hasilFaceMatch = await faceEmbedding.pencocokkanWajah(wajahCheck)
-                console.log("================ HASIL PENCOCOKAN WAJAH ================")
-                resultPencocokan = hasilFaceMatch.probe_results[0].match
-                console.log(resultPencocokan)
-
-
-                if (resultPencocokan == 'false' || resultPencocokan === false) {
-
-
-
-                    res.status(500).json({
-                        status: 'ABSEN GAGAL',
-                        ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi. absen hari ini pada jam : ',
-                        jam: jam
-                    });
-
-
-
-
-                } else {
-
-                    // res.status(200).json({
-                    //     // status: 'ABSEN SUKSES',
-                    //     // ket: 'Mohon bersabar, Pelan saja om/tante, Absensi face-matching berlaku mulai tanggal 1 februari 2026, anda melakukan absen hari ini pada jam : ',
-                    //     // jam: jam
-                    //     status: 'ABSEN SUKSES',
-                    //     ket: 'Terimakasih, anda berhasil melakukan absen hari ini pada jam : ',
-                    //     jam: jam
-                    // });
-
-                    addAbsensiV2(req, res);
-                    break;
-
-                }
-
-                // console.log("================ HASIL PENCOCOKAN WAJAH ================")
-
-            }
-
-
-            // console.log(listWajah)
-
-            // console.log("=========== DATA WAJAH ===========");
-
-
-
-
-        }
-
-
-
     }
 
+    console.log("real");
+    console.log("=========== DATA WAJAH ===========");
+    var listWajah = await faceEmbedding.getDataWajah(db, req.body.NIP)
+    console.log(listWajah);
+
+    console.log("Jumlah wajah :" + listWajah.length)
+
+    if (listWajah.length < 1) {
+        res.status(500).json({
+            status: 'ABSEN GAGAL',
+            ket: 'Sayangnya, anda belum memiliki foto sampel yang telah di verifikasi, mohon hubungi admin pada nomor : 082290069105 (Hasbar Jaya). absen hari ini pada jam : ',
+            jam: jam
+        });
+    } else {
+        var resultPencocokan = false;
+
+        for (let i = 0; i < listWajah.length; i++) {
+            const wajahCheck = {
+                reference: req.file.filename,
+                probe1: listWajah[i].file
+            }
+
+            const hasilFaceMatch = await faceEmbedding.pencocokkanWajah(wajahCheck)
+            console.log("================ HASIL PENCOCOKAN WAJAH ================")
+            resultPencocokan = hasilFaceMatch.probe_results[0].match
+            console.log(resultPencocokan)
+
+            if (resultPencocokan == 'false' || resultPencocokan === false) {
+
+                res.status(500).json({
+                    status: 'ABSEN GAGAL',
+                    ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi. absen hari ini pada jam : ',
+                    jam: jam
+                });
+            } else {
+                addAbsensiV2(req, res);
+                break;
+            }
+            // console.log("================ HASIL PENCOCOKAN WAJAH ================")
+        }
+        // console.log(listWajah)
+        // console.log("=========== DATA WAJAH ===========");
+    }
 });
-
-
 
 const addAbsensiV2 = async (req, res) => {
 
@@ -186,18 +140,13 @@ const addAbsensiV2 = async (req, res) => {
         console.log("Respon error dari absenharian client, utk server DCN");
         res.json({})
     }
-
 }
 
-
-
 // INI UNTUK ABSENSI VERSI BARU (FACE RECOGNATION)
-
 // INI UNTUK ABSENSI VERSI LAMA (TANPA FACE RECOGNATION)
 router.post('/Add', async (req, res) => {
 
     // console.log(url_micro_4+'/micro_4/Add_Absen/Add');
-
     const body = req.body;
     var profile_login = req.user.profile
     body.lokasi_absen_unit = profile_login.lokasi_absen
@@ -220,7 +169,6 @@ router.post('/Add', async (req, res) => {
         console.log("Respon error dari absenharian client, utk server DCN");
         res.json({})
     }
-
 
 });
 
@@ -575,7 +523,6 @@ router.post('/viewListDarurat', (req, res) => {
     })
 });
 
-
 // DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
 router.post('/viewListDarurat_v2', (req, res) => {
     console.log("LIST DARURAT DI PANGGIL")
@@ -711,7 +658,6 @@ router.post('/removeDarurat_v2', (req, res) => {
         }
     })
 })
-
 // DI GUNAKAN PADA ABSENSI VERSI TERBARU (FACE ID)
 
 router.post('/AddMockLocation', (req, res) => {
@@ -835,7 +781,5 @@ function hapus_file(file) {
     })
 
 }
-
-
 
 module.exports = router;

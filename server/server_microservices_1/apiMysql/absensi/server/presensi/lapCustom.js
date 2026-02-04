@@ -175,7 +175,7 @@ async function loopingDate() {
 
 
 
-router.post('/view', async (req, res) => {
+router.post('/view_1', async (req, res) => {
     try {
         /* ===================== PARSE TANGGAL ===================== */
         const waktuFirst = req.body.waktuFirst.replaceAll("/", "-")
@@ -365,7 +365,7 @@ router.post('/view', async (req, res) => {
 
 
 
-router.post('/view_backup', async (req, res) => {
+router.post('/view', async (req, res) => {
 
     var waktuFirstX = req.body.waktuFirst
     var waktuLastX = req.body.waktuLast
@@ -393,7 +393,7 @@ router.post('/view_backup', async (req, res) => {
     // console.log(listTanggal);
 
 
-    // console.log(req.body)
+    console.log(req.body)
     // console.log(waktuLast)
 
     let view = `
@@ -481,6 +481,8 @@ router.post('/view_backup', async (req, res) => {
         
         WHERE 
         biodata.unit_kerja = '`+ req.body.unit_kerja_id + `'
+        AND biodata.jenis_pegawai_id=`+ req.body.jnsASN + `
+
         ORDER BY jabatan.level
 
     `

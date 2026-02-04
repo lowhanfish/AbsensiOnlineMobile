@@ -1,92 +1,126 @@
-# Dokumentasi API Absensi Online - Face Anti-Spoofing
+# Face Anti-Spoofing API Documentation
 
-### Untuk aktifkan sementara
-source venv/bin/activate && python3 main.py
-deactivate
-============================================
-### untuk paten
+Face Anti-Spoofing Microservice untuk aplikasi Absensi Online - mendeteksi apakah gambar wajah adalah asli (real) atau palsu (fake/cetakan).
 
-#### source venv/bin/activate
-#### which python
-##### Result : /home/diskominfo-konsel/Documents/App/AbsensiOnlineMobile/server/server_microservices_9/venv/bin/python
-
-#### pm2 start main.py --name "microservices-9 (spoofing detection)" --interpreter /home/diskominfo-konsel/Documents/App/AbsensiOnlineMobile/server/server_microservices_9/venv/bin/python
-
-#### pm2 save
-
-#### pm2 startup
-
-
-## 1. Inference (Prediksi Gambar dari File)
-
-- **Endpoint:** `POST /api/v1/inference`
-- **Deskripsi:** Memprediksi apakah gambar wajah yang dikirim adalah asli (real) atau palsu (fake).
-- **Request:**
-  - **Body:** form-data
-    - `image` (file): File gambar yang akan diuji
-- **Response:**
-  - `prediction`: "real" atau "fake"
-  - `confidence`: Nilai kepercayaan prediksi (float)
-- **Contoh Response:**
-
-```json
-{
-  "prediction": "fake",
-  "confidence": 0.65
-}
-```
+**Base URL:** `http://localhost:5009`
 
 ---
 
-## 2. Inference dari URL Gambar
+## Endpoints
 
-- **Endpoint:** `POST /api/v1/inference-url`
-- **Deskripsi:** Memprediksi apakah gambar wajah dari URL adalah asli (real) atau palsu (fake).
-- **Request:**
-  - **Headers:** `Content-Type: application/json`
-  - **Body:** raw JSON
-    ```json
-    {
-      "url": "https://example.com/gambar-wajah.jpg"
-    }
-    ```
-- **Response:**
-  - `prediction`: "real" atau "fake"
-  - `confidence`: Nilai kepercayaan prediksi (float)
-- **Contoh Request Postman:**
-  - Method: `POST`
-  - URL: `http://localhost:5009/api/v1/inference-url`
-  - Headers: `Content-Type: application/json`
-  - Body (raw JSON):
-    ```json
-    {
-        "url": "https://link-gambar.com/image.jpg"
-    }
-    ```
-- **Contoh Response:**
+### 1. Inference (Upload Gambar)
+
+Prediksi apakah gambar wajah yang diupload adalah asli atau palsu.
+
+- **URL:** `/api/v1/inference`
+- **Method:** `POST`
+- **Content-Type:** `multipart/form-data`
+
+**Request Body:**
+
+| Parameter | Tipe | Wajib | Deskripsi |
+|-----------|------|-------|-----------|
+| image | File | Ya | File gambar wajah (JPG, PNG, dll) |
+
+**Response Sukses:**
 
 ```json
 {
   "prediction": "real",
-  "confidence": 0.98
+  "confidence": 0.92,
+  "prob_real": 0.92,
+  "prob_fake": 0.08,
+  "threshold_used": 0.55
+}
+```
+
+**Response Error:**
+
+```json
+{
+  "error": "No image file provided"
 }
 ```
 
 ---
 
-## 4. Fine-tune (Pelatihan Ulang Model)
+### 2. Inference dari URL
 
-- **Endpoint:** `POST /api/v1/finetune`
-- **Deskripsi:** Melakukan pelatihan ulang model dengan dataset baru.
-- **Request:**
-  - **Body:** form-data
-    - `data_dir` (string): Path direktori dataset
-    - `epochs` (integer, opsional): Jumlah epoch (default: 10)
-    - `batch_size` (integer, opsional): Ukuran batch (default: 32)
-- **Response:**
-  - `message`: Status fine-tuning
-  - atau `error`: Pesan error jika gagal
-- **Contoh Response:**
+Prediksi apakah gambar wajah dari URL adalah asli atau palsu.
+
+- **URL:** `/api/v1/inference-url`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+
+**Request Body:**
+
+```json
+{
+  "url": "https://example.com/wajah.jpg"
+}
+```
+
+**Response Sukses:**
+
+```json
+{
+  "prediction": "real",
+  "confidence": 0.87,
+  "prob_real": 0.87,
+  "prob_fake": 0.13,
+  "threshold_used": 0.55
+}
+```
+
+---
+
+### 3. Inference dari File Lokal
+
+Prediksi apakah gambar wajah dari direktori server uploads adalah asli atau palsu.
+
+- **URL:** `/api/v1/uploads`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+
+**Request Body:**
+
+```json
+{
+  "filename": "1768754045524.jpg"
+}
+```
+
+**Response Sukses:**
+
+```json
+{
+  "prediction": "real",
+  "confidence": 0.95,
+  "prob_real": 0.95,
+  "prob_fake": 0.05,
+  "threshold_used": 0.55
+}
+```
+
+---
+
+### 4. Fine-tuning Model
+
+Melatih ulang model dengan dataset baru.
+
+- **URL:** `/api/v1/finetune`
+- **Method:** `POST`
+- **Content-Type:** `multipart/form-data`
+
+**Request Body:**
+
+| Parameter | Tipe | Wajib | Deskripsi |
+|-----------|------|-------|-----------|
+| data_dir | String | Ya | Path direktori dataset |
+| epochs | Integer | Tidak | Jumlah epoch (default: 10) |
+| batch_size | Integer | Tidak | Ukuran batch (default: 32) |
+
+**Response Sukses:**
 
 ```json
 {
@@ -94,11 +128,16 @@ deactivate
 }
 ```
 
-## 5. Cek Status Server
+---
 
-- **Endpoint:** `GET /`
-- **Deskripsi:** Mengecek status server.
-- **Response:**
+### 5. Health Check
+
+Memeriksa status server.
+
+- **URL:** `/`
+- **Method:** `GET`
+
+**Response:**
 
 ```json
 {
@@ -109,36 +148,71 @@ deactivate
 
 ---
 
-## 6. Inference dari File Lokal
+## Konfigurasi Threshold
 
-- **Endpoint:** `POST /api/v1/uploads`
-- **Deskripsi:** Memprediksi apakah gambar wajah dari file lokal (server/server/uploads) adalah asli (real) atau palsu (fake).
-- **Request:**
-  - **Headers:** `Content-Type: application/json`
-  - **Body:** raw JSON
-    ```json
-    {
-      "filename": "1768754045524.jpg"
-    }
-    ```
-- **Response:**
-  - `prediction`: "real" atau "fake"
-  - `confidence`: Nilai kepercayaan prediksi (float)
-- **Contoh Response:**
+| Threshold | Sensitivitas | Deskripsi |
+|-----------|--------------|-----------|
+| 0.35-0.40 | Longgar | Lebih banyak terdeteksi "fake" |
+| 0.45-0.50 | Seimbang | Default untuk penggunaan umum |
+| 0.55-0.60 | Ketat | Lebih banyak terdeteksi "real" |
 
-```json
-{
-  "prediction": "real",
-  "confidence": 0.98
-}
-```
-
-
+**Logika Threshold:**
+- Jika `prob_fake >= FAKE_THRESHOLD` → **"fake"**
+- Jika `prob_fake < FAKE_THRESHOLD` → **"real"**
 
 ---
 
-**Catatan:**
+## Menjalankan Server
 
-- Semua endpoint berjalan di port 5009 (default)
-- Kirim gambar dengan key `image` pada endpoint inference
-- Untuk fine-tune, pastikan path dataset valid di server
+### Development
+
+```bash
+cd server/server_microservices_9
+source venv/bin/activate
+python3 main.py
+```
+
+### Production (PM2)
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Get Python path
+which python
+# Output: /home/diskominfo-konsel/Documents/App/AbsensiOnlineMobile/server/server_microservices_9/venv/bin/python
+
+# Start with PM2
+pm2 start main.py \
+  --name "microservices-9-spoofing" \
+  --interpreter /home/diskominfo-konsel/Documents/App/AbsensiOnlineMobile/server/server_microservices_9/venv/bin/python
+
+# Save PM2 config
+pm2 save
+
+# Setup startup
+pm2 startup
+```
+
+---
+
+## Library Dependencies
+
+```
+flask>=2.0.0
+flask-cors>=3.0.0
+onnxruntime-gpu>=1.16.0
+numpy>=1.21.0
+opencv-python>=4.5.0
+requests>=2.28.0
+```
+
+---
+
+## Catatan
+
+- Model default: `saved_models/AntiSpoofing_bin_1.5_128.onnx`
+- Server berjalan di port **5009**
+- Support GPU (CUDA) dengan fallback ke CPU
+- Gambar di-resize ke 128x128 pixels untuk inferensi
+
