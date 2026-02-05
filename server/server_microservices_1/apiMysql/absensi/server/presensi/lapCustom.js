@@ -175,7 +175,7 @@ async function loopingDate() {
 
 
 
-router.post('/view_1', async (req, res) => {
+router.post('/view', async (req, res) => {
     try {
         /* ===================== PARSE TANGGAL ===================== */
         const waktuFirst = req.body.waktuFirst.replaceAll("/", "-")
@@ -365,7 +365,7 @@ router.post('/view_1', async (req, res) => {
 
 
 
-router.post('/view', async (req, res) => {
+router.post('/view_1', async (req, res) => {
 
     var waktuFirstX = req.body.waktuFirst
     var waktuLastX = req.body.waktuLast

@@ -31,7 +31,7 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     if (req.body.VERSI_APP !== '2.0.0') {
         res.status(500).json({
             status: 'ABSEN GAGAL',
-            ket: 'Sayangnya, aplikasi yang anda gunakan (versi perekaman) tidak berlaku lagi. Silahkan hubungi Admin Riko (BKPSDM) +62 823-2427-7546 (WhatsApp) untuk mendapatkan penjelasan teknis. absen hari ini pada jam : ',
+            ket: 'Sayangnya, aplikasi yang anda gunakan (versi perekaman) tidak berlaku lagi. Silahkan hubungi Admin Dukut Hadi (BKPSDM) +62 878-6101-7680 (WhatsApp) untuk mendapatkan penjelasan teknis. absen hari ini pada jam : ',
             jam: jam
         });
         return false
@@ -81,7 +81,7 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
     if (listWajah.length < 1) {
         res.status(500).json({
             status: 'ABSEN GAGAL',
-            ket: 'Sayangnya, anda belum memiliki foto sampel yang telah di verifikasi, mohon hubungi admin pada nomor : 082290069105 (Hasbar Jaya). absen hari ini pada jam : ',
+            ket: 'Sayangnya, anda belum memiliki foto sampel yang telah di verifikasi, mohon hubungi Administrator pada nomor : 082290069105 (Bpk. Hasbar Jaya). absen hari ini pada jam : ',
             jam: jam
         });
     } else {
@@ -102,7 +102,7 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
                 res.status(500).json({
                     status: 'ABSEN GAGAL',
-                    ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi. absen hari ini pada jam : ',
+                    ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi atau hubungi via WhatsApp Admin Mangke/Hermansyah (BKPSDM) - 0852-5553-5614 untuk penjelasan lanjut. absen hari ini pada jam : ',
                     jam: jam
                 });
             } else {
