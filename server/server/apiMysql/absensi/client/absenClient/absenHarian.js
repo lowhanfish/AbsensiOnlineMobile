@@ -102,7 +102,7 @@ router.post('/Add_v2', upload.single("file"), async (req, res) => {
 
                 res.status(500).json({
                     status: 'ABSEN GAGAL',
-                    ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi atau hubungi via WhatsApp Admin Mangke/Hermansyah (BKPSDM) - 0852-5553-5614 untuk penjelasan lanjut. absen hari ini pada jam : ',
+                    ket: 'Sayangnya foto yg anda kirimkan dan foto sampel kami deteksi berbeda. silahkan ulangi lagi atau hubungi via WhatsApp Admin Asrif (KOMINFO) - 0851-6322-7980 untuk penjelasan lanjut. absen hari ini pada jam : ',
                     jam: jam
                 });
             } else {
