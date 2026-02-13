@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     Platform,
     PermissionsAndroid,
+    ToastAndroid,
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Circle } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
@@ -86,8 +87,7 @@ function Absensi() {
                 return { trusted: false, reason: 'Perangkat di-root / jailbreak' };
 
             if (Platform.OS === 'android') {
-                if (JailMonkey.canMockLocation && JailMonkey.canMockLocation())
-                    return { trusted: false, reason: 'Mock location diizinkan' };
+                // Deteksi mock location hanya dari GPS flag (lebih akurat)
                 if (position && position.mocked)
                     return { trusted: false, reason: 'Lokasi palsu terdeteksi' };
                 if (JailMonkey.isOnExternalStorage && JailMonkey.isOnExternalStorage())
@@ -98,8 +98,9 @@ function Absensi() {
 
             if (JailMonkey.isDebugged && JailMonkey.isDebugged())
                 return { trusted: false, reason: 'Aplikasi sedang di-debug' };
-            if (JailMonkey.trustFall && JailMonkey.trustFall())
-                return { trusted: false, reason: 'Pemeriksaan trustFall gagal' };
+            // trustFall check dihilangkan karena sering false positive di HP lama
+            // if (JailMonkey.trustFall && JailMonkey.trustFall())
+            //     return { trusted: false, reason: 'Pemeriksaan trustFall gagal' };
 
             return { trusted: true };
         } catch (err) {
@@ -142,13 +143,13 @@ function Absensi() {
 
     /** Tombol cek lokasi */
     const tombolCekLokasi = async () => {
-        await getLocation();
+        await getLocation(true); // Trigger high accuracy
         // Alert.alert('Lokasi Anda', `Latitude: ${lokasi.latitude}\nLongitude: ${lokasi.longitude}`);
         CekJarakAbsen();
     };
 
-    /** Ambil lokasi dengan retry mechanism */
-    const getLocation = async () => {
+    /** Ambil lokasi dengan opsi akurasi */
+    const getLocation = async (forceHighAccuracy = false) => {
         try {
             if (Platform.OS === 'android') {
                 const granted = await PermissionsAndroid.request(
@@ -166,14 +167,30 @@ function Absensi() {
                 }
             }
 
-            // Opsi geolocation yang lebih baik dengan fallback
-            const geoOptions = {
-                enableHighAccuracy: false, // Mulai dengan network-based untuk kecepatan
-                timeout: 20000, // Timeout lebih panjang (20 detik)
-                maximumAge: 60000, // Izinkan posisi cache sampai 1 menit
-                forceRequestLocation: true,
-                showLocationDialog: true,
-            };
+            let geoOptions;
+            if (forceHighAccuracy) {
+                // Notifikasi high accuracy aktif
+                if (Platform.OS === 'android') {
+                    ToastAndroid.show('GPS High Accuracy aktif', ToastAndroid.LONG);
+                }
+                // Gunakan high accuracy langsung saat trigger tombol
+                geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 30000,
+                    maximumAge: 30000,
+                    forceRequestLocation: true,
+                    showLocationDialog: true,
+                };
+            } else {
+                // Mulai dengan network-based untuk kecepatan awal
+                geoOptions = {
+                    enableHighAccuracy: false,
+                    timeout: 20000,
+                    maximumAge: 60000,
+                    forceRequestLocation: true,
+                    showLocationDialog: true,
+                };
+            }
 
             const getPosition = () => {
                 return new Promise((resolve, reject) => {
@@ -182,25 +199,27 @@ function Absensi() {
             };
 
             let position;
-            try {
+            if (forceHighAccuracy) {
+                // Langsung high accuracy tanpa fallback
                 position = await getPosition();
-                console.log('✅ Lokasi berhasil diambil:', position.coords);
-            } catch (firstError) {
-                console.warn(
-                    '⚠️ Pertama gagal, coba dengan high accuracy:',
-                    firstError,
-                );
-
-                // Coba lagi dengan high accuracy jika gagal
-                const highAccuracyOptions = {
-                    enableHighAccuracy: true,
-                    timeout: 30000, // Timeout lebih lama untuk GPS
-                    maximumAge: 30000,
-                };
-
-                position = await new Promise((resolve, reject) => {
-                    Geolocation.getCurrentPosition(resolve, reject, highAccuracyOptions);
-                });
+                console.log('✅ Lokasi berhasil diambil (high accuracy):', position.coords);
+            } else {
+                // Coba network-based dulu, fallback ke high accuracy jika gagal
+                try {
+                    position = await getPosition();
+                    console.log('✅ Lokasi berhasil diambil (network):', position.coords);
+                } catch (firstError) {
+                    console.warn('⚠️ Network gagal, coba high accuracy:', firstError);
+                    const highAccuracyOptions = {
+                        enableHighAccuracy: true,
+                        timeout: 30000,
+                        maximumAge: 30000,
+                    };
+                    position = await new Promise((resolve, reject) => {
+                        Geolocation.getCurrentPosition(resolve, reject, highAccuracyOptions);
+                    });
+                    console.log('✅ Lokasi berhasil diambil (fallback high accuracy):', position.coords);
+                }
             }
 
             const security = await verifyDeviceSecurity(position);
